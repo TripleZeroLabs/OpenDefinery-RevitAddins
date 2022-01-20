@@ -20,10 +20,58 @@ This is an extremely early version of the OpenDefinery Revitᵀᴹ add-in which 
 ## Introducing the industry's first REST API for shared parameters.
 One of the main benefits of this suite of add-ins is that they leverage the [OpenDefinery API](https://documenter.getpostman.com/view/5483074/T1LHGpQo). This API can be used to create and retrieve shared parameters, as well as retrieve entire "sets" of shared paramaters (aka `Collections`) which is how to run a validation against any given standard.
 
-Ultimately, a software development kit (SDK) will be released, but until then this open source project can serve as a reference for how to use the API using C#.
-
 #### Example Request
-This example demonstrates how the `SharedParameter` class is used to retrieve a shared parameter from the OpenDefinery database by simply passing the GUID as an argument.
+The below examples demonstrate how to retrieve a list of `SharedParameters` from OpenDefinery by passing a GUID to the API.
+
+**cURL**
+
+`curl --location --request GET 'http://app.opendefinery.com/rest/params/guid/a4d4a6bb-1eca-43ed-a52b-376bff2d9a76?_format=json'`
+
+**JSON Reponse**
+```
+{
+  "rows": [
+    {
+      "id": "28156",
+      "name": "AirFlowAirShaft",
+      "data_category": "",
+      "data_type": "HVAC_AIR_FLOW",
+      "description": "The air flow of an air shaft.",
+      "group": "Default Group",
+      "guid": "a4d4a6bb-1eca-43ed-a52b-376bff2d9a76",
+      "user_modifiable": "1",
+      "visible": "1",
+      "author": "6",
+      "collections": "10794"
+    },
+    {
+      "id": "29584",
+      "name": "AirFlow_AirShaft",
+      "data_category": "",
+      "data_type": "HVAC_AIR_FLOW",
+      "description": "The air flow of an air shaft.",
+      "group": "Default Group",
+      "guid": "a4d4a6bb-1eca-43ed-a52b-376bff2d9a76",
+      "user_modifiable": "1",
+      "visible": "1",
+      "author": "1",
+      "collections": ""
+    }
+  ],
+  "pager": {
+    "current_page": 0,
+    "total_items": 2,
+    "total_pages": 1,
+    "items_per_page": 100
+  }
+}
+```
+
+Note that an array of `rows` is returned because OpenDefinery can store multiple shared parameters with the same GUID. The `collections` property helps identify where each instance of the `SharedParameter` is assigned.
+
+**C# Method**
+
+This example demonstrates how the above endpoint is implemented within the `SharedParameter` class retrieve a shared parameter from the OpenDefinery database by simply passing the GUID as an argument.
 
 For more complete API docs and more sample code, visit the [OpenDefinery API Documentation](https://documenter.getpostman.com/view/5483074/T1LHGpQo).
 ```
