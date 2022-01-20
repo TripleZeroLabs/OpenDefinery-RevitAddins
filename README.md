@@ -9,7 +9,7 @@ Currently, the OpenDefinery platform is in private beta, which means all account
 ## OpenDefinery Shared Parameter Manager
 This is an extremely early version of the OpenDefinery Revitᵀᴹ add-in which means it doesn't do much and is not very pretty, but don't forget to star this repository because there are many more features coming in the near term.
 
-![](OD-ParamManager\images\screenshot.png)
+![](https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/blob/master/OD-ParamManager/images/screenshot.png)
 
 ### Current Features (v0.1)
 - **Parameter Validation:** Iterate through each shared parameter in a project or family and check if it exist in a particular [OpenDefinery Collection](https://app.opendefinery.com/browse/collections). In other words, this tool validates if a project is in compliance with any given standard that is hosted on OpenDefinery.
