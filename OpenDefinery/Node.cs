@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace OpenDefinery
 {
     /// <summary>
-    /// The Node class is a generic class for deserializing Drupal responses when modifying content
+    /// The Node class is a generic class for deserializing OpenDefinery responses when modifying content
     /// </summary>
     class Node
     {

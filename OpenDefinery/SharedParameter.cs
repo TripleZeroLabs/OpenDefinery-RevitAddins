@@ -153,7 +153,7 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Checks that an exact match of a SharedParameter already exists in Drupal. Useful for mitigating duplicates.
+        /// Checks that an exact match of a SharedParameter already exists in OpenDefinery. Useful for mitigating duplicates.
         /// </summary>
         /// <param name="definery">The main Definery object provides the basic auth token</param>
         /// <param name="newParameter">The SharedParameter to validate</param>
@@ -165,7 +165,7 @@ namespace OpenDefinery
             // Retrieve all Parameters from the GUID
             var foundParams = FromGuid(definery, newParameter.Guid);
 
-            // Logic when one ore more SharedParameter is found in Drupal
+            // Logic when one ore more SharedParameter is found in OpenDefinery
             if (foundParams != null && foundParams.Count() > 1)
             {
                 foreach (var p in foundParams)
@@ -213,7 +213,7 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Retrieve a page of ShareParameters from Drupal.
+        /// Retrieve a page of ShareParameters from OpenDefinery.
         /// </summary>
         /// <param name="definery">The main Definery object provides the basic auth code.</param>
         /// <param name="itemsPerPage">The number of items per page (only increments of 5, 10, 25, 50, and 100 are allowed)</param>
@@ -254,10 +254,10 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Retrieve all parameters from a specific User on Drupal.
+        /// Retrieve all parameters from a specific User on OpenDefinery.
         /// </summary>
         /// <param name="definery">The main Definery object provides the basic auth token</param>
-        /// <param name="userName">The Drupal username of the user to check for</param>
+        /// <param name="userName">The OpenDefinery username of the user to check for</param>
         /// <param name="itemsPerPage">The number of items to return per page. Acceptable values are 5, 10, 25, 50, 100.</param>
         /// <param name="offset">The offset of items to skip pages</param>
         /// <param name="resetTotals">Clear the total pages and items from the pager to start over?</param>
@@ -479,7 +479,7 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Creates a new Shared Parameter on Drupal
+        /// Creates a new Shared Parameter on OpenDefinery
         /// Response codes:
         ///     201: Created
         ///     422: Unprocessable entity (possibly missing a required field)
@@ -493,7 +493,7 @@ namespace OpenDefinery
             var client = new RestClient(Definery.BaseUrl + "node?_format=json");
             client.Timeout = -1;
 
-            // Assign the datatype value by the Term ID defined by Drupal to pass to the API call (we cannot pass the name)
+            // Assign the datatype value by the Term ID defined by OpenDefinery to pass to the API call (we cannot pass the name)
             var dataType = definery.DataTypes.Find(d => d.Name.ToString() == param.DataType);
             var dataCategory = new DataCategory();
 
@@ -508,7 +508,7 @@ namespace OpenDefinery
                 dataCategory = DataCategory.GetByHashcode(definery, param.DataCategoryHashcode);
             }
 
-            // Get the tag ID from Drupal. If the tag does not exist, create a tag and assign the ID to request body
+            // Get the tag ID from OpenDefinery. If the tag does not exist, create a tag and assign the ID to request body
             // First format the tag name accordingly...
             var tagName = string.Empty;
             var tagId = string.Empty;
@@ -517,7 +517,7 @@ namespace OpenDefinery
             {
                 tagName = Tag.FormatName(param.Group);
 
-                // ... Then attempt to retrieve the tag from Drupal
+                // ... Then attempt to retrieve the tag from OpenDefinery
                 tagId = Tag.GetIdFromName(definery, tagName);
 
                 // ... If the tag does not exist, an empty array is returned. Create the tag if neccessary.

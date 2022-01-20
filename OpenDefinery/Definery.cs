@@ -28,11 +28,11 @@ namespace OpenDefinery
         public User CurrentUser { get; set; }
 
         /// <summary>
-        /// Login to Drupal using a username and password.
+        /// Login to OpenDefinery using a username and password.
         /// </summary>
         /// <param name="definery">The main Definery object</param>
-        /// <param name="username">The Drupal username to login</param>
-        /// <param name="password">The password of the Drupal user</param>
+        /// <param name="username">The OpenDefinery username to login</param>
+        /// <param name="password">The password of the OpenDefinery user</param>
         public static Definery Init(Definery definery, string username, string password)
         {
             var client = new RestClient(BaseUrl + "user/login?_format=json");
@@ -76,7 +76,7 @@ namespace OpenDefinery
         {
             if (!string.IsNullOrEmpty(definery.AuthCode))
             {
-                // Load the data from Drupal
+                // Load the data from OpenDefinery
                 definery.Groups = Group.GetAll(definery);
                 definery.DataTypes = DataType.GetAll(definery);
                 definery.DataCategories = DataCategory.GetAll(definery);

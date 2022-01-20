@@ -19,7 +19,7 @@ namespace OpenDefinery
         public string Hashcode { get; set; }
 
         /// <summary>
-        /// Retrieve all DataCategoreis from Drupal.
+        /// Retrieve all DataCategoreis from OpenDefinery.
         /// </summary>
         /// <param name="definery">The main Definery object provides the CSRF token.</param>
         /// <returns>A list of DataType objects.</returns>

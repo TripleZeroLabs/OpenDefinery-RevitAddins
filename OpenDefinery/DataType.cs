@@ -16,7 +16,7 @@ namespace OpenDefinery
         public string Name { get; set; }
 
         /// <summary>
-        /// Retrieve all DataTypes from Drupal.
+        /// Retrieve all DataTypes from OpenDefinery.
         /// </summary>
         /// <param name="definery">The main Definery object provides the CSRF token.</param>
         /// <returns>A list of DataType objects.</returns>
@@ -37,7 +37,7 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Retrieve the DataType object from Drupal from the name.
+        /// Retrieve the DataType object from OpenDefinery from the name.
         /// </summary>
         /// <param name="allDataTypes">A list of all DataTypes typically sourced from the main Definery object.</param>
         /// <param name="dataTypeName">The name the DataType to retrieve.</param>
@@ -63,7 +63,7 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Retrive the DataType ID from its name. This ID is useful when the DataType ID in Drupal is required for an API call.
+        /// Retrive the DataType ID from its name. This ID is useful when the DataType ID in OpenDefinery is required for an API call.
         /// </summary>
         /// <param name="allDataTypes">A list of all DataTypes typically sourced from the main Definery object.</param>
         /// <param name="dataTypeName">The nane of the DataType.</param>

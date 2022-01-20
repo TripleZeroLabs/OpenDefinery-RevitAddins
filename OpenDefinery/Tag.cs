@@ -15,7 +15,7 @@ namespace OpenDefinery
         public string Name { get; set; }
 
         /// <summary>
-        /// Creates a new Tag on Drupal
+        /// Creates a new Tag on OpenDefinery
         /// </summary>
         /// <param name="definery">The main Definery object provides the CSRF token</param>
         /// <param name="tagName">The name for the new Tag</param>
