@@ -50,9 +50,9 @@
                         Margin="0" 
                         Height="30" 
                         VerticalContentAlignment="Center"
-                        KeyDown="SubmitLoginForm"/>
-                    <Button x:Name="Button_Login" Content="Login" Margin="0,30,0,5" Height="35" Click="Button_Login_Click" Background="#FF002E80" Foreground="White" BorderBrush="#FF000346"/>
-                    <Button Content="Cancel" Margin="0,0,0,20" Height="26" Background="{x:Null}" BorderBrush="{x:Null}" Click="Button_Cancel_Click"/>
+                        KeyDown="SubmitLoginForm" TabIndex="1"/>
+                    <Button x:Name="Button_Login" Content="Login" Margin="0,30,0,5" Height="35" Click="Button_Login_Click" Background="#FF002E80" Foreground="White" BorderBrush="#FF000346" TabIndex="2"/>
+                    <Button Content="Cancel" Margin="0,0,0,20" Height="26" Background="{x:Null}" BorderBrush="{x:Null}" Click="Button_Cancel_Click" TabIndex="3"/>
                     <TextBlock x:Name="TextBlock_Login_Links" TextWrapping="Wrap" TextAlignment="Center" Margin="0">
                         <Hyperlink 
                             NavigateUri="https://app.opendefinery.com/user/password" RequestNavigate="Hyperlink_RequestNavigate">
