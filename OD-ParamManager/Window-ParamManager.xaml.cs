@@ -90,58 +90,6 @@ namespace OD_ParamManager
         }
 
         /// <summary>
-        /// Compares the shared parameters in the current Revit model to the selected OpenDefinery Collection
-        /// </summary>
-        /// <returns>A list of validated shared parameters identifying standard parameters as true</returns>
-        private List<SharedParameter> ValidateParameters()
-        {
-            // Set the selected Collection
-            if (SelectedCollection != null)
-            {
-                // Retrieve all shared parameters from OpenDefinery based on a Collection
-                Definery.DefineryParameters = Collection.GetLiteParams(Definery, SelectedCollection);
-
-                if (Definery.DefineryParameters != null)
-                {
-                    // Instantiate a new list for the validated parameters
-                    var validatedParams = new List<SharedParameter>();
-
-                    // Loop through Revit parameters to see if it appears in the OpenDefinery Collection
-                    foreach (var p in Definery.RevitParameters)
-                    {
-                        // Toggle the boolean and add the parameters to the new list
-                        if (Definery.DefineryParameters.Any(o => o.Guid == p.Guid))
-                        {
-                            p.IsStandard = true;
-                            validatedParams.Add(p);
-                        }
-                        else
-                        {
-                            p.IsStandard = false;
-                            validatedParams.Add(p);
-                        }
-                    }
-
-                    // Pass the updated list to the main Definery object
-                    Definery.ValidatedParams = validatedParams;
-
-                    // Display the validated parameters in the UI
-                    return Definery.ValidatedParams;
-                }
-                else
-                {
-                    MessageBox.Show("There was an error retrieving the shared parameters in the Collection.", "Error retrieving parameters.");
-
-                    return null;
-                }
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// User pressed enter key on login form
         /// </summary>
         /// <param name="sender"></param>
@@ -177,7 +125,11 @@ namespace OD_ParamManager
                 SelectedCollection = ComboCollections.SelectedItem as Collection;
 
                 // Process the parameters to identify standard vs non-standard (boolean)
-                Definery.ValidatedParams = ValidateParameters();
+                Definery.ValidatedParams = Collection.ValidateParameters(
+                    Definery, 
+                    SelectedCollection, 
+                    Definery.RevitParameters, 
+                    Definery.DefineryParameters);
 
                 // Set the data grid source to the new data set
                 DataGrid_Main.ItemsSource = Definery.ValidatedParams;

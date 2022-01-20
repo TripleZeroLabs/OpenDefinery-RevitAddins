@@ -412,5 +412,64 @@ namespace OpenDefinery
             }
 
         }
+
+        /// <summary>
+        /// Compares the shared parameters in the OpenDefinery Collection to the parameters extracted from current Revit model
+        /// </summary>
+        /// <param name="definery">The main Definery object</param>
+        /// <param name="collection">The OpenDefinery Collection to validate against/param>
+        /// <param name="revitParams">A list of shared parameters extracted from Revit</param>
+        /// <param name="odParams">A list of Shared Parameters retrieved from OpenDefinery</param>
+        /// <returns>The list of validated Shared Parameters or null if there was an issue</returns>
+        public static List<SharedParameter> ValidateParameters(
+            Definery definery, 
+            Collection collection, 
+            List<SharedParameter> revitParams, 
+            List<SharedParameter> odParams)
+        {
+            // Set the selected Collection
+            if (definery != null && collection != null)
+            {
+                // Retrieve all shared parameters from OpenDefinery based on a Collection
+                odParams = Collection.GetLiteParams(definery, collection);
+
+                if (odParams != null)
+                {
+                    // Instantiate a new list for the validated parameters
+                    var validatedParams = new List<SharedParameter>();
+
+                    // Loop through Revit parameters to see if it appears in the OpenDefinery Collection
+                    foreach (var p in revitParams)
+                    {
+                        // Toggle the boolean and add the parameters to the new list
+                        if (odParams.Any(o => o.Guid == p.Guid))
+                        {
+                            p.IsStandard = true;
+                            validatedParams.Add(p);
+                        }
+                        else
+                        {
+                            p.IsStandard = false;
+                            validatedParams.Add(p);
+                        }
+                    }
+
+                    // Return the final list of parameters
+                    return validatedParams;
+                }
+                else
+                {
+                    Debug.Write("There was an error retrieving the shared parameters in the Collection.", "Error retrieving parameters.");
+
+                    return null;
+                }
+            }
+            else
+            {
+                Debug.Write("There was an error retrieving the Collection.", "Error retrieving collection.");
+
+                return null;
+            }
+        }
     }
 }
