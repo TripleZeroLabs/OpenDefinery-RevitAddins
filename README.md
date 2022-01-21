@@ -1,4 +1,5 @@
 # OpenDefinery for Revitᵀᴹ
+![](https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/blob/master/OpenDefinery/images/OpenDefinery-Banner-1.png)
 OpenDefinery is reinventing how shared parameters are managed in Revitᵀᴹ. By ditching the antiquated plain text file and implementing an online database, additional meta data can be stored which makes BIM data within Revitᵀᴹ more scalable and easier to manage.
 
 For more information on the OpenDefinery platform, visit [OpenDefinery.com](http://opendefinery.com).
