@@ -75,10 +75,12 @@ Note that an array of `rows` is returned because OpenDefinery can store multiple
 This example demonstrates how the above endpoint is implemented within the `SharedParameter` class retrieve a shared parameter from the OpenDefinery database by simply passing the GUID as an argument.
 
 For more complete API docs and more sample code, visit the [OpenDefinery API Documentation](https://documenter.getpostman.com/view/5483074/T1LHGpQo).
-```
+
+```cs
 public static ObservableCollection<SharedParameter> FromGuid(Definery definery, Guid guid)
 {
-    var client = new RestClient(Definery.BaseUrl + string.Format("rest/params/guid/{0}?_format=json", guid.ToString()));
+    var client = new RestClient(definery.BaseUrl + 
+        string.Format("rest/params/guid/{0}?_format=json", guid.ToString()));
     var request = new RestRequest(Method.GET);
     request.AddHeader("Authorization", "Basic " + definery.AuthCode);
     IRestResponse response = client.Execute(request);
