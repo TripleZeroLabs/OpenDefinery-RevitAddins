@@ -22,15 +22,16 @@
         </DataGrid>
         <DataGrid x:Name="DataGrid_Detailed" Margin="10,36,10,10"/>
         <ComboBox 
-            x:Name="ComboCollections" 
+            x:Name="Combo_Collections" 
             HorizontalAlignment="Left" 
-            Margin="10,9,0,0" 
+            Margin="10,7,0,0" 
             VerticalAlignment="Top" 
             Width="295" 
             SelectionChanged="ComboCollections_SelectionChanged" 
             ItemsSource="{Binding}"
             DisplayMemberPath="Name"
             />
+        <Button x:Name="Button_AddToCollection" Content="Add To Collection" HorizontalAlignment="Right" Margin="0,7,10,0" VerticalAlignment="Top" Width="125" Height="22" Click="Button_AddToCollection_Click"/>
         <Grid x:Name="Grid_Overlay" Margin="0" Background="Black" OpacityMask="#CC000000" d:IsHidden="True">
             <Grid HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Background="White" Width="340">
                 <StackPanel x:Name="StackPanel_Login" Margin="20">

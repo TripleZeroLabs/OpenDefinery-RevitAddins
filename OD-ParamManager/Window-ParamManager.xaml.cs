@@ -85,7 +85,7 @@ namespace OD_ParamManager
                     collectionsCombo.Add(c);
                 }
 
-                ComboCollections.ItemsSource = collectionsCombo;
+                Combo_Collections.ItemsSource = collectionsCombo;
             }
         }
 
@@ -119,10 +119,10 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void ComboCollections_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ComboCollections.SelectedItem != null)
+            if (Combo_Collections.SelectedItem != null)
             {
                 // Set the selected Collection
-                SelectedCollection = ComboCollections.SelectedItem as Collection;
+                SelectedCollection = Combo_Collections.SelectedItem as Collection;
 
                 // Process the parameters to identify standard vs non-standard (boolean)
                 Definery.ValidatedParams = Collection.ValidateParameters(
@@ -164,6 +164,21 @@ namespace OD_ParamManager
         private void Button_Cancel_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void Button_AddToCollection_Click(object sender, RoutedEventArgs e)
+        {
+            // Get the selected Collection as a Collection object
+            SelectedCollection = Combo_Collections.SelectedItem as Collection;
+
+            // Add each selected row to the Collection
+            foreach (var p in DataGrid_Main.SelectedItems)
+            {
+                // Get current Shared Parameter as a SharedParameter object
+                var selectedParam = p as SharedParameter;
+
+                var response = SharedParameter.AddToCollection(Definery, selectedParam, SelectedCollection.Id);
+            }
         }
     }
 }

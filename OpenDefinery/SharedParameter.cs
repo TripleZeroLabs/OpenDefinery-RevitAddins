@@ -672,7 +672,7 @@ namespace OpenDefinery
         /// <param name="definery">The main Definery object provides the CSRF token</param>
         /// <param name="param">The SharedParameter object to add</param>
         /// <param name="collection">The Collection object to add the Shared Parameter to</param>
-        public static IRestResponse AddCollection(Definery definery, SharedParameter param, int newCollectionId)
+        public static IRestResponse AddToCollection(Definery definery, SharedParameter param, int newCollectionId)
         {
             // Instantiate a list of Collection IDs as strings
             var collectionIds = new List<string>();
@@ -684,15 +684,23 @@ namespace OpenDefinery
             }
 
             // Add the new Collection to the list to be added
-            if (!param.CollectionsString.Contains(newCollectionId.ToString()))
+            if (!string.IsNullOrEmpty(param.CollectionsString))
             {
-                collectionIds.Add(newCollectionId.ToString());
+                // Only add the parameter to the Collection if it isn't already in it
+                if (!param.CollectionsString.Contains(newCollectionId.ToString()))
+                {
+                    collectionIds.Add(newCollectionId.ToString());
+                }
+                else
+                {
+                    Debug.WriteLine(param.Name + " already belongs to " + newCollectionId.ToString());
+                }
             }
             else
             {
-                Debug.WriteLine(param.Name + " already belongs to " + newCollectionId.ToString());
+                param.CollectionsString = string.Empty;
+                collectionIds.Add(newCollectionId.ToString());
             }
-
             // Instantiate a string to pass Collections to body of API call
             var bodyFieldCollections = ", \"field_collections\": [";
             foreach (var id in collectionIds)
