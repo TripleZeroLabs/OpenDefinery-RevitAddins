@@ -57,7 +57,7 @@
     </Reference>
     <Reference Include="OpenDefinery, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\OpenDefinery\bin\Release\OpenDefinery.dll</HintPath>
+      <HintPath>..\OpenDefinery\bin\Debug\OpenDefinery.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
