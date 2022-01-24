@@ -847,6 +847,29 @@ namespace OpenDefinery
         }
 
         /// <summary>
+        /// Retrieve data from the OpenDefinery parameters and pass to parameters from Revit
+        /// </summary>
+        /// <param name="defineryParams">A list of OpenDefinery parameters from a particular collection</param>
+        /// <param name="revitParams">A list of Revit parameters retrieved from a project</param>
+        /// <returns></returns>
+        public static SharedParameter SetDefineryData(SharedParameter defineryParam, SharedParameter revitParam)
+        {
+            if (defineryParam != null && revitParam != null)
+            {
+                var updatedParam = defineryParam;
+                updatedParam.ElementId = revitParam.ElementId;
+                updatedParam.Name = revitParam.Name;
+                updatedParam.IsStandard = true;
+
+                return updatedParam;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Generate a tab delimited string of shared parameters (including header)
         /// </summary>
         /// <param name="paramList">The list of parameters to convert</param>

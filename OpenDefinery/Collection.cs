@@ -431,7 +431,8 @@ namespace OpenDefinery
             if (definery != null && collection != null)
             {
                 // Retrieve all shared parameters from OpenDefinery based on a Collection
-                odParams = Collection.GetLiteParams(definery, collection);
+                //odParams = Collection.GetLiteParams(definery, collection);
+                odParams = GetParameters(definery, collection).ToList();
 
                 if (odParams != null)
                 {
@@ -441,16 +442,31 @@ namespace OpenDefinery
                     // Loop through Revit parameters to see if it appears in the OpenDefinery Collection
                     foreach (var p in revitParams)
                     {
-                        // Toggle the boolean and add the parameters to the new list
-                        if (odParams.Any(o => o.Guid == p.Guid))
+                        var foundOdParams = odParams.Where(o => o.Guid == p.Guid);
+
+                        // Add the matching parameter to the output list
+                        if (foundOdParams.Count() == 1)
                         {
-                            p.IsStandard = true;
+                            // Set additional data before adding to the list
+                            validatedParams.Add(SharedParameter.SetDefineryData(foundOdParams.FirstOrDefault(), p));
+                        }
+                        else if (foundOdParams.Count() == 0)
+                        {
+                            Debug.WriteLine(string.Format("No parameter with GUID {0} found.", p.Guid.ToString()));
+
+                            // Identify the parameter as non-standard and add to the output list
+                            p.IsStandard = false;
+
                             validatedParams.Add(p);
                         }
+                        // TODO: There shouldn't be multiple params with the same GUIDs in a Collection
+                        // so there should be a warning thrown to the user here
                         else
                         {
-                            p.IsStandard = false;
-                            validatedParams.Add(p);
+                            Debug.WriteLine(string.Format("Multiple parameters with GUID {0} found. Returning first for now.", p.Guid.ToString()));
+
+                            // Set additional data before adding to the list
+                            validatedParams.Add(SharedParameter.SetDefineryData(foundOdParams.FirstOrDefault(), p));
                         }
                     }
 
