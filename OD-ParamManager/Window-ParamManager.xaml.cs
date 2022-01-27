@@ -29,6 +29,7 @@ namespace OD_ParamManager
             // Initialize the UI
             DataGrid_Detailed.Visibility = Visibility.Hidden;
             Grid_Overlay.Visibility = Visibility.Visible;
+            Grid_EditParams.Visibility = Visibility.Hidden;
             FocusManager.SetFocusedElement(this, TextBox_Username);
 
             // Instantiate the main Definery object
@@ -90,6 +91,31 @@ namespace OD_ParamManager
         }
 
         /// <summary>
+        /// Reloads the DataGrid whenever parameters are added or modified.
+        /// </summary>
+        private void RefreshValidation()
+        {
+            // Reset previous data
+            DataGrid_Main.ItemsSource = null;
+
+            if (Combo_Collections.SelectedItem != null)
+            {
+                // Set the selected Collection
+                SelectedCollection = Combo_Collections.SelectedItem as Collection;
+
+                // Process the parameters to identify standard vs non-standard (boolean)
+                Definery.ValidatedParams = Collection.ValidateParameters(
+                    Definery,
+                    SelectedCollection,
+                    Definery.RevitParameters);
+
+                // Set the data grid source to the new data set
+                DataGrid_Main.ItemsSource = Definery.ValidatedParams;
+                DataGrid_Main.Items.Refresh();
+            }
+        }
+
+        /// <summary>
         /// User pressed enter key on login form
         /// </summary>
         /// <param name="sender"></param>
@@ -119,21 +145,7 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void ComboCollections_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (Combo_Collections.SelectedItem != null)
-            {
-                // Set the selected Collection
-                SelectedCollection = Combo_Collections.SelectedItem as Collection;
-
-                // Process the parameters to identify standard vs non-standard (boolean)
-                Definery.ValidatedParams = Collection.ValidateParameters(
-                    Definery, 
-                    SelectedCollection, 
-                    Definery.RevitParameters, 
-                    Definery.DefineryParameters);
-
-                // Set the data grid source to the new data set
-                DataGrid_Main.ItemsSource = Definery.ValidatedParams;
-            }
+            RefreshValidation();
         }
 
         /// <summary>
@@ -152,7 +164,8 @@ namespace OD_ParamManager
 
                 // Update the UI
                 PopulateCollectionsCombo(Definery);
-                Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
+                Grid_Overlay.Visibility = Visibility.Hidden;
+                Grid_Login.Visibility = Visibility.Hidden;
             }
         }
 
@@ -168,8 +181,15 @@ namespace OD_ParamManager
 
         private void Button_AddToCollection_Click(object sender, RoutedEventArgs e)
         {
+            // Toggle the UI
+            Grid_Overlay.Visibility = Visibility.Visible;
+            Grid_EditParams.Visibility = Visibility.Visible;
+
             // Get the selected Collection as a Collection object
             SelectedCollection = Combo_Collections.SelectedItem as Collection;
+
+            // Instantiate a list of parameters to pass to the data grid
+            var paramsToEdit = new List<SharedParameter>();
 
             // Add each selected row to the Collection
             foreach (var p in DataGrid_Main.SelectedItems)
@@ -177,8 +197,46 @@ namespace OD_ParamManager
                 // Get current Shared Parameter as a SharedParameter object
                 var selectedParam = p as SharedParameter;
 
-                var response = SharedParameter.AddToCollection(Definery, selectedParam, SelectedCollection.Id);
+                paramsToEdit.Add(selectedParam);
             }
+
+            // Refresh the DataGrid
+            DataGrid_EditParams.ItemsSource = paramsToEdit;
+        }
+
+        private void Button_SaveParams_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var p in DataGrid_EditParams.Items)
+            {
+                // Get current Shared Parameter as a SharedParameter object
+                var selectedParam = p as SharedParameter;
+
+                // Prompt the user to fork the parameter if it doesn't exist in OpenDefinery
+                if (selectedParam.DefineryId == 0)
+                {
+                    // Fork the parameter
+                    SharedParameter.Create(
+                        Definery,
+                        selectedParam,
+                        SelectedCollection.Id,
+                        selectedParam.DefineryId,
+                        selectedParam.Name,
+                        selectedParam.Description
+                        );
+                }
+                else
+                {
+                    // Add the parameter to the selected Collection
+                    SharedParameter.AddToCollection(Definery, selectedParam, SelectedCollection.Id);
+                }
+            }
+
+            // Refresh the UI
+            Grid_EditParams.Visibility = Visibility.Hidden;
+            Grid_Overlay.Visibility = Visibility.Hidden;
+
+            // Validate parameters again and reload the DataGrid
+            RefreshValidation();
         }
     }
 }

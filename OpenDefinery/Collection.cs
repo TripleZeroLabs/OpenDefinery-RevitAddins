@@ -424,15 +424,14 @@ namespace OpenDefinery
         public static List<SharedParameter> ValidateParameters(
             Definery definery, 
             Collection collection, 
-            List<SharedParameter> revitParams, 
-            List<SharedParameter> odParams)
+            List<SharedParameter> revitParams)
         {
             // Set the selected Collection
             if (definery != null && collection != null)
             {
                 // Retrieve all shared parameters from OpenDefinery based on a Collection
                 //odParams = Collection.GetLiteParams(definery, collection);
-                odParams = GetParameters(definery, collection).ToList();
+               var odParams = GetParameters(definery, collection).ToList();
 
                 if (odParams != null)
                 {
@@ -445,6 +444,8 @@ namespace OpenDefinery
                         var foundOdParams = odParams.Where(o => o.Guid == p.Guid);
 
                         // Add the matching parameter to the output list
+                        // TODO: Notify the user when a parameter name/description is different
+                        // between the Collection and Revit model
                         if (foundOdParams.Count() == 1)
                         {
                             // Set additional data before adding to the list

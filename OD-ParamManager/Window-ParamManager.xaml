@@ -32,8 +32,8 @@
             DisplayMemberPath="Name"
             />
         <Button x:Name="Button_AddToCollection" Content="Add To Collection" HorizontalAlignment="Right" Margin="0,7,10,0" VerticalAlignment="Top" Width="125" Height="22" Click="Button_AddToCollection_Click"/>
-        <Grid x:Name="Grid_Overlay" Margin="0" Background="Black" OpacityMask="#CC000000" d:IsHidden="True">
-            <Grid HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Background="White" Width="340">
+        <Grid x:Name="Grid_Overlay" Margin="0" Background="#D8000000" d:IsHidden="True">
+            <Grid x:Name="Grid_Login" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Background="White" Width="340" d:IsHidden="True">
                 <StackPanel x:Name="StackPanel_Login" Margin="20">
                     <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Login to OpenDefinery" VerticalAlignment="Top" FontSize="18"/>
                     <Label Content="Username" Margin="0,20,0,5" Padding="0" IsTabStop="False"/>
@@ -54,16 +54,15 @@
                         KeyDown="SubmitLoginForm" TabIndex="1"/>
                     <Button x:Name="Button_Login" Content="Login" Margin="0,30,0,5" Height="35" Click="Button_Login_Click" Background="#FF002E80" Foreground="White" BorderBrush="#FF000346" TabIndex="2"/>
                     <Button Content="Cancel" Margin="0,0,0,20" Height="26" Background="{x:Null}" BorderBrush="{x:Null}" Click="Button_Cancel_Click" TabIndex="3"/>
-                    <TextBlock x:Name="TextBlock_Login_Links" TextWrapping="Wrap" TextAlignment="Center" Margin="0">
-                        <Hyperlink 
-                            NavigateUri="https://app.opendefinery.com/user/password" RequestNavigate="Hyperlink_RequestNavigate">
-                            <Run Text="Forgot Password"/></Hyperlink>
-                        <Run Text="   |   "/>
-                        <Hyperlink 
-                            NavigateUri="https://app.opendefinery.com/user/register" RequestNavigate="Hyperlink_RequestNavigate"> 
-                            <Run Text="Register"/></Hyperlink>
-                    </TextBlock>
+                    <TextBlock x:Name="TextBlock_Login_Links" TextWrapping="Wrap" TextAlignment="Center" Margin="0"><Hyperlink 
+                            NavigateUri="https://app.opendefinery.com/user/password" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="Forgot Password"/></Hyperlink><Run Text=" "/><Run Text="   |   "/><Run Text=" "/><Hyperlink 
+                            NavigateUri="https://app.opendefinery.com/user/register" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="Register"/></Hyperlink></TextBlock>
                 </StackPanel>
+            </Grid>
+            <Grid x:Name="Grid_EditParams" Margin="20" Background="White" d:IsHidden="True">
+                <Button x:Name="Button_CloseEditParams" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20"/>
+                <DataGrid x:Name="DataGrid_EditParams" Margin="0,30,0,40"/>
+                <Button x:Name="Button_SaveParams" Content="Save" HorizontalAlignment="Right" Height="29" Width="80" Click="Button_SaveParams_Click" VerticalAlignment="Bottom"/>
             </Grid>
         </Grid>
     </Grid>

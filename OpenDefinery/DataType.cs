@@ -42,9 +42,9 @@ namespace OpenDefinery
         /// <param name="allDataTypes">A list of all DataTypes typically sourced from the main Definery object.</param>
         /// <param name="dataTypeName">The name the DataType to retrieve.</param>
         /// <returns>The DataType object.</returns>
-        public static DataType GetFromName(List<DataType> allDataTypes, string dataTypeName)
+        public static DataType GetFromName(Definery definery, string dataTypeName)
         {
-            var foundDataTypes = allDataTypes.Where(g => g.Name == dataTypeName);
+            var foundDataTypes = definery.DataTypes.Where(g => g.Name.ToLower() == dataTypeName.ToLower());
 
             if (foundDataTypes.Count() == 1)
             {

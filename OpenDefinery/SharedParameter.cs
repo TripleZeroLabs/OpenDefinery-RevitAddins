@@ -488,13 +488,19 @@ namespace OpenDefinery
         /// <param name="param"></param>
         /// <param name="collectionId"></param>
         /// <returns></returns>
-        public static SharedParameter Create(Definery definery, SharedParameter param, int? collectionId = null, int? forkedId = null)
+        public static SharedParameter Create(
+            Definery definery, 
+            SharedParameter param, 
+            int? collectionId = null, 
+            int? forkedId = null, 
+            string updatedName = null, 
+            string updatedDescription = null)
         {
             var client = new RestClient(Definery.BaseUrl + "node?_format=json");
             client.Timeout = -1;
 
             // Assign the datatype value by the Term ID defined by OpenDefinery to pass to the API call (we cannot pass the name)
-            var dataType = definery.DataTypes.Find(d => d.Name.ToString() == param.DataType);
+            var dataType = definery.DataTypes.Find(d => d.Name.ToLower() == param.DataType.ToLower());
             var dataCategory = new DataCategory();
 
             // Format values before assigning
@@ -540,14 +546,18 @@ namespace OpenDefinery
             }
 
             // Add default values
-            if (param.UserModifiable == null)
+            if (string.IsNullOrEmpty(param.UserModifiable))
             {
                 param.UserModifiable = "1";
             }
-            if (param.Visible == null)
+            if (string.IsNullOrEmpty(param.Visible))
             {
                 param.Visible = "1";
             }
+
+            // Set the values if the parameter has a new name and description
+            param.Name = updatedName;
+            param.Description = updatedDescription;
 
             //TODO: Clean up this mess some day.
             var requestBody = "{" +
@@ -735,7 +745,7 @@ namespace OpenDefinery
                         "\"target_id\": \"shared_parameter\"" +
                     "}]" +
                     bodyFieldCollections +
-                "}", 
+                "}",
                 ParameterType.RequestBody);
             IRestResponse response = client.Execute(request);
 
