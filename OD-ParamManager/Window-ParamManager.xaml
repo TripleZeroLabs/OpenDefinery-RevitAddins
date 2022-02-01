@@ -7,31 +7,88 @@
             mc:Ignorable="d" 
             d:DesignHeight="450" d:DesignWidth="800" 
             Height="900"
-            Width="1800"
-        Title="OpenDefinery | Parameter Manager">
+            Width="1600"
+            Background="#e7eff8"
+            Title="OpenDefinery | Parameter Manager">
 
-    <Grid x:Name="Grid_Main">
-        <DataGrid x:Name="DataGrid_Main" Margin="10,36,10,10" AutoGenerateColumns="False">
-            <DataGrid.Columns>
-                <DataGridCheckBoxColumn Binding="{Binding IsStandard}" Header="Standard" IsReadOnly="True" Width="60"/>
-                <DataGridTextColumn Binding="{Binding Name}" Header="Name" IsReadOnly="True" Width="400"/>
-                <DataGridTextColumn Binding="{Binding Guid}" Header="GUID" IsReadOnly="True" Width="300"/>
-                <DataGridTextColumn Binding="{Binding DataType}" Header="Data Type" IsReadOnly="True" Width="150"/>
-                <DataGridTextColumn Binding="{Binding Description}" Header="Description" IsReadOnly="True" Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
-        <DataGrid x:Name="DataGrid_Detailed" Margin="10,36,10,10"/>
-        <ComboBox 
+    <Grid Margin="0">
+        <DockPanel x:Name="DockPanel_Main" LastChildFill="False" Margin="0">
+            <Grid x:Name="Grid_Sidebar" Width="225" DockPanel.Dock="Left" HorizontalAlignment="Left" Background="#5b7cfe">
+                <Border Padding="10">
+                    <StackPanel Margin="0">
+                        <TextBlock x:Name="TextBlock_Username" TextWrapping="Wrap" Margin="0,50,0,0" Text="Jay" Foreground="White" FontSize="20" TextAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+            <Grid x:Name="Grid_Main" DockPanel.Dock="Right">
+                <DataGrid 
+                    x:Name="DataGrid_Main" 
+                    Margin="50,105,50,50" 
+                    AutoGenerateColumns="False" 
+                    GridLinesVisibility="Horizontal"
+                    HorizontalGridLinesBrush="#F1F1F1"
+                    SelectionMode="Extended">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#5b7cfe"/>
+                                </Trigger>
+                            </Style.Triggers>
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="1"/>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.CellStyle>
+                        <Style TargetType="DataGridCell">
+                            <Setter Property="VerticalContentAlignment" Value="Bottom"/>
+                            <Setter Property="Padding" Value="20"/>
+                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                        <Border 
+                                            Padding="{TemplateBinding Padding}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}" 
+                                            SnapsToDevicePixels="True">
+                                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.CellStyle>
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Binding="{Binding IsStandard}" Header="Standard" IsReadOnly="True" Width="60"/>
+                        <DataGridTextColumn Binding="{Binding Name}" Header="Name" IsReadOnly="True" Width="300"/>
+                        <DataGridTextColumn Binding="{Binding Guid}" Header="GUID" IsReadOnly="True" Width="300"/>
+                        <DataGridTextColumn Binding="{Binding DataType}" Header="Data Type" IsReadOnly="True" Width="150"/>
+                        <DataGridTextColumn Binding="{Binding Description}" Header="Description" IsReadOnly="True" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <DataGrid x:Name="DataGrid_Detailed" Margin="50" Background="{x:Null}" BorderBrush="{x:Null}" d:IsHidden="True"/>
+                <ComboBox 
             x:Name="Combo_Collections" 
             HorizontalAlignment="Left" 
-            Margin="10,7,0,0" 
+            Margin="50,50,0,0" 
             VerticalAlignment="Top" 
             Width="295" 
             SelectionChanged="ComboCollections_SelectionChanged" 
             ItemsSource="{Binding}"
-            DisplayMemberPath="Name"
+            DisplayMemberPath="Name" Height="30"
+            FontSize="17"
             />
-        <Button x:Name="Button_AddToCollection" Content="Add To Collection" HorizontalAlignment="Right" Margin="0,7,10,0" VerticalAlignment="Top" Width="125" Height="22" Click="Button_AddToCollection_Click"/>
+                <Button x:Name="Button_AddToCollection" Background="#5b7cfe" Foreground="#FFFFFF" Padding="5,10" Content="Add To Collection" HorizontalAlignment="Right" Margin="0,50,50,0" VerticalAlignment="Top" Width="125"  Click="Button_AddToCollection_Click" Height="40"/>
+            </Grid>
+        </DockPanel>
         <Grid x:Name="Grid_Overlay" Margin="0" Background="#D8000000" d:IsHidden="True">
             <Grid x:Name="Grid_Login" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Background="White" Width="340" d:IsHidden="True">
                 <StackPanel x:Name="StackPanel_Login" Margin="20">
@@ -59,10 +116,15 @@
                             NavigateUri="https://app.opendefinery.com/user/register" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="Register"/></Hyperlink></TextBlock>
                 </StackPanel>
             </Grid>
-            <Grid x:Name="Grid_EditParams" Margin="20" Background="White" d:IsHidden="True">
-                <Button x:Name="Button_CloseEditParams" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Width="20" Height="20"/>
-                <DataGrid x:Name="DataGrid_EditParams" Margin="0,30,0,40"/>
-                <Button x:Name="Button_SaveParams" Content="Save" HorizontalAlignment="Right" Height="29" Width="80" Click="Button_SaveParams_Click" VerticalAlignment="Bottom"/>
+            <Grid x:Name="Grid_EditParams" Margin="100" Background="White" d:IsHidden="True">
+                <Button x:Name="Button_CloseEditParams" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Button_CloseEditParams_Click" FontSize="25" Width="40" Height="40"/>
+                <DataGrid x:Name="DataGrid_EditParams" Margin="0,40" AutoGenerateColumns="False" IsReadOnly="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="300"/>
+                        <DataGridTextColumn Binding="{Binding Description}" Header="Description" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Button x:Name="Button_SaveParams" Content="Save" HorizontalAlignment="Right" Height="29" Width="80" Click="Button_SaveParams_Click" VerticalAlignment="Bottom" Margin="0,0,10,10"/>
             </Grid>
         </Grid>
     </Grid>

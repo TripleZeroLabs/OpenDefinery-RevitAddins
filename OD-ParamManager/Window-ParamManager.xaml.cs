@@ -58,6 +58,8 @@ namespace OD_ParamManager
             // Only continue if the CSRF token was retrieved from OpenDefinery
             if (Definery != null && !string.IsNullOrEmpty(Definery.CsrfToken))
             {
+                TextBlock_Username.Text = "Logged in as " + Definery.CurrentUser.Name;
+
                 return true;
             }
             else
@@ -237,6 +239,18 @@ namespace OD_ParamManager
 
             // Validate parameters again and reload the DataGrid
             RefreshValidation();
+        }
+
+        /// <summary>
+        /// Close button on EditParams is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_CloseEditParams_Click(object sender, RoutedEventArgs e)
+        {
+            DataGrid_EditParams.ItemsSource = null;
+            Grid_EditParams.Visibility = Visibility.Hidden;
+            Grid_Overlay.Visibility = Visibility.Hidden;
         }
     }
 }
