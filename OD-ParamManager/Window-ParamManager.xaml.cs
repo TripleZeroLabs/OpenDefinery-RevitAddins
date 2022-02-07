@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using OpenDefinery;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
-using OpenDefinery;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -27,9 +27,9 @@ namespace OD_ParamManager
             InitializeComponent();
 
             // Initialize the UI
-            DataGrid_Detailed.Visibility = Visibility.Hidden;
             Grid_Overlay.Visibility = Visibility.Visible;
             Grid_EditParams.Visibility = Visibility.Hidden;
+            TextBlock_Version.Text = "Version " + typeof(Window_ParamManager).Assembly.GetName().Version.ToString();
             FocusManager.SetFocusedElement(this, TextBox_Username);
 
             // Instantiate the main Definery object
@@ -39,7 +39,6 @@ namespace OD_ParamManager
             Definery.RevitParameters = revitParams;
 
             // Update the UI
-            DataGrid_Detailed.ItemsSource = Definery.RevitParameters;
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
@@ -58,7 +57,7 @@ namespace OD_ParamManager
             // Only continue if the CSRF token was retrieved from OpenDefinery
             if (Definery != null && !string.IsNullOrEmpty(Definery.CsrfToken))
             {
-                TextBlock_Username.Text = "Logged in as " + Definery.CurrentUser.Name;
+                //TextBlock_Username.Text = "Logged in as " + Definery.CurrentUser.Name;
 
                 return true;
             }

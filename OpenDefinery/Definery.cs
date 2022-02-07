@@ -45,20 +45,30 @@ namespace OpenDefinery
             // Return the CSRF token if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                JObject json = JObject.Parse(response.Content);
+                try
+                {
+                    JObject json = JObject.Parse(response.Content);
 
-                // Assign tokens to Definery members
-                definery.CsrfToken = json.SelectToken("csrf_token").ToString();
+                    // Assign tokens to Definery members
+                    definery.CsrfToken = json.SelectToken("csrf_token").ToString();
 
-                // Add logged in user data
-                definery.CurrentUser = new User();
-                definery.CurrentUser.Id = json.SelectToken("current_user.uid").ToString();
-                definery.CurrentUser.Name = json.SelectToken("current_user.name").ToString();
+                    // Add logged in user data
+                    definery.CurrentUser = new User();
+                    definery.CurrentUser.Id = json.SelectToken("current_user.uid").ToString();
+                    definery.CurrentUser.Name = json.SelectToken("current_user.name").ToString();
 
-                // Store the auth code for GET requests
-                definery.AuthCode = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
+                    // Store the auth code for GET requests
+                    definery.AuthCode = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
 
-                return definery;
+                    return definery;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("[" + ex.ToString() + "]" + response.Content, "Error Logging In");
+
+                    // Return the original Definery object to maintain previously set properties
+                    return definery;
+                }
             }
             else
             {

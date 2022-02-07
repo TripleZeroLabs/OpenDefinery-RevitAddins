@@ -55,7 +55,6 @@ namespace OD_ParamManager
             var mw = new Window_ParamManager(revitParams);
             mw.ShowDialog();
             
-
             return Result.Succeeded;
         }
     }

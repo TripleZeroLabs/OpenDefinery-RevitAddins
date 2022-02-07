@@ -2,7 +2,7 @@ using Autodesk.Revit.UI;
 
 namespace OD_ParamManager
 {
-    class App : IExternalApplication
+    class RvtApp : IExternalApplication
     {
         public Result OnStartup(UIControlledApplication a)
         {

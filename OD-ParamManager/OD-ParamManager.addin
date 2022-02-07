@@ -12,7 +12,7 @@
   <AddIn Type="Application">
     <Name>Manage Parameters</Name>
     <Assembly>OD-ParamManager.dll</Assembly>
-    <FullClassName>OD_ParamManager.App</FullClassName>
+    <FullClassName>OD_ParamManager.RvtApp</FullClassName>
     <ClientId>d97141ec-879d-4296-a3c5-f6a6a4abaafb</ClientId>
     <VendorId>OpenDefinery</VendorId>
     <VendorDescription>OpenDefinery.com</VendorDescription>
