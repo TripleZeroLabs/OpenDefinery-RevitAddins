@@ -11,7 +11,7 @@
             Title="OpenDefinery | Parameter Manager">
 
     <Grid>
-        <TabControl Margin="0" TabStripPlacement="Left" BorderThickness="0">
+        <TabControl Margin="0" TabStripPlacement="Left" BorderThickness="0" Background="{x:Null}">
 
             <TabControl.Resources>
                 <Style TargetType="TabItem">
@@ -40,10 +40,10 @@
             </TabControl.Resources>
 
             <TabItem Name ="Dashboard" Header="Dashboard">
-                <Grid Margin="0">
-                    <StackPanel Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock x:Name="TextBlock_Welcome" HorizontalAlignment="Center" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="40" Text="Welcome to OpenDefinery" />
-                        <TextBlock x:Name="TextBlock_Version" HorizontalAlignment="Center" Margin="0" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="23" Text="Version " Foreground="#FFA0A0A0" />
+                <Grid Margin="0" Background="White">
+                    <StackPanel Margin="0,100,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White">
+                        <TextBlock x:Name="TextBlock_Welcome" HorizontalAlignment="Center" Margin="100,20,100,0" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="30" Text="Welcome to OpenDefinery" />
+                        <TextBlock x:Name="TextBlock_Version" HorizontalAlignment="Center" Margin="100,0,100,20" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="20" Text="Version " Foreground="#FFA0A0A0" />
                     </StackPanel>
                 </Grid>
 
@@ -75,73 +75,24 @@
                         Click="Button_AddToCollection_Click"
                         DockPanel.Dock="Right"/>
                         </DockPanel>
+                        <Grid Height="60" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
+                            <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Parameters in Model" VerticalAlignment="Top" FontSize="22" FontWeight="Bold"/>
+                            <DockPanel Height="25" Margin="0,0,10,0" VerticalAlignment="Bottom">
+                                <Button x:Name="Button_FilterAll" Content="View All" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterAll_Click"/>
+                                <Button x:Name="Button_FilterInCollection" Content="In Collection" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25" Padding="10,0" Margin="0,0,10,-0.2" Click="Button_FilterInCollection_Click"/>
+                                <Button x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click"/>
+                            </DockPanel>
+                        </Grid>
                         <DataGrid 
                     x:Name="DataGrid_Main" 
-                    Margin="20,0" 
+                    Margin="20,20,20,14" 
                     AutoGenerateColumns="False" 
                     GridLinesVisibility="Horizontal"
                     HorizontalGridLinesBrush="#F1F1F1"
                     SelectionMode="Extended"
-                    Height="300"
                     DockPanel.Dock="Top"
                     HorizontalScrollBarVisibility="Disabled"
                     ItemsSource="{Binding}"
-                    >
-                            <DataGrid.RowStyle>
-                                <Style TargetType="{x:Type DataGridRow}">
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="BorderThickness" Value="1"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#5b7cfe"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
-                            <DataGrid.CellStyle>
-                                <Style TargetType="{x:Type DataGridCell}">
-                                    <Setter Property="VerticalContentAlignment" Value="Bottom"/>
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                                <Border 
-                                            Padding="{TemplateBinding Padding}" 
-                                            BorderBrush="{TemplateBinding BorderBrush}" 
-                                            BorderThickness="{TemplateBinding BorderThickness}" 
-                                            SnapsToDevicePixels="True">
-                                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Foreground" Value="#FFFFFF"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.CellStyle>
-                            <DataGrid.Columns>
-                                <DataGridCheckBoxColumn Binding="{Binding IsStandard}" Header="In Collection" IsReadOnly="True" Width="80"/>
-                                <DataGridTextColumn Binding="{Binding Name}" Header="Name" IsReadOnly="True" Width="300"/>
-                                <DataGridTextColumn Binding="{Binding Guid}" Header="GUID" IsReadOnly="True" Width="300"/>
-                                <DataGridTextColumn Binding="{Binding DataType}" Header="Data Type" IsReadOnly="True" Width="150"/>
-                                <DataGridTextColumn Binding="{Binding Description}" Header="Description" IsReadOnly="True" Width="*"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                        <DataGrid 
-                    x:Name="DataGrid_NonStandard" 
-                    Margin="20" 
-                    AutoGenerateColumns="False" 
-                    GridLinesVisibility="Horizontal"
-                    HorizontalGridLinesBrush="#F1F1F1"
-                    SelectionMode="Extended"
-                    IsHitTestVisible="True"
-                    DockPanel.Dock="Bottom"
                     >
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">

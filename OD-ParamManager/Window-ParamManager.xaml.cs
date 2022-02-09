@@ -1,15 +1,19 @@
 ﻿using OpenDefinery;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Navigation;
 
 namespace OD_ParamManager
 {
+    public enum SelectedFilter { All, InCollection, NotInCollection }
+
     /// <summary>
     /// Interaction logic for Window_ParamManager.xaml
     /// </summary>
@@ -17,6 +21,7 @@ namespace OD_ParamManager
     {
         private Definery Definery { get; set; }
         private Collection SelectedCollection { get; set; }
+        private static SelectedFilter SelectedFilter {get;set;}
 
         /// <summary>
         /// MainWindow constructor
@@ -26,11 +31,15 @@ namespace OD_ParamManager
         {
             InitializeComponent();
 
-            // Initialize the UI
+            // Set the intial fields and UI
             Grid_Overlay.Visibility = Visibility.Visible;
             Grid_EditParams.Visibility = Visibility.Hidden;
+
             TextBlock_Version.Text = "Version " + typeof(Window_ParamManager).Assembly.GetName().Version.ToString();
             FocusManager.SetFocusedElement(this, TextBox_Username);
+            
+            SelectedFilter = SelectedFilter.All;
+            ToggleFilterButtons();
 
             // Instantiate the main Definery object
             Definery = new Definery();
@@ -250,6 +259,93 @@ namespace OD_ParamManager
             DataGrid_EditParams.ItemsSource = null;
             Grid_EditParams.Visibility = Visibility.Hidden;
             Grid_Overlay.Visibility = Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// Helper method to toggle filter UI after user interaction
+        /// </summary>
+        private void ToggleFilterButtons()
+        {
+            if (SelectedFilter == SelectedFilter.All)
+            {
+                Button_FilterAll.IsEnabled = false;
+                Button_FilterInCollection.IsEnabled = true;
+                Button_FilterNotInCollection.IsEnabled = true;
+            }
+            else if (SelectedFilter == SelectedFilter.InCollection)
+            {
+                Button_FilterAll.IsEnabled = true;
+                Button_FilterInCollection.IsEnabled = false;
+                Button_FilterNotInCollection.IsEnabled = true;
+
+            }
+            else if (SelectedFilter == SelectedFilter.NotInCollection)
+            {
+                Button_FilterAll.IsEnabled = true;
+                Button_FilterInCollection.IsEnabled = true;
+                Button_FilterNotInCollection.IsEnabled = false;
+
+            }
+        }
+
+        /// <summary>
+        /// Filter All button is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_FilterAll_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedFilter = SelectedFilter.All;
+            ToggleFilterButtons();
+
+            ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
+
+            cv.Filter = o =>
+            {
+                SharedParameter p = o as SharedParameter;
+
+                return p != null;
+            };
+        }
+
+        /// <summary>
+        /// Filter In Collection button is clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_FilterInCollection_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedFilter = SelectedFilter.InCollection;
+            ToggleFilterButtons();
+
+            ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
+
+            cv.Filter = o =>
+            {
+                SharedParameter p = o as SharedParameter;
+                
+                return p.IsStandard == true;
+            };
+        }
+
+        /// <summary>
+        /// Filter Not in Collection button clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_FilterNotInCollection_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedFilter = SelectedFilter.NotInCollection;
+            ToggleFilterButtons();
+
+            ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
+
+            cv.Filter = o =>
+            {
+                SharedParameter p = o as SharedParameter;
+
+                return p.IsStandard == false;
+            };
         }
     }
 }
