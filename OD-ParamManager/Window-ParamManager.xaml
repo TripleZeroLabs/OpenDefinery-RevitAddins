@@ -77,10 +77,16 @@
                                 <Button 
                         x:Name="Button_AddToCollection" 
                         Content="Add To Collection" 
-                        Margin="0"
+                        Margin="10,0,0,0"
                         Padding="10,3"
                         Click="Button_AddToCollection_Click"
                         DockPanel.Dock="Right" HorizontalAlignment="Right" Height="25"/>
+                                <Button 
+                                    x:Name="Button_Purge" 
+                                    Content="Purge From Model" 
+                                    Margin="10,0,0,0"
+                                    Padding="10,3"
+                                    DockPanel.Dock="Right" HorizontalAlignment="Right" Height="25" Click="Button_Purge_Click"/>
                             </DockPanel>
                         </Grid>
                         <DataGrid 

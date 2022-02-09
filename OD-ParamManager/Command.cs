@@ -12,6 +12,8 @@ namespace OD_ParamManager
     [Transaction(TransactionMode.Manual)]
     public class Command : IExternalCommand
     {
+        public static Document Document { get; set; }
+
         public Result Execute(
           ExternalCommandData commandData,
           ref string message,
@@ -20,14 +22,14 @@ namespace OD_ParamManager
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
             Application app = uiapp.Application;
-            Document doc = uidoc.Document;
+            Document = uidoc.Document;
 
             // Instantiate a list to store the shared parameters from the current Revit model
             var revitParams = new List<SharedParameter>();
 
             // Collect shared parameters as elements
             FilteredElementCollector collector
-                = new FilteredElementCollector(doc)
+                = new FilteredElementCollector(Document)
                 .WhereElementIsNotElementType();
 
             collector.OfClass(typeof(SharedParameterElement));
@@ -56,6 +58,71 @@ namespace OD_ParamManager
             mw.ShowDialog();
             
             return Result.Succeeded;
+        }
+
+        public static void PurgeParameters(Window_ParamManager mw, Document doc, List<SharedParameter> paramsToDelete)
+        {
+            // Instantiate a collection of parameters to delete from the model
+            ICollection<ElementId> elementIds = new List<ElementId>();
+
+            // Retrieve Element IDs
+            foreach (var p in paramsToDelete)
+            {
+                ElementId id = new ElementId(p.ElementId);
+
+                elementIds.Add(id);
+            }
+
+            // Delete all Elements by their ID
+            if (elementIds.Count > 0)
+            {
+                // Instantiate a TaskDialog to warn the user of data loss
+                TaskDialog td = new TaskDialog("Purge Shared Parameters");
+                td.Id = "PurgeParams";
+                td.MainIcon = TaskDialogIcon.TaskDialogIconWarning;
+                td.Title = "WARNING: Possible Data Loss";
+                td.TitleAutoPrefix = false;
+                td.AllowCancellation = true;
+
+                td.MainInstruction = string.Format(
+                    "Are you sure you want to purge {0} shared parameters from this model?", 
+                    elementIds.Count.ToString()
+                    );
+                td.MainContent =
+                    "Purging shared parameters from this model will completely delete them from the project model and any loaded families. " +
+                    "This can result in untinentional data loss.\n\n" +
+                    "Would you like to continue?";
+
+                td.ExpandedContent = "";
+
+                foreach (var p in paramsToDelete)
+                {
+                    td.ExpandedContent += p.Name + " [" + p.Guid + "]\n";
+                }
+
+                td.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
+                TaskDialogResult result = td.Show();
+
+                // Delete Shared Parameters from the model if the user confirms
+                if (result == TaskDialogResult.Yes)
+                {
+                    Transaction trans = new Transaction(doc, "Purge Shared Parameters");
+                    trans.Start();
+
+                    foreach (var eId in elementIds)
+                    {
+                        doc.Delete(eId);
+                    }
+
+                    trans.Commit();
+
+                    mw.Activate();
+                }
+                else   // Do nothing
+                {
+                    mw.Activate();
+                }
+            }
         }
     }
 }

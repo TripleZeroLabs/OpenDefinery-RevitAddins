@@ -421,5 +421,28 @@ namespace OD_ParamManager
         {
             ToggleActionButtons();
         }
+
+        private void Button_Purge_Click(object sender, RoutedEventArgs e)
+        {
+            // Retrieve selected items and cast to Paramaters
+            if (DataGrid_Main.SelectedItems.Count > 0)
+            {
+                var parameters = new List<SharedParameter>();
+
+                foreach (var i in DataGrid_Main.SelectedItems)
+                {
+                    var sharedParam = i as SharedParameter;
+
+                    if (sharedParam.ElementId != 0)
+                    {
+                        parameters.Add(sharedParam);
+                    }
+
+                }
+
+                // Delete the Parameters from the model
+                Command.PurgeParameters(this, Command.Document, parameters);
+            }
+        }
     }
 }
