@@ -334,17 +334,24 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void Button_FilterInCollection_Click(object sender, RoutedEventArgs e)
         {
-            SelectedFilter = SelectedFilter.InCollection;
-            ToggleFilterButtons();
-
-            var cv = InitCollectionView();
-
-            cv.Filter = o =>
+            if (SelectedCollection != null)
             {
-                SharedParameter p = o as SharedParameter;
-                
-                return p.IsStandard == true;
-            };
+                SelectedFilter = SelectedFilter.InCollection;
+                ToggleFilterButtons();
+
+                var cv = InitCollectionView();
+
+                cv.Filter = o =>
+                {
+                    SharedParameter p = o as SharedParameter;
+
+                    return p.IsStandard == true;
+                };
+            }
+            else
+            {
+                MessageBox.Show("Select a Collection to use this filter.", "No Collection Selected");
+            }
         }
 
         /// <summary>
@@ -354,17 +361,24 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void Button_FilterNotInCollection_Click(object sender, RoutedEventArgs e)
         {
-            SelectedFilter = SelectedFilter.NotInCollection;
-            ToggleFilterButtons();
-
-            var cv = InitCollectionView();
-
-            cv.Filter = o =>
+            if (SelectedCollection != null)
             {
-                SharedParameter p = o as SharedParameter;
+                SelectedFilter = SelectedFilter.NotInCollection;
+                ToggleFilterButtons();
 
-                return p.IsStandard == false;
-            };
+                var cv = InitCollectionView();
+
+                cv.Filter = o =>
+                {
+                    SharedParameter p = o as SharedParameter;
+
+                    return p.IsStandard == false;
+                };
+            }
+            else
+            {
+                MessageBox.Show("Select a Collection to use this filter.", "No Collection Selected");
+            }
         }
     
         /// <summary>
