@@ -40,6 +40,7 @@ namespace OD_ParamManager
             
             SelectedFilter = SelectedFilter.All;
             ToggleFilterButtons();
+            ToggleActionButtons();
 
             // Instantiate the main Definery object
             Definery = new Definery();
@@ -346,6 +347,47 @@ namespace OD_ParamManager
 
                 return p.IsStandard == false;
             };
+        }
+    
+        /// <summary>
+        /// Helper method to toggle the UI for action buttons
+        /// </summary>
+        private void ToggleActionButtons()
+        {
+            if (DataGrid_Main.SelectedItem != null)
+            {
+                // Cast the selected items to Shared Parameters
+                var selectedParams = new List<SharedParameter>();
+
+                foreach (var i in DataGrid_Main.SelectedItems)
+                {
+                    selectedParams.Add(i as SharedParameter);
+                }
+
+                // Disable the Add to Collection button if any selected Parameters are already in the Collection
+                if (selectedParams.Any(p => p.IsStandard == true))
+                {
+                    Button_AddToCollection.IsEnabled = false;
+                }
+                else
+                {
+                    Button_AddToCollection.IsEnabled = true;
+                }
+            }
+            else
+            {
+                Button_AddToCollection.IsEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// User changes selection in the DataGrid
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DataGrid_Main_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ToggleActionButtons();
         }
     }
 }

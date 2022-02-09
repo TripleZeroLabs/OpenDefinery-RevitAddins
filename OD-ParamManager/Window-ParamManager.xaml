@@ -67,13 +67,6 @@
                         Height="30"
                         VerticalContentAlignment="Center"
                         />
-                            <Button 
-                        x:Name="Button_AddToCollection" 
-                        Content="Add To Collection" 
-                        Margin="0"
-                        Padding="10,3"
-                        Click="Button_AddToCollection_Click"
-                        DockPanel.Dock="Right"/>
                         </DockPanel>
                         <Grid Height="60" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
                             <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Parameters in Model" VerticalAlignment="Top" FontSize="22" FontWeight="Bold"/>
@@ -81,6 +74,13 @@
                                 <Button x:Name="Button_FilterAll" Content="View All" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterAll_Click"/>
                                 <Button x:Name="Button_FilterInCollection" Content="In Collection" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25" Padding="10,0" Margin="0,0,10,-0.2" Click="Button_FilterInCollection_Click"/>
                                 <Button x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click"/>
+                                <Button 
+                        x:Name="Button_AddToCollection" 
+                        Content="Add To Collection" 
+                        Margin="0"
+                        Padding="10,3"
+                        Click="Button_AddToCollection_Click"
+                        DockPanel.Dock="Right" HorizontalAlignment="Right" Height="25"/>
                             </DockPanel>
                         </Grid>
                         <DataGrid 
@@ -92,7 +92,7 @@
                     SelectionMode="Extended"
                     DockPanel.Dock="Top"
                     HorizontalScrollBarVisibility="Disabled"
-                    ItemsSource="{Binding}"
+                    ItemsSource="{Binding}" SelectionChanged="DataGrid_Main_SelectionChanged"
                     >
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">
