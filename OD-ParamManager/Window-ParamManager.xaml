@@ -134,7 +134,7 @@
                             </DataGrid.CellStyle>
                             <DataGrid.Columns>
                                 <DataGridCheckBoxColumn Binding="{Binding IsStandard}" Header="In Collection" IsReadOnly="True" Width="80"/>
-                                <DataGridTextColumn Binding="{Binding Name}" Header="Name" IsReadOnly="True" Width="300"/>
+                                <DataGridTextColumn Binding="{Binding Name}" Header="Name" IsReadOnly="True" Width="300" SortDirection="Ascending"/>
                                 <DataGridTextColumn Binding="{Binding Guid}" Header="GUID" IsReadOnly="True" Width="300"/>
                                 <DataGridTextColumn Binding="{Binding DataType}" Header="Data Type" IsReadOnly="True" Width="150"/>
                                 <DataGridTextColumn Binding="{Binding Description}" Header="Description" IsReadOnly="True" Width="*"/>

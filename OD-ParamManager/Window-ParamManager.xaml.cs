@@ -48,6 +48,10 @@ namespace OD_ParamManager
             // Set data passed from the Revit command
             Definery.RevitParameters = revitParams;
 
+            // Set the initial DataGrid prior to validating so the table is not empty
+            DataGrid_Main.ItemsSource = Definery.RevitParameters;
+            InitCollectionView();
+
             // Update the UI
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
@@ -157,6 +161,7 @@ namespace OD_ParamManager
         private void ComboCollections_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             RefreshValidation();
+            InitCollectionView();
         }
 
         /// <summary>
@@ -262,6 +267,19 @@ namespace OD_ParamManager
             Grid_Overlay.Visibility = Visibility.Hidden;
         }
 
+        private ICollectionView InitCollectionView()
+        {
+            ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
+
+            if (cv.SortDescriptions.Count() == 0)
+            {
+                cv.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                cv.Refresh();
+            }
+
+            return cv;
+        }
+
         /// <summary>
         /// Helper method to toggle filter UI after user interaction
         /// </summary>
@@ -299,7 +317,7 @@ namespace OD_ParamManager
             SelectedFilter = SelectedFilter.All;
             ToggleFilterButtons();
 
-            ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
+            var cv = InitCollectionView();
 
             cv.Filter = o =>
             {
@@ -319,7 +337,7 @@ namespace OD_ParamManager
             SelectedFilter = SelectedFilter.InCollection;
             ToggleFilterButtons();
 
-            ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
+            var cv = InitCollectionView();
 
             cv.Filter = o =>
             {
@@ -339,7 +357,7 @@ namespace OD_ParamManager
             SelectedFilter = SelectedFilter.NotInCollection;
             ToggleFilterButtons();
 
-            ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
+            var cv = InitCollectionView();
 
             cv.Filter = o =>
             {
