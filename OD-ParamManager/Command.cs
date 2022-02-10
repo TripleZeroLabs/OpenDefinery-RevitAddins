@@ -60,6 +60,12 @@ namespace OD_ParamManager
             return Result.Succeeded;
         }
 
+        /// <summary>
+        /// Delete Shared Parameter elements from the current Document.
+        /// </summary>
+        /// <param name="mw">The Window instance to pass make active after purging</param>
+        /// <param name="doc">The current Revit Document</param>
+        /// <param name="paramsToDelete">The list of OpenDefinery Shared Parameters to delete</param>
         public static void PurgeParameters(Window_ParamManager mw, Document doc, List<SharedParameter> paramsToDelete)
         {
             // Instantiate a collection of parameters to delete from the model
