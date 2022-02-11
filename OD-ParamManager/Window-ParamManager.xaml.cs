@@ -34,6 +34,7 @@ namespace OD_ParamManager
             // Set the intial fields and UI
             Grid_Overlay.Visibility = Visibility.Visible;
             Grid_EditParams.Visibility = Visibility.Hidden;
+            Grid_Details.Visibility = Visibility.Hidden;
 
             TextBlock_Version.Text = "Version " + typeof(Window_ParamManager).Assembly.GetName().Version.ToString();
             FocusManager.SetFocusedElement(this, TextBox_Username);
@@ -386,7 +387,7 @@ namespace OD_ParamManager
         /// </summary>
         private void ToggleActionButtons()
         {
-            if (DataGrid_Main.SelectedItem != null)
+            if (DataGrid_Main.SelectedItems != null)
             {
                 // Cast the selected items to Shared Parameters
                 var selectedParams = new List<SharedParameter>();
@@ -405,10 +406,14 @@ namespace OD_ParamManager
                 {
                     Button_AddToCollection.IsEnabled = true;
                 }
+
+                // Toggle the Details button
+                Button_Details.IsEnabled = true;
             }
             else
             {
                 Button_AddToCollection.IsEnabled = false;
+                Button_Details.IsEnabled = false;
             }
         }
 
@@ -422,6 +427,11 @@ namespace OD_ParamManager
             ToggleActionButtons();
         }
 
+        /// <summary>
+        /// User clicks the Purge button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_Purge_Click(object sender, RoutedEventArgs e)
         {
             // Retrieve selected items and cast to Paramaters
@@ -437,12 +447,84 @@ namespace OD_ParamManager
                     {
                         parameters.Add(sharedParam);
                     }
-
                 }
 
                 // Delete the Parameters from the model
                 Command.PurgeParameters(this, Command.Document, parameters);
             }
+        }
+
+        /// <summary>
+        /// User clicks the Details button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Details_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGrid_Main.SelectedItems.Count > 0)
+            {
+                var listOfDetails = new Dictionary<string, List<string>>();
+
+                foreach (var i in DataGrid_Main.SelectedItems)
+                {
+                    var selectedParam = i as SharedParameter;
+
+                    var details = Command.GetParamDetails(Command.Document, selectedParam);
+
+                    if (details.Count > 0)
+                    {
+                        foreach (var detail in details)
+                        {
+                            listOfDetails.Add(detail.Key, detail.Value);
+                        }
+                    }
+                }
+
+                // Populate TreeView
+                foreach (var detail in listOfDetails)
+                {
+                    var parentItem = new TreeViewItem();
+                    parentItem.Header = detail.Key.ToString();
+
+                    // Add children
+                    foreach (var value in detail.Value)
+                    {
+                        var childItem = new TreeViewItem();
+                        childItem.Header = value.ToString();
+                        parentItem.Items.Add(childItem);
+                    }
+
+                    TreeView_Details.Items.Add(parentItem);
+                }
+
+                // Show the TreeView
+                Grid_Overlay.Visibility = Visibility.Visible;
+                Grid_Details.Visibility = Visibility.Visible;
+            }
+        }
+
+        /// <summary>
+        /// Helper method for using the mousewheel to scroll
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ListViewScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            ScrollViewer scv = (ScrollViewer)sender;
+            scv.ScrollToVerticalOffset(scv.VerticalOffset - e.Delta);
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// User clicks Close Details button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_CloseDetails_Click(object sender, RoutedEventArgs e)
+        {
+            // Hide the TreeView
+            Grid_Overlay.Visibility = Visibility.Hidden;
+            Grid_Details.Visibility = Visibility.Hidden;
         }
     }
 }
