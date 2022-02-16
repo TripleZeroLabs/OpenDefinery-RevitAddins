@@ -136,7 +136,7 @@ namespace OD_ParamManager
                 }
             }
         }
-      
+
         /// <summary>
         /// Get details about a Shared Parameter such as which elements are using it
         /// </summary>
@@ -176,10 +176,9 @@ namespace OD_ParamManager
                                 var data = new List<string>();
 
                                 // Create a unique key for the dictionary
-                                var key = string.Format("{0} <{1}>", p.GUID.ToString(), elemType.Id.ToString());
-                                
-                                //data.Add("ElementId: " + elemType.Id.ToString());
-                                data.Add("Name: " + p.Definition.Name);
+                                var key = string.Format("{0} <{1}>", p.Definition.Name, elemType.Id.ToString());
+
+                                data.Add("Element Name: " + e.Name + ":" + elemType.Name);
                                 data.Add("Guid: " + p.GUID.ToString());
                                 data.Add("Binding: " + typeOrInstance);
                                 data.Add("Value: " + p.AsString());
@@ -209,9 +208,9 @@ namespace OD_ParamManager
                                 var data = new List<string>();
 
                                 // Create a unique key for the dictionary
-                                var key = string.Format("{0} <{1}>", p.GUID.ToString(), e.Id.ToString());
+                                var key = string.Format("{0} <{1}>", p.Definition.Name, e.Id.ToString());
 
-                                data.Add("ElementId: " + e.Id.ToString());
+                                data.Add("Element Name: " + e.Name);
                                 data.Add("Name: " + p.Definition.Name);
                                 data.Add("Guid: " + p.GUID.ToString());
                                 data.Add("Binding: " + typeOrInstance);

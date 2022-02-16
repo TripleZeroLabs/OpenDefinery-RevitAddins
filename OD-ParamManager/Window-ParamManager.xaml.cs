@@ -480,26 +480,33 @@ namespace OD_ParamManager
                     }
                 }
 
-                // Populate TreeView
-                foreach (var detail in listOfDetails)
+                if (listOfDetails.Count > 0)
                 {
-                    var parentItem = new TreeViewItem();
-                    parentItem.Header = detail.Key.ToString();
-
-                    // Add children
-                    foreach (var value in detail.Value)
+                    // Populate TreeView
+                    foreach (var detail in listOfDetails)
                     {
-                        var childItem = new TreeViewItem();
-                        childItem.Header = value.ToString();
-                        parentItem.Items.Add(childItem);
+                        var parentItem = new TreeViewItem();
+                        parentItem.Header = detail.Key.ToString();
+
+                        // Add children
+                        foreach (var value in detail.Value)
+                        {
+                            var childItem = new TreeViewItem();
+                            childItem.Header = value.ToString();
+                            parentItem.Items.Add(childItem);
+                        }
+
+                        TreeView_Details.Items.Add(parentItem);
                     }
 
-                    TreeView_Details.Items.Add(parentItem);
+                    // Show the TreeView
+                    Grid_Overlay.Visibility = Visibility.Visible;
+                    Grid_Details.Visibility = Visibility.Visible;
                 }
-
-                // Show the TreeView
-                Grid_Overlay.Visibility = Visibility.Visible;
-                Grid_Details.Visibility = Visibility.Visible;
+                else
+                {
+                    MessageBox.Show("There are no families which use the selected parameters.");
+                }
             }
         }
 

@@ -49,7 +49,7 @@
 
             </TabItem>
 
-            <TabItem Name="Validate" Header="Validate">
+            <TabItem Name="Parameters" Header="Parameters">
                 <Grid>
                     <DockPanel Margin="0,0,-0.4,0.4" LastChildFill="True">
                         <DockPanel Height="30" LastChildFill="False" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20">
@@ -164,16 +164,12 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Name ="AddToModel" Header="Load Parameters">
-
-            </TabItem>
-
-            <TabItem Name="Manage" Header="Manage Collections">
+            <TabItem Name="Collections" Header="Collections">
 
             </TabItem>
 
         </TabControl>
-        <Grid x:Name="Grid_Overlay" Margin="0" Background="#D8000000">
+        <Grid x:Name="Grid_Overlay" Margin="0" Background="#D8000000" d:IsHidden="True">
             <Grid x:Name="Grid_Login" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Background="White" Width="340" d:IsHidden="True">
                 <StackPanel x:Name="StackPanel_Login" Margin="20">
                     <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Login to OpenDefinery" VerticalAlignment="Top" FontSize="18"/>
@@ -210,9 +206,9 @@
                 </DataGrid>
                 <Button x:Name="Button_SaveParams" Content="Save" HorizontalAlignment="Right" Height="29" Width="80" Click="Button_SaveParams_Click" VerticalAlignment="Bottom" Margin="0,0,10,10"/>
             </Grid>
-            <Grid x:Name="Grid_Details" Margin="50" Background="White" Width="500">
+            <Grid x:Name="Grid_Details" Margin="50" Background="White" Width="400" d:IsHidden="True">
                 <Button x:Name="Button_CloseDetails" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Button_CloseDetails_Click"  FontSize="25" Width="40" Height="40" Margin="0"/>
-                <ScrollViewer Margin="50" PreviewMouseWheel="ListViewScrollViewer_PreviewMouseWheel">
+                <ScrollViewer Margin="10,50" PreviewMouseWheel="ListViewScrollViewer_PreviewMouseWheel">
                     <TreeView x:Name="TreeView_Details"/>
                 </ScrollViewer>
             </Grid>
