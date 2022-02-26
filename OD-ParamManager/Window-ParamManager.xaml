@@ -68,9 +68,9 @@
                         VerticalContentAlignment="Center"
                         />
                         </DockPanel>
-                        <Grid Height="60" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
-                            <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Parameters in Model" VerticalAlignment="Top" FontSize="22" FontWeight="Bold"/>
-                            <DockPanel Height="25" Margin="0,0,10,0" VerticalAlignment="Bottom">
+                        <Grid Height="70" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
+                            <TextBlock x:Name="TextBlock_ParamsTitle" HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Parameters in Model" VerticalAlignment="Top" FontSize="24" FontWeight="Light"/>
+                            <DockPanel Height="25" Margin="0,0,0,0" VerticalAlignment="Bottom">
                                 <Button x:Name="Button_FilterAll" Content="View All" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterAll_Click"/>
                                 <Button x:Name="Button_FilterInCollection" Content="In Collection" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25" Padding="10,0" Margin="0,0,10,-0.2" Click="Button_FilterInCollection_Click"/>
                                 <Button x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click"/>
@@ -94,7 +94,7 @@
                                     Click="Button_Purge_Click"/>
                                 <Button 
                                     x:Name="Button_Details" 
-                                    Content="Details" 
+                                    Content="Evaluate" 
                                     Margin="10,0,0,0" 
                                     Padding="10,3"
                                     DockPanel.Dock="Right" 

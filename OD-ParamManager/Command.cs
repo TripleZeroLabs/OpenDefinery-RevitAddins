@@ -6,61 +6,25 @@ using OpenDefinery;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace OD_ParamManager
 {
     [Transaction(TransactionMode.Manual)]
     public class Command : IExternalCommand
     {
-        public static Document Document { get; set; }
-        static FilteredElementCollector FamilyInstances { get; set; }
+        public RvtConnector RvtConnector { get; set; }
 
         public Result Execute(
           ExternalCommandData commandData,
           ref string message,
           ElementSet elements)
         {
-            UIApplication uiapp = commandData.Application;
-            UIDocument uidoc = uiapp.ActiveUIDocument;
-            Application app = uiapp.Application;
-            Document = uidoc.Document;
-
-            // Set all Family Instances
-            FilteredElementCollector collector1 = new FilteredElementCollector(Document);
-            collector1.OfClass(typeof(FamilyInstance));
-            FamilyInstances = collector1;
-
-            // Instantiate a list to store the shared parameters from the current Revit model
-            var revitParams = new List<SharedParameter>();
-
-            // Collect shared parameters as elements
-            FilteredElementCollector collector2
-                = new FilteredElementCollector(Document)
-                .WhereElementIsNotElementType();
-
-            collector2.OfClass(typeof(SharedParameterElement));
-
-            // Add each parameter to the list
-            foreach (Element e in collector2)
-            {
-                SharedParameterElement param = e as SharedParameterElement;
-                Definition def = param.GetDefinition();
-
-                Debug.WriteLine("[" + e.Id + "]\t" + def.Name + "\t(" + param.GuidValue + ")");
-
-                // Cast the SharedParameterElement to a "lite" OpenDefinery SharedParameter
-                // TODO: Retrieve all Revit parameter data such as the DATAGAATEGORY
-                var castedParam = new SharedParameter(
-                    param.GuidValue, def.Name, def.ParameterType.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
-                    );
-
-                castedParam.ElementId = Convert.ToInt32(e.Id.IntegerValue);
-
-                revitParams.Add(castedParam);
-            }
+            // Instantiate the connection to the Revit Model
+            var rvtConnector = new RvtConnector(commandData);
 
             // Instantiate a main window
-            var mw = new Window_ParamManager(revitParams);
+            var mw = new Window_ParamManager(rvtConnector);
             mw.ShowDialog();
 
             return Result.Succeeded;
@@ -89,10 +53,9 @@ namespace OD_ParamManager
             if (elementIds.Count > 0)
             {
                 // Instantiate a TaskDialog to warn the user of data loss
-                TaskDialog td = new TaskDialog("Purge Shared Parameters");
+                TaskDialog td = new TaskDialog("WARNING: Possible Data Loss");
                 td.Id = "PurgeParams";
                 td.MainIcon = TaskDialogIcon.TaskDialogIconWarning;
-                td.Title = "WARNING: Possible Data Loss";
                 td.TitleAutoPrefix = false;
                 td.AllowCancellation = true;
 
@@ -100,6 +63,7 @@ namespace OD_ParamManager
                     "Are you sure you want to purge {0} shared parameters from this model?",
                     elementIds.Count.ToString()
                     );
+
                 td.MainContent =
                     "Purging shared parameters from this model will completely delete them from the project model and any loaded families. " +
                     "This can result in untinentional data loss.\n\n" +
@@ -143,23 +107,23 @@ namespace OD_ParamManager
         /// <param name="doc">The Document to search</param>
         /// <param name="odParam">An OpenDefinery Shared Parameter</param>
         /// <returns></returns>
-        public static Dictionary<string, List<string>> GetParamDetails(Document doc, SharedParameter odParam)
+        public static Dictionary<string, List<string>> GetParamDetails(RvtConnector rvtConnector, SharedParameter odParam)
         {
             var output = new Dictionary<string, List<string>>();
 
             // Cast the int to and ElementId and retrieve the Parameter Element from the model
             ElementId paramId = new ElementId(odParam.ElementId);
-            var paramElem = doc.GetElement(paramId) as ParameterElement;
+            var paramElem = rvtConnector.Document.GetElement(paramId) as ParameterElement;
             SharedParameterElement sharedParameterElement = paramElem as SharedParameterElement;
             //var paramDef = paramElem.GetDefinition();
 
             // Iterate through all elements and add the Shared Parameter to the dictionary if found
-            foreach (var e in FamilyInstances)
+            foreach (var e in rvtConnector.FamilyInstances)
             {
                 var typeOrInstance = string.Empty;
 
                 // Try to the Family Type to access the type parameters
-                Element elemType = doc.GetElement(e.GetTypeId());
+                Element elemType = rvtConnector.Document.GetElement(e.GetTypeId());
 
                 if (elemType != null)
                 {

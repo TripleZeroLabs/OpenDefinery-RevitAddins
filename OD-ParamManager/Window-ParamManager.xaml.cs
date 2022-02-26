@@ -1,4 +1,7 @@
-﻿using OpenDefinery;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using OpenDefinery;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,6 +23,8 @@ namespace OD_ParamManager
     public partial class Window_ParamManager : Window
     {
         private Definery Definery { get; set; }
+        private RvtConnector RvtConnector { get; set; }
+        private List<SharedParameter> RevitParameters { get; set; }
         private Collection SelectedCollection { get; set; }
         private static SelectedFilter SelectedFilter {get;set;}
 
@@ -27,16 +32,18 @@ namespace OD_ParamManager
         /// MainWindow constructor
         /// </summary>
         /// <param name="definery"></param>
-        public Window_ParamManager(List<SharedParameter> revitParams)
+        public Window_ParamManager(RvtConnector rvtConnector)
         {
             InitializeComponent();
 
             // Set the intial fields and UI
-            Grid_Overlay.Visibility = Visibility.Visible;
-            Grid_EditParams.Visibility = Visibility.Hidden;
-            Grid_Details.Visibility = Visibility.Hidden;
+            Grid_Overlay.Visibility = System.Windows.Visibility.Visible;
+            Grid_EditParams.Visibility = System.Windows.Visibility.Hidden;
+            Grid_Details.Visibility = System.Windows.Visibility.Hidden;
 
+            RvtConnector = rvtConnector;
             TextBlock_Version.Text = "Version " + typeof(Window_ParamManager).Assembly.GetName().Version.ToString();
+            TextBlock_ParamsTitle.Text = "Parameters in " + RvtConnector.Document.PathName.Split('\\').Last();
             FocusManager.SetFocusedElement(this, TextBox_Username);
             
             SelectedFilter = SelectedFilter.All;
@@ -47,11 +54,7 @@ namespace OD_ParamManager
             Definery = new Definery();
 
             // Set data passed from the Revit command
-            Definery.RevitParameters = revitParams;
-
-            // Set the initial DataGrid prior to validating so the table is not empty
-            DataGrid_Main.ItemsSource = Definery.RevitParameters;
-            InitCollectionView();
+            RefreshRevitParams();
 
             // Update the UI
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -181,8 +184,8 @@ namespace OD_ParamManager
 
                 // Update the UI
                 PopulateCollectionsCombo(Definery);
-                Grid_Overlay.Visibility = Visibility.Hidden;
-                Grid_Login.Visibility = Visibility.Hidden;
+                Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
+                Grid_Login.Visibility = System.Windows.Visibility.Hidden;
             }
         }
 
@@ -199,8 +202,8 @@ namespace OD_ParamManager
         private void Button_AddToCollection_Click(object sender, RoutedEventArgs e)
         {
             // Toggle the UI
-            Grid_Overlay.Visibility = Visibility.Visible;
-            Grid_EditParams.Visibility = Visibility.Visible;
+            Grid_Overlay.Visibility = System.Windows.Visibility.Visible;
+            Grid_EditParams.Visibility = System.Windows.Visibility.Visible;
 
             // Get the selected Collection as a Collection object
             SelectedCollection = Combo_Collections.SelectedItem as Collection;
@@ -249,8 +252,8 @@ namespace OD_ParamManager
             }
 
             // Refresh the UI
-            Grid_EditParams.Visibility = Visibility.Hidden;
-            Grid_Overlay.Visibility = Visibility.Hidden;
+            Grid_EditParams.Visibility = System.Windows.Visibility.Hidden;
+            Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
 
             // Validate parameters again and reload the DataGrid
             RefreshValidation();
@@ -264,10 +267,57 @@ namespace OD_ParamManager
         private void Button_CloseEditParams_Click(object sender, RoutedEventArgs e)
         {
             DataGrid_EditParams.ItemsSource = null;
-            Grid_EditParams.Visibility = Visibility.Hidden;
-            Grid_Overlay.Visibility = Visibility.Hidden;
+            Grid_EditParams.Visibility = System.Windows.Visibility.Hidden;
+            Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
         }
 
+        /// <summary>
+        /// Retrieve Shared Parameters from Revit model
+        /// </summary>
+        /// <param name="doc">The Revit Document</param>
+        /// <returns></returns>
+        private void RefreshRevitParams()
+        {
+            // Instantiate a list to store the shared parameters from the current Revit model
+            var revitParams = new List<SharedParameter>();
+
+            // Collect shared parameters as elements
+            FilteredElementCollector collector2
+                = new FilteredElementCollector(RvtConnector.Document)
+                .WhereElementIsNotElementType();
+
+            collector2.OfClass(typeof(SharedParameterElement));
+
+            // Add each parameter to the list
+            foreach (Element e in collector2)
+            {
+                SharedParameterElement param = e as SharedParameterElement;
+                Definition def = param.GetDefinition();
+
+                //Debug.WriteLine("[" + e.Id + "]\t" + def.Name + "\t(" + param.GuidValue + ")");
+
+                // Cast the SharedParameterElement to a "lite" OpenDefinery SharedParameter
+                // TODO: Retrieve all Revit parameter data such as the DATAGAATEGORY
+                var castedParam = new SharedParameter(
+                    param.GuidValue, def.Name, def.ParameterType.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
+                    );
+
+                castedParam.ElementId = Convert.ToInt32(e.Id.IntegerValue);
+
+                revitParams.Add(castedParam);
+            }
+
+            RevitParameters = revitParams;
+
+            // Show the Parameters on the UI
+            DataGrid_Main.ItemsSource = RevitParameters;
+            InitCollectionView();
+        }
+
+        /// <summary>
+        /// Helper method to sort datagrid
+        /// </summary>
+        /// <returns></returns>
         private ICollectionView InitCollectionView()
         {
             ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
@@ -450,7 +500,7 @@ namespace OD_ParamManager
                 }
 
                 // Delete the Parameters from the model
-                Command.PurgeParameters(this, Command.Document, parameters);
+                Command.PurgeParameters(this, RvtConnector.Document, parameters);
             }
         }
 
@@ -463,13 +513,21 @@ namespace OD_ParamManager
         {
             if (DataGrid_Main.SelectedItems.Count > 0)
             {
+                TreeView_Details.Items.Clear();
+
                 var listOfDetails = new Dictionary<string, List<string>>();
+
+                // Instantiate a list of Shared Parameters for later use
+                var selectedParams = new List<SharedParameter>();
 
                 foreach (var i in DataGrid_Main.SelectedItems)
                 {
                     var selectedParam = i as SharedParameter;
 
-                    var details = Command.GetParamDetails(Command.Document, selectedParam);
+                    selectedParams.Add(selectedParam);
+
+                    // Retrieve the details/usage of the Shared Parameter for UI
+                    var details = Command.GetParamDetails(RvtConnector, selectedParam);
 
                     if (details.Count > 0)
                     {
@@ -500,12 +558,101 @@ namespace OD_ParamManager
                     }
 
                     // Show the TreeView
-                    Grid_Overlay.Visibility = Visibility.Visible;
-                    Grid_Details.Visibility = Visibility.Visible;
+                    Grid_Overlay.Visibility = System.Windows.Visibility.Visible;
+                    Grid_Details.Visibility = System.Windows.Visibility.Visible;
                 }
+
+                // Prompt the user to purge the parameters if all are not used
                 else
                 {
-                    MessageBox.Show("There are no families which use the selected parameters.");
+                    // Instantiate a collection of parameters to delete from the model
+                    ICollection<ElementId> elementIds = new List<ElementId>();
+
+                    // Retrieve Element IDs
+                    foreach (var p in selectedParams)
+                    {
+                        ElementId id = new ElementId(p.ElementId);
+
+                        elementIds.Add(id);
+                    }
+
+                    var td = new TaskDialog("Purge Selected Shared Parameters");
+                    td.Id = "PurgeParams";
+                    td.MainIcon = TaskDialogIcon.TaskDialogIconInformation;
+                    td.TitleAutoPrefix = false;
+                    td.AllowCancellation = true;
+
+                    td.MainInstruction = "Would you like to purge these unused parameters?";
+
+                    td.MainContent = string.Format(
+                        "There are no families which use the selected {0} parameters. " +
+                        "Would you like to purge them from the model?",
+                        DataGrid_Main.SelectedItems.Count.ToString());
+
+                    td.ExpandedContent = "";
+
+                    foreach (var p in selectedParams)
+                    {
+                        td.ExpandedContent += p.Name + " [" + p.Guid + "]\n";
+                    }
+
+                    td.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
+                    TaskDialogResult result = td.Show();
+
+                    // Delete Shared Parameters from the model if the user confirms
+                    if (result == TaskDialogResult.Yes)
+                    {
+                        Transaction trans = new Transaction(RvtConnector.Document, "Purge Shared Parameters");
+                        trans.Start();
+
+                        // Instantiate lists of results to write to the log
+                        var successfulDeletes = new List<string>();
+                        var failedDeletes = new List<string>();
+
+                        foreach (var eId in elementIds)
+                        {
+                            try
+                            {
+                                RvtConnector.Document.Delete(eId);
+
+                                successfulDeletes.Add("DELETE SUCCESSFUL\t" + eId.ToString());
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(string.Format("Error deleting {0}:\n\n" + ex.ToString(), eId.ToString()));
+
+                                failedDeletes.Add("DELETE FAILED\t" + eId.ToString());
+                            }
+                        }
+
+                        trans.Commit();
+
+                        var tdConfirmation = new TaskDialog("Purged Parameters");
+
+                        tdConfirmation.MainInstruction =
+                            string.Format("Successfully purged {0} shared parameters from the model.",
+                            successfulDeletes.Count.ToString());
+
+                        tdConfirmation.ExpandedContent = "";
+
+                        foreach (var fd in failedDeletes)
+                        {
+                            tdConfirmation.ExpandedContent += fd + "\n";
+                        }
+
+                        tdConfirmation.Show();
+
+                        // Load all of the things to the main Definery object
+                        RefreshRevitParams();
+
+                        Activate();
+                    }
+                    // Switch back to the main window
+                    else
+                    {
+                        Activate();
+                    }
+
                 }
             }
         }
@@ -530,8 +677,8 @@ namespace OD_ParamManager
         private void Button_CloseDetails_Click(object sender, RoutedEventArgs e)
         {
             // Hide the TreeView
-            Grid_Overlay.Visibility = Visibility.Hidden;
-            Grid_Details.Visibility = Visibility.Hidden;
+            Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
+            Grid_Details.Visibility = System.Windows.Visibility.Hidden;
         }
     }
 }
