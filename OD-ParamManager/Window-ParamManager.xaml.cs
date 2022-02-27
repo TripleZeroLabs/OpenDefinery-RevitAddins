@@ -54,7 +54,7 @@ namespace OD_ParamManager
             Definery = new Definery();
 
             // Set data passed from the Revit command
-            RefreshRevitParams();
+            RefreshRevitParams(Definery);
 
             // Update the UI
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -274,9 +274,9 @@ namespace OD_ParamManager
         /// <summary>
         /// Retrieve Shared Parameters from Revit model
         /// </summary>
-        /// <param name="doc">The Revit Document</param>
+        /// <param name="definery">The main Definery object</param>
         /// <returns></returns>
-        private void RefreshRevitParams()
+        private void RefreshRevitParams(Definery definery)
         {
             // Instantiate a list to store the shared parameters from the current Revit model
             var revitParams = new List<SharedParameter>();
@@ -307,10 +307,10 @@ namespace OD_ParamManager
                 revitParams.Add(castedParam);
             }
 
-            RevitParameters = revitParams;
+            definery.RevitParameters = revitParams;
 
             // Show the Parameters on the UI
-            DataGrid_Main.ItemsSource = RevitParameters;
+            DataGrid_Main.ItemsSource = definery.RevitParameters;
             InitCollectionView();
         }
 
@@ -478,38 +478,11 @@ namespace OD_ParamManager
         }
 
         /// <summary>
-        /// User clicks the Purge button
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Button_Purge_Click(object sender, RoutedEventArgs e)
-        {
-            // Retrieve selected items and cast to Paramaters
-            if (DataGrid_Main.SelectedItems.Count > 0)
-            {
-                var parameters = new List<SharedParameter>();
-
-                foreach (var i in DataGrid_Main.SelectedItems)
-                {
-                    var sharedParam = i as SharedParameter;
-
-                    if (sharedParam.ElementId != 0)
-                    {
-                        parameters.Add(sharedParam);
-                    }
-                }
-
-                // Delete the Parameters from the model
-                Command.PurgeParameters(this, RvtConnector.Document, parameters);
-            }
-        }
-
-        /// <summary>
         /// User clicks the Details button
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Button_Details_Click(object sender, RoutedEventArgs e)
+        private void Button_Evaluate_Click(object sender, RoutedEventArgs e)
         {
             if (DataGrid_Main.SelectedItems.Count > 0)
             {
@@ -643,8 +616,9 @@ namespace OD_ParamManager
                         tdConfirmation.Show();
 
                         // Load all of the things to the main Definery object
-                        RefreshRevitParams();
+                        RefreshRevitParams(Definery);
 
+                        // Switch back to the Main Window
                         Activate();
                     }
                     // Switch back to the main window
@@ -652,7 +626,6 @@ namespace OD_ParamManager
                     {
                         Activate();
                     }
-
                 }
             }
         }

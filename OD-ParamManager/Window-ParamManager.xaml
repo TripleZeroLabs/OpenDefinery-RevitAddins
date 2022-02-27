@@ -10,6 +10,37 @@
             WindowStartupLocation="CenterScreen"
             Title="OpenDefinery | Parameter Manager">
 
+    <Window.Resources>
+        <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" x:Key="FilterButton">
+            <Style.Setters>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="#555555"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <ContentPresenter x:Name="ButtonPresenter" 
+                                          Content="{TemplateBinding Content}"
+                                          HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style.Setters>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <TabControl Margin="0" TabStripPlacement="Left" BorderThickness="0" Background="{x:Null}">
 
@@ -68,12 +99,12 @@
                         VerticalContentAlignment="Center"
                         />
                         </DockPanel>
-                        <Grid Height="70" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
+                        <Grid Height="55" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
                             <TextBlock x:Name="TextBlock_ParamsTitle" HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Parameters in Model" VerticalAlignment="Top" FontSize="24" FontWeight="Light"/>
                             <DockPanel Height="25" Margin="0,0,0,0" VerticalAlignment="Bottom">
-                                <Button x:Name="Button_FilterAll" Content="View All" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterAll_Click"/>
-                                <Button x:Name="Button_FilterInCollection" Content="In Collection" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25" Padding="10,0" Margin="0,0,10,-0.2" Click="Button_FilterInCollection_Click"/>
-                                <Button x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click"/>
+                                <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterAll" Content="View All" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterAll_Click" IsEnabled="False" Width="50"/>
+                                <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterInCollection" Content="In Collection" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25" Padding="10,0" Margin="0,0,10,-0.2" Click="Button_FilterInCollection_Click" Width="75"/>
+                                <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click" Width="100"/>
                                 <Button 
                                     x:Name="Button_AddToCollection" 
                                     Content="Add To Collection" 
@@ -84,15 +115,6 @@
                                     HorizontalAlignment="Right" 
                                     Height="25"/>
                                 <Button 
-                                    x:Name="Button_Purge" 
-                                    Content="Purge From Model" 
-                                    Margin="10,0,0,0" 
-                                    Padding="10,3"
-                                    DockPanel.Dock="Right" 
-                                    HorizontalAlignment="Right" 
-                                    Height="25" 
-                                    Click="Button_Purge_Click"/>
-                                <Button 
                                     x:Name="Button_Details" 
                                     Content="Evaluate" 
                                     Margin="10,0,0,0" 
@@ -100,44 +122,64 @@
                                     DockPanel.Dock="Right" 
                                     HorizontalAlignment="Right" 
                                     Height="25" 
-                                    Click="Button_Details_Click"/>
+                                    Click="Button_Evaluate_Click"/>
                             </DockPanel>
                         </Grid>
                         <DataGrid 
-                    x:Name="DataGrid_Main" 
-                    Margin="20,20,20,14" 
-                    AutoGenerateColumns="False" 
-                    GridLinesVisibility="Horizontal"
-                    HorizontalGridLinesBrush="#F1F1F1"
-                    SelectionMode="Extended"
-                    DockPanel.Dock="Top"
-                    HorizontalScrollBarVisibility="Disabled"
-                    ItemsSource="{Binding}" SelectionChanged="DataGrid_Main_SelectionChanged"
-                    >
+                            x:Name="DataGrid_Main" 
+                            Margin="20,20,20,14" 
+                            AutoGenerateColumns="False" 
+                            GridLinesVisibility="Horizontal"
+                            HorizontalGridLinesBrush="#F1F1F1"
+                            SelectionMode="Extended"
+                            DockPanel.Dock="Top"
+                            HorizontalScrollBarVisibility="Disabled"
+                            ItemsSource="{Binding}" 
+                            SelectionChanged="DataGrid_Main_SelectionChanged"
+                            >
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">
+                                    <Style.Resources>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="Black" />
+                                    </Style.Resources>
+                                    <Setter Property="FontSize" Value="13"/>
                                     <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
                                     <Style.Triggers>
                                         <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#5b7cfe"/>
+                                            <Setter Property="Background" Value="LightSkyBlue"/>
+                                            <Setter Property="Foreground" Value="White"/>
                                         </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="LightGray"/>
+                                        </Trigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsSelected" Value="True" />
+                                                <Condition Property="IsMouseOver" Value="True" />
+                                            </MultiTrigger.Conditions>
+                                            <MultiTrigger.Setters>
+                                                <Setter Property="Background" Value="LightSkyBlue" />
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </MultiTrigger.Setters>
+                                        </MultiTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </DataGrid.RowStyle>
                             <DataGrid.CellStyle>
                                 <Style TargetType="{x:Type DataGridCell}">
-                                    <Setter Property="VerticalContentAlignment" Value="Bottom"/>
-                                    <Setter Property="Padding" Value="0"/>
-                                    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Padding" Value="20"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                                <Border 
-                                            Padding="{TemplateBinding Padding}" 
-                                            BorderBrush="{TemplateBinding BorderBrush}" 
-                                            BorderThickness="{TemplateBinding BorderThickness}" 
-                                            SnapsToDevicePixels="True">
+                                                <Border Padding="{TemplateBinding Padding}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}" 
+                                                        BorderThickness="{TemplateBinding BorderThickness}" 
+                                                        Background="{TemplateBinding Background}" 
+                                                        SnapsToDevicePixels="True">
                                                     <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
                                                 </Border>
                                             </ControlTemplate>
@@ -145,11 +187,6 @@
                                     </Setter>
                                     <Setter Property="BorderThickness" Value="0"/>
                                     <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Foreground" Value="#FFFFFF"/>
-                                        </Trigger>
-                                    </Style.Triggers>
                                 </Style>
                             </DataGrid.CellStyle>
                             <DataGrid.Columns>

@@ -20,6 +20,11 @@ namespace OD_ParamManager
             FamilyInstances = GetFamilyInstances(Document);
         }
 
+        /// <summary>
+        /// Retrieve family instances from the current Revit Document
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
         static FilteredElementCollector GetFamilyInstances(Document doc)
         {
             // Set all Family Instances
