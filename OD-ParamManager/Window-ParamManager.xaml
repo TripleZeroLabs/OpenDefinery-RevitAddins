@@ -43,7 +43,7 @@
 
     <Grid>
         <TabControl Margin="0" TabStripPlacement="Left" BorderThickness="0" Background="{x:Null}">
-
+            
             <TabControl.Resources>
                 <Style TargetType="TabItem">
                     <Setter Property="Template">
@@ -54,7 +54,8 @@
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Left"
                                         ContentSource="Header"
-                                        Margin="20,10" />
+                                        Margin="20,10" 
+                                        MinWidth="150"/>
                                 </Grid>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="True">
@@ -154,7 +155,7 @@
                                             <Setter Property="Foreground" Value="White"/>
                                         </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="LightGray"/>
+                                            <Setter Property="Background" Value="#F9F9F9"/>
                                         </Trigger>
                                         <MultiTrigger>
                                             <MultiTrigger.Conditions>
