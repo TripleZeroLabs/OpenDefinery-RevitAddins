@@ -131,6 +131,9 @@ namespace OD_ParamManager
                 // Set the data grid source to the new data set
                 DataGrid_Main.ItemsSource = Definery.ValidatedParams;
                 DataGrid_Main.Items.Refresh();
+
+                // Maintain filter if one was applied prior to changing selection
+                ApplyExistingFilter();
             }
         }
 
@@ -355,6 +358,25 @@ namespace OD_ParamManager
                 Button_FilterInCollection.IsEnabled = true;
                 Button_FilterNotInCollection.IsEnabled = false;
 
+            }
+        }
+
+        /// <summary>
+        /// Helper method to maintain the parameter filter based on which filter button is disabled
+        /// </summary>
+        private void ApplyExistingFilter()
+        {
+            if (!Button_FilterAll.IsEnabled)
+            {
+                Button_FilterAll.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+            if(!Button_FilterInCollection.IsEnabled)
+            {
+                Button_FilterInCollection.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+            if (!Button_FilterNotInCollection.IsEnabled)
+            {
+                Button_FilterNotInCollection.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
         }
 
