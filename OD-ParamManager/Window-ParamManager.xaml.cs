@@ -202,6 +202,11 @@ namespace OD_ParamManager
             this.Close();
         }
 
+        /// <summary>
+        /// User clicked the Add to Collection button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_AddToCollection_Click(object sender, RoutedEventArgs e)
         {
             // Toggle the UI
@@ -227,6 +232,11 @@ namespace OD_ParamManager
             DataGrid_EditParams.ItemsSource = paramsToEdit;
         }
 
+        /// <summary>
+        /// User clicked the Save button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Button_SaveParams_Click(object sender, RoutedEventArgs e)
         {
             foreach (var p in DataGrid_EditParams.Items)
