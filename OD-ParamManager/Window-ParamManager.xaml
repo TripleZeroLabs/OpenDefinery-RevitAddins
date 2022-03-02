@@ -4,6 +4,7 @@
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
             xmlns:local="clr-namespace:OD_ParamManager"
+            xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
             mc:Ignorable="d" 
             Height="900"
             Width="1300"
@@ -11,6 +12,37 @@
             Title="OpenDefinery | Parameter Manager">
 
     <Window.Resources>
+        <Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="{x:Type ComboBox}">
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style TargetType="{x:Type Image}" x:Key="TabIcon">
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="Width" Value="15"/>
+        </Style>
+        <Style TargetType="{x:Type Image}" x:Key="ButtonIcon">
+            <Setter Property="Margin" Value="0,1,5,0"/>
+            <Setter Property="Width" Value="12"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value=".4"></Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" x:Key="ActionButton">
+            <Style.Setters>
+                <Setter Property="Background" Value="LightSkyBlue"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style.Setters>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="ToolTip" Value="The selected parameter is already in the OpenDefinery Collection"></Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" x:Key="CloseButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
         <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" x:Key="FilterButton">
             <Style.Setters>
                 <Setter Property="Background" Value="Transparent"/>
@@ -21,9 +53,9 @@
                         <ControlTemplate TargetType="{x:Type Button}">
                             <Grid Background="{TemplateBinding Background}">
                                 <ContentPresenter x:Name="ButtonPresenter" 
-                                          Content="{TemplateBinding Content}"
-                                          HorizontalAlignment="Center" 
-                                          VerticalAlignment="Center" />
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center" />
                             </Grid>
                         </ControlTemplate>
                     </Setter.Value>
@@ -43,7 +75,7 @@
 
     <Grid>
         <TabControl Margin="0" TabStripPlacement="Left" BorderThickness="0" Background="{x:Null}">
-            
+
             <TabControl.Resources>
                 <Style TargetType="TabItem">
                     <Setter Property="Template">
@@ -71,7 +103,13 @@
                 </Style>
             </TabControl.Resources>
 
-            <TabItem Name ="Dashboard" Header="Dashboard">
+            <TabItem Name ="Dashboard">
+                <TabItem.Header>
+                    <DockPanel>
+                        <Image Source="Assets/Icons/home-8-fill.png" Style="{StaticResource TabIcon}" />
+                        <TextBlock DockPanel.Dock="Left">Dashboard</TextBlock>
+                    </DockPanel>
+                </TabItem.Header>
                 <Grid Margin="0" Background="White">
                     <StackPanel Margin="0,100,0,0" HorizontalAlignment="Center" VerticalAlignment="Top" Background="White">
                         <TextBlock x:Name="TextBlock_Welcome" HorizontalAlignment="Center" Margin="100,20,100,0" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="30" Text="Welcome to OpenDefinery" />
@@ -81,54 +119,82 @@
 
             </TabItem>
 
-            <TabItem Name="Parameters" Header="Parameters">
+            <TabItem Name="Parameters">
+                <TabItem.Header>
+                    <DockPanel>
+                        <Image Source="Assets/Icons/building-4-fill.png" Style="{StaticResource TabIcon}" />
+                        <TextBlock DockPanel.Dock="Left">Model Parameters</TextBlock>
+                    </DockPanel>
+                </TabItem.Header>
                 <Grid>
                     <DockPanel Margin="0,0,-0.4,0.4" LastChildFill="True">
-                        <DockPanel Height="30" LastChildFill="False" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20">
-                            <ComboBox 
-                        x:Name="Combo_Collections" 
-                        HorizontalAlignment="Left" 
-                        Margin="0,0,-300,0" 
-                        VerticalAlignment="Top" 
-                        Width="400" 
-                        SelectionChanged="ComboCollections_SelectionChanged" 
-                        ItemsSource="{Binding}"
-                        DisplayMemberPath="Name"
-                        FontSize="12"
-                        DockPanel.Dock="Left"
-                        Height="30"
-                        VerticalContentAlignment="Center"
-                        />
-                        </DockPanel>
+                        <TextBlock 
+                            x:Name="TextBlock_ParamsTitle" 
+                            DockPanel.Dock="Top" 
+                            HorizontalAlignment="Left" 
+                            Margin="20,5" 
+                            TextWrapping="Wrap" 
+                            Text="Parameters in Model"
+                            VerticalAlignment="Top" 
+                            FontSize="24" 
+                            FontWeight="Light"/>
                         <Grid Height="55" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
-                            <TextBlock x:Name="TextBlock_ParamsTitle" HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="Parameters in Model" VerticalAlignment="Top" FontSize="24" FontWeight="Light"/>
+                            <ComboBox 
+                            x:Name="Combo_Collections" 
+                            HorizontalAlignment="Left" 
+                            VerticalAlignment="Top" 
+                            Width="400" 
+                            SelectionChanged="ComboCollections_SelectionChanged" 
+                            ItemsSource="{Binding}"
+                            DisplayMemberPath="Name"
+                            FontSize="12"
+                            Height="30"
+                            VerticalContentAlignment="Center" DockPanel.Dock="Top"
+                            />
+
                             <DockPanel Height="25" Margin="0,0,0,0" VerticalAlignment="Bottom">
                                 <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterAll" Content="View All" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterAll_Click" IsEnabled="False" Width="50"/>
                                 <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterInCollection" Content="In Collection" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25" Padding="10,0" Margin="0,0,10,-0.2" Click="Button_FilterInCollection_Click" Width="75"/>
                                 <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click" Width="100"/>
                                 <Button 
-                                    x:Name="Button_AddToCollection" 
-                                    Content="Add To Collection" 
-                                    Margin="10,0,0,0"
-                                    Padding="10,3"
-                                    Click="Button_AddToCollection_Click"
-                                    DockPanel.Dock="Right" 
-                                    HorizontalAlignment="Right" 
-                                    Height="25"/>
+                                Style="{StaticResource ActionButton}"
+                                x:Name="Button_AddToCollection" 
+                                Margin="10,0,0,0"
+                                Padding="10,3"
+                                Click="Button_AddToCollection_Click"
+                                DockPanel.Dock="Right" 
+                                HorizontalAlignment="Right" 
+                                Height="25"
+                                ToolTip="Add the selected parameters to the selected OpenDefinery Collection">
+                                    <DockPanel>
+                                        <Image Source="Assets/Icons/add-circle-fill.png" Style="{StaticResource ButtonIcon}" />
+                                        <TextBlock>
+                                            Add to Collection
+                                        </TextBlock>
+                                    </DockPanel>
+                                </Button>
                                 <Button 
-                                    x:Name="Button_Details" 
-                                    Content="Evaluate" 
-                                    Margin="10,0,0,0" 
-                                    Padding="10,3"
-                                    DockPanel.Dock="Right" 
-                                    HorizontalAlignment="Right" 
-                                    Height="25" 
-                                    Click="Button_Evaluate_Click"/>
+                                Style="{StaticResource ActionButton}"
+                                x:Name="Button_Details" 
+                                Margin="10,0,0,0" 
+                                Padding="10,3"
+                                DockPanel.Dock="Right" 
+                                HorizontalAlignment="Right" 
+                                Height="25" 
+                                Click="Button_Evaluate_Click"
+                                ToolTip="Find all model elements which use the selected parameters">
+                                    <DockPanel>
+                                        <Image Source="Assets/Icons/database-2-fill.png" Style="{StaticResource ButtonIcon}" />
+                                        <TextBlock>
+                                            Evaluate
+                                        </TextBlock>
+                                    </DockPanel>
+                                </Button>
                             </DockPanel>
                         </Grid>
                         <DataGrid 
                             x:Name="DataGrid_Main" 
-                            Margin="20,20,20,14" 
+                            Margin="20,10,20,14" 
                             AutoGenerateColumns="False" 
                             GridLinesVisibility="Horizontal"
                             HorizontalGridLinesBrush="#F1F1F1"
@@ -191,7 +257,29 @@
                                 </Style>
                             </DataGrid.CellStyle>
                             <DataGrid.Columns>
-                                <DataGridCheckBoxColumn Binding="{Binding IsStandard}" Header="In Collection" IsReadOnly="True" Width="80"/>
+                                <DataGridTemplateColumn Header="Standard" Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Image x:Name="InCollection" Source="Assets/Icons/checkbox-circle-fill.png">
+                                                <Image.Style>
+                                                    <Style TargetType="{x:Type Image}">
+                                                        <Setter Property="Width" Value="18"></Setter>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding Path=IsStandard}" Value="True">
+                                                    <Setter Property="Source" Value="Assets/Icons/checkbox-circle-fill.png" TargetName="InCollection"/>
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=IsStandard}" Value="False">
+                                                    <Setter Property="Source" Value="Assets/Icons/checkbox-blank-circle-line.png" TargetName="InCollection"/>
+                                                    <Setter Property="Opacity" Value=".1"/>
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Binding="{Binding Name}" Header="Name" IsReadOnly="True" Width="300" SortDirection="Ascending"/>
                                 <DataGridTextColumn Binding="{Binding Guid}" Header="GUID" IsReadOnly="True" Width="300"/>
                                 <DataGridTextColumn Binding="{Binding DataType}" Header="Data Type" IsReadOnly="True" Width="150"/>
@@ -202,11 +290,26 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Name="Collections" Header="Collections">
+            <TabItem Name="Collections">
+                <TabItem.Header>
+                    <DockPanel>
+                        <Image Source="Assets/Icons/booklet-fill.png" Style="{StaticResource TabIcon}" />
+                        <TextBlock DockPanel.Dock="Left">Manage Collections</TextBlock>
+                    </DockPanel>
+                </TabItem.Header>
+            </TabItem>
 
+            <TabItem Name="Settings">
+                <TabItem.Header>
+                    <DockPanel>
+                        <Image Source="Assets/Icons/settings-5-fill.png" Style="{StaticResource TabIcon}" />
+                        <TextBlock DockPanel.Dock="Left">Settings</TextBlock>
+                    </DockPanel>
+                </TabItem.Header>
             </TabItem>
 
         </TabControl>
+        
         <Grid x:Name="Grid_Overlay" Margin="0" Background="#D8000000" d:IsHidden="True">
             <Grid x:Name="Grid_Login" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Background="White" Width="340" d:IsHidden="True">
                 <StackPanel x:Name="StackPanel_Login" Margin="20">
@@ -235,7 +338,7 @@
                 </StackPanel>
             </Grid>
             <Grid x:Name="Grid_EditParams" Margin="100" Background="White" d:IsHidden="True">
-                <Button x:Name="Button_CloseEditParams" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Button_CloseEditParams_Click" FontSize="25" Width="40" Height="40"/>
+                <Button Style="{StaticResource CloseButton}" x:Name="Button_CloseEditParams" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Button_CloseEditParams_Click" FontSize="25" Width="40" Height="40"/>
                 <DataGrid x:Name="DataGrid_EditParams" Margin="0,40" AutoGenerateColumns="False" IsReadOnly="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="300"/>
@@ -244,8 +347,8 @@
                 </DataGrid>
                 <Button x:Name="Button_SaveParams" Content="Save" HorizontalAlignment="Right" Height="29" Width="80" Click="Button_SaveParams_Click" VerticalAlignment="Bottom" Margin="0,0,10,10"/>
             </Grid>
-            <Grid x:Name="Grid_Details" Margin="50" Background="White" Width="400" d:IsHidden="True">
-                <Button x:Name="Button_CloseDetails" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Button_CloseDetails_Click"  FontSize="25" Width="40" Height="40" Margin="0"/>
+            <Grid x:Name="Grid_Details" Margin="50" Background="White" Width="600" d:IsHidden="True">
+                <Button Style="{StaticResource FilterButton}" x:Name="Button_CloseDetails" Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Button_CloseDetails_Click"  FontSize="25" Width="40" Height="40" Margin="0"/>
                 <ScrollViewer Margin="10,50" PreviewMouseWheel="ListViewScrollViewer_PreviewMouseWheel">
                     <TreeView x:Name="TreeView_Details"/>
                 </ScrollViewer>
