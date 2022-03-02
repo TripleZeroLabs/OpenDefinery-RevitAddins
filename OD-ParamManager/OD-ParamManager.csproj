@@ -125,11 +125,8 @@
     <Resource Include="Assets\Icons\add-circle-fill.png" />
     <Resource Include="Assets\Icons\booklet-fill.png" />
     <Resource Include="Assets\Icons\building-4-fill.png" />
-    <Resource Include="Assets\Icons\eye-fill.png" />
     <Resource Include="Assets\Icons\home-8-fill.png" />
     <Resource Include="Assets\Icons\settings-5-fill.png" />
-    <Resource Include="Assets\Icons\shield-check-fill.png" />
-    <Resource Include="Assets\Icons\shield-check-line.png" />
     <Resource Include="Assets\Icons\checkbox-blank-circle-line.png" />
     <Resource Include="Assets\Icons\checkbox-circle-fill.png" />
     <Resource Include="Assets\Icons\database-2-fill.png" />
