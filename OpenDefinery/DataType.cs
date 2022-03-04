@@ -90,5 +90,25 @@ namespace OpenDefinery
 
             return null;
         }
+
+        /// <summary>
+        /// Retrieve a DataType from it's ParameterType Enumeration
+        /// (https://www.revitapidocs.com/2017/f38d847e-207f-b59a-3bd6-ebea80d5be63.htm)
+        /// </summary>
+        /// <param name="dataTypeName"></param>
+        /// <param name="dataTypes"></param>
+        /// <returns></returns>
+        public static DataType GetByParamTypeName(string dataTypeName, List<DataType> dataTypes)
+        {
+            var dataType = dataTypes.Where(
+                d => d.Name.Replace("_", string.Empty).ToLower() == dataTypeName.ToLower()).FirstOrDefault();
+
+            if (dataType == null)
+            {
+                dataType = dataTypes.Where(d => d.ParameterTypeName == dataTypeName).FirstOrDefault();
+            }
+
+            return dataType;
+        }
     }
 }
