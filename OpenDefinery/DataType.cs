@@ -15,6 +15,9 @@ namespace OpenDefinery
         [JsonProperty("name")]
         public string Name { get; set; }
 
+        [JsonProperty("param_type_name")]
+        public string ParameterTypeName { get; set; }
+
         /// <summary>
         /// Retrieve all DataTypes from OpenDefinery.
         /// </summary>

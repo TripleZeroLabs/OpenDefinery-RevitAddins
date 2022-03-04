@@ -24,7 +24,7 @@ namespace OD_ParamManager
     {
         private Definery Definery { get; set; }
         private RvtConnector RvtConnector { get; set; }
-        private List<SharedParameter> RevitParameters { get; set; }
+        private List<SharedParameter> ParamsToEdit { get; set; }
         private Collection SelectedCollection { get; set; }
         private static SelectedFilter SelectedFilter {get;set;}
 
@@ -54,7 +54,7 @@ namespace OD_ParamManager
             Definery = new Definery();
 
             // Set data passed from the Revit command
-            RefreshRevitParams(Definery);
+            //RefreshRevitParams();
 
             // Update the UI
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -122,13 +122,16 @@ namespace OD_ParamManager
                 // Set the selected Collection
                 SelectedCollection = Combo_Collections.SelectedItem as Collection;
 
+                // Refresh the parameters from the Revit model
+                RefreshRevitParams();
+
                 // Process the parameters to identify standard vs non-standard (boolean)
                 Definery.ValidatedParams = Collection.ValidateParameters(
                     Definery,
                     SelectedCollection,
                     Definery.RevitParameters);
 
-                // Set the data grid source to the new data set
+                // Update the DataGrid
                 DataGrid_Main.ItemsSource = Definery.ValidatedParams;
                 DataGrid_Main.Items.Refresh();
 
@@ -228,8 +231,92 @@ namespace OD_ParamManager
                 paramsToEdit.Add(selectedParam);
             }
 
-            // Refresh the DataGrid
-            DataGrid_EditParams.ItemsSource = paramsToEdit;
+            // Populate the edit form
+            PopulateEditForm(paramsToEdit);
+        }
+
+        private void PopulateEditForm(List<SharedParameter> parameters)
+        {
+            // Clear any existing UI elements from previous processes
+            Stack_EditParamForm.Children.Clear();
+
+            // Instantiate a list of UI elements to add to Grid later
+            var formElements = new List<UIElement>();
+
+            // Add to list of parameters for later use
+            ParamsToEdit = new List<SharedParameter>();
+
+            foreach (var p in parameters)
+            {
+                // Create form elements if the parameter isn't already in the Collection
+                if (!p.IsStandard)
+                {
+                    ParamsToEdit.Add(p);
+
+                    // Create a card to store all of the fields
+                    var card = new StackPanel();
+                    card.Name = "Card_" + p.Guid.ToString().Replace('-','_');
+
+                    var header = new TextBlock();
+                    header.Text = string.Format("{0} ({1})", p.Name, p.DataType);
+                    header.Style = Resources["FormHeader"] as Style;
+                    card.Children.Add(header);
+
+                    var subHeader = new TextBlock();
+                    subHeader.Text = string.Format("{0}", p.Guid);
+                    subHeader.Style = Resources["FormSubHeader"] as Style;
+                    card.Children.Add(subHeader);
+
+                    var fieldName = new System.Windows.Controls.TextBox();
+                    fieldName.Text = p.Name;
+                    fieldName.Style = Resources["FormInput"] as Style;
+                    fieldName.Name = "NewName_" + p.Guid.ToString().Replace('-', '_');
+                    card.Children.Add(fieldName);
+
+                    var labelName = new TextBlock();
+                    labelName.Text = "New Name";
+                    labelName.Style = Resources["FormCaption"] as Style;
+                    card.Children.Add(labelName);
+
+                    var fieldDesc = new System.Windows.Controls.TextBox();
+                    fieldDesc.Text = p.Description;
+                    fieldDesc.Style = Resources["FormInput"] as Style;
+                    fieldDesc.Name = "NewDesc_" + p.Guid.ToString().Replace('-', '_');
+                    card.Children.Add(fieldDesc);
+
+                    var labelDesc = new TextBlock();
+                    labelDesc.Text = "New Description";
+                    labelDesc.Style = Resources["FormCaption"] as Style;
+                    card.Children.Add(labelDesc);
+
+                    // Add the card to the list
+                    formElements.Add(card);
+                }
+                else
+                {
+                    // Create a card to store all of the fields
+                    var card = new StackPanel();
+                    card.Name = "Card_" + p.Guid.ToString().Replace('-', '_');
+
+                    var header = new TextBlock();
+                    header.Text = string.Format("{0} is already in the Collection.", p.Name, p.Guid);
+                    header.Style = Resources["StatusSuccess"] as Style;
+                    card.Children.Add(header);
+
+                    var subHeader = new TextBlock();
+                    subHeader.Text = string.Format("{0}", p.Guid);
+                    subHeader.Style = Resources["FormSubHeader"] as Style;
+                    card.Children.Add(subHeader);
+
+                    formElements.Add(card);
+                }
+            }
+
+            // Add form elements to the stack panel
+            foreach (var e in formElements)
+            {
+                Stack_EditParamForm.Children.Add(e);
+            }
         }
 
         /// <summary>
@@ -239,30 +326,40 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void Button_SaveParams_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var p in DataGrid_EditParams.Items)
-            {
-                // Get current Shared Parameter as a SharedParameter object
-                var selectedParam = p as SharedParameter;
+            var newParams = new List<SharedParameter>();
 
-                // Prompt the user to fork the parameter if it doesn't exist in OpenDefinery
-                if (selectedParam.DefineryId == 0)
+            foreach (var p in ParamsToEdit)
+            {
+                var formattedGuid = p.Guid.ToString().Replace('-', '_');
+
+                var paramEditCard = LogicalTreeHelper.FindLogicalNode(
+                    Stack_EditParamForm, "Card_" + formattedGuid) 
+                    as StackPanel;
+
+                if (paramEditCard != null)
                 {
-                    // Fork the parameter
-                    SharedParameter.Create(
-                        Definery,
-                        selectedParam,
-                        SelectedCollection.Id,
-                        selectedParam.DefineryId,
-                        selectedParam.Name,
-                        selectedParam.Description
-                        );
+                    // Retrieve form values
+                    var newName = LogicalTreeHelper.FindLogicalNode(paramEditCard, "NewName_" + formattedGuid) as System.Windows.Controls.TextBox;
+                    var newDesc = LogicalTreeHelper.FindLogicalNode(paramEditCard, "NewDesc_" + formattedGuid) as System.Windows.Controls.TextBox;
+
+                    if (!string.IsNullOrEmpty(newName.Text))
+                    {
+                        var newParam = SharedParameter.Create(Definery, p, SelectedCollection.Id, p.DefineryId, newName.Text, newDesc.Text);
+
+                        newParams.Add(newParam);
+                    }
+                    else
+                    {
+                        MessageBox.Show(string.Format("The New Name field for \"{0}\"cannot be blank.", p.Name), "Name Required");
+                    }
                 }
-                else
-                {
-                    // Add the parameter to the selected Collection
-                    SharedParameter.AddToCollection(Definery, selectedParam, SelectedCollection.Id);
-                }
+
             }
+
+            MessageBox.Show(string.Format(
+                "Successfully added {0} of {1} parameters.",
+                newParams.Count.ToString(),
+                ParamsToEdit.Count.ToString()));
 
             // Refresh the UI
             Grid_EditParams.Visibility = System.Windows.Visibility.Hidden;
@@ -279,7 +376,7 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void Button_CloseEditParams_Click(object sender, RoutedEventArgs e)
         {
-            DataGrid_EditParams.ItemsSource = null;
+            Stack_EditParamForm.Children.Clear();
             Grid_EditParams.Visibility = System.Windows.Visibility.Hidden;
             Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
         }
@@ -289,30 +386,39 @@ namespace OD_ParamManager
         /// </summary>
         /// <param name="definery">The main Definery object</param>
         /// <returns></returns>
-        private void RefreshRevitParams(Definery definery)
+        private void RefreshRevitParams()
         {
             // Instantiate a list to store the shared parameters from the current Revit model
             var revitParams = new List<SharedParameter>();
 
             // Collect shared parameters as elements
-            FilteredElementCollector collector2
+            FilteredElementCollector collector
                 = new FilteredElementCollector(RvtConnector.Document)
                 .WhereElementIsNotElementType();
 
-            collector2.OfClass(typeof(SharedParameterElement));
+            collector.OfClass(typeof(SharedParameterElement));
 
             // Add each parameter to the list
-            foreach (Element e in collector2)
+            foreach (Element e in collector)
             {
                 SharedParameterElement param = e as SharedParameterElement;
                 Definition def = param.GetDefinition();
 
+                var dataType = Definery.DataTypes.Where(
+                    d => d.Name.Replace("_", string.Empty).ToLower() == def.ParameterType.ToString().ToLower()).FirstOrDefault();
+
+                if (dataType == null)
+                {
+                    dataType = Definery.DataTypes.Where(d => d.ParameterTypeName == def.ParameterType.ToString()).FirstOrDefault();
+                }
+
                 //Debug.WriteLine("[" + e.Id + "]\t" + def.Name + "\t(" + param.GuidValue + ")");
 
                 // Cast the SharedParameterElement to a "lite" OpenDefinery SharedParameter
-                // TODO: Retrieve all Revit parameter data such as the DATAGAATEGORY
+                // TODO: Retrieve all Revit parameter data such as the DATACATEGORY
                 var castedParam = new SharedParameter(
-                    param.GuidValue, def.Name, def.ParameterType.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
+                    param.GuidValue, def.Name, dataType.Name, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
+                    //param.GuidValue, def.Name, def.ParameterType.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
                     );
 
                 castedParam.ElementId = Convert.ToInt32(e.Id.IntegerValue);
@@ -320,10 +426,10 @@ namespace OD_ParamManager
                 revitParams.Add(castedParam);
             }
 
-            definery.RevitParameters = revitParams;
+            Definery.RevitParameters = revitParams;
 
             // Show the Parameters on the UI
-            DataGrid_Main.ItemsSource = definery.RevitParameters;
+            DataGrid_Main.ItemsSource = Definery.RevitParameters;
             InitCollectionView();
         }
 
@@ -477,16 +583,6 @@ namespace OD_ParamManager
                 foreach (var i in DataGrid_Main.SelectedItems)
                 {
                     selectedParams.Add(i as SharedParameter);
-                }
-
-                // Disable the Add to Collection button if any selected Parameters are already in the Collection
-                if (selectedParams.Any(p => p.IsStandard == true))
-                {
-                    Button_AddToCollection.IsEnabled = false;
-                }
-                else
-                {
-                    Button_AddToCollection.IsEnabled = true;
                 }
 
                 // Toggle the Details button
@@ -647,8 +743,8 @@ namespace OD_ParamManager
 
                         tdConfirmation.Show();
 
-                        // Load all of the things to the main Definery object
-                        RefreshRevitParams(Definery);
+                        // Refresh parameters in the main Definery object
+                        RefreshRevitParams();
 
                         // Switch back to the Main Window
                         Activate();

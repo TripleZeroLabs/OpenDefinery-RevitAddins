@@ -93,7 +93,7 @@ namespace OpenDefinery
             var listOfParams = new List<SharedParameter>();
 
             var client = new RestClient(Definery.BaseUrl + string.Format(
-                "rest/params/collection/{0}?_format=json", collection.Id)
+                "rest/params/collection/{0}/all?_format=json", collection.Id)
                 );
             client.Timeout = -1;
             var request = new RestRequest(Method.GET);
@@ -453,8 +453,6 @@ namespace OpenDefinery
                         }
                         else if (foundOdParams.Count() == 0)
                         {
-                            Debug.WriteLine(string.Format("No parameter with GUID {0} found.", p.Guid.ToString()));
-
                             // Identify the parameter as non-standard and add to the output list
                             p.IsStandard = false;
 
@@ -462,7 +460,7 @@ namespace OpenDefinery
                         }
                         // TODO: There shouldn't be multiple params with the same GUIDs in a Collection
                         // so there should be a warning thrown to the user here
-                        else
+                        else if (foundOdParams.Count() > 1)
                         {
                             Debug.WriteLine(string.Format("Multiple parameters with GUID {0} found. Returning first for now.", p.Guid.ToString()));
 

@@ -500,14 +500,14 @@ namespace OpenDefinery
             client.Timeout = -1;
 
             // Assign the datatype value by the Term ID defined by OpenDefinery to pass to the API call (we cannot pass the name)
-            var dataType = definery.DataTypes.Find(d => d.Name.ToLower() == param.DataType.ToLower());
+            var dataType = definery.DataTypes.Find(d => d.Name == param.DataType);
             var dataCategory = new DataCategory();
 
             // Format values before assigning
-            if (dataType != null)
-            {
-                param.DataType = dataType.Id.ToString();
-            }
+            //if (dataType != null)
+            //{
+            //    param.DataType = dataType.Id.ToString();
+            //}
 
             if (!string.IsNullOrEmpty(param.DataCategoryHashcode))
             {
@@ -581,7 +581,7 @@ namespace OpenDefinery
                     "\"und\": \"41\"" +
                 "}," +
                 "\"field_data_type\": {" +
-                "\"und\": \"" + param.DataType + "\"" +
+                "\"und\": \"" + dataType.Id.ToString() + "\"" +
                 "}," +
                 "\"field_data_category\": {" +
                 "\"und\": \"" + dataCategory.Id + "\"" +
