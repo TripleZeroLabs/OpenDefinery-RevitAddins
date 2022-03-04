@@ -404,21 +404,12 @@ namespace OD_ParamManager
                 SharedParameterElement param = e as SharedParameterElement;
                 Definition def = param.GetDefinition();
 
-                var dataType = Definery.DataTypes.Where(
-                    d => d.Name.Replace("_", string.Empty).ToLower() == def.ParameterType.ToString().ToLower()).FirstOrDefault();
-
-                if (dataType == null)
-                {
-                    dataType = Definery.DataTypes.Where(d => d.ParameterTypeName == def.ParameterType.ToString()).FirstOrDefault();
-                }
-
-                //Debug.WriteLine("[" + e.Id + "]\t" + def.Name + "\t(" + param.GuidValue + ")");
+                var dataType = DataType.GetByParamTypeName(def.ParameterType.ToString(), Definery.DataTypes);
 
                 // Cast the SharedParameterElement to a "lite" OpenDefinery SharedParameter
                 // TODO: Retrieve all Revit parameter data such as the DATACATEGORY
                 var castedParam = new SharedParameter(
                     param.GuidValue, def.Name, dataType.Name, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
-                    //param.GuidValue, def.Name, def.ParameterType.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
                     );
 
                 castedParam.ElementId = Convert.ToInt32(e.Id.IntegerValue);
