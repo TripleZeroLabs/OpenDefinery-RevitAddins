@@ -92,7 +92,7 @@ namespace OpenDefinery
                 definery.DataCategories = DataCategory.GetAll(definery);
                 definery.MyCollections = Collection.ByCurrentUser(definery);
                 definery.AllCollections = Collection.GetAll(definery);
-                
+
                 // Clean up Data Category names
                 foreach (var cat in definery.DataCategories)
                 {
@@ -116,7 +116,6 @@ namespace OpenDefinery
                     else if (y.Name == null) return 1;
                     else return x.Name.CompareTo(y.Name);
                 });
-
             }
 
             return definery;

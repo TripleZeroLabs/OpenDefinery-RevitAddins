@@ -12,6 +12,16 @@
             Title="OpenDefinery | Parameter Manager">
 
     <Window.Resources>
+        <Style TargetType="{x:Type Grid}" x:Key="SecondaryMenu">
+            <Setter Property="Background" Value="LightSkyBlue" />
+            <Setter Property="Width" Value="500"/>
+        </Style>
+        <Style TargetType="TabItem">
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style TargetType="{x:Type DockPanel}" x:Key="ApplicationBg">
+            <Setter Property="Background" Value="#f9f9f9"/>
+        </Style>
         <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}" x:Key="StatusSuccess">
             <Setter Property="Margin" Value="0,40,10,0"/>
             <Setter Property="Padding" Value="10"/>
@@ -60,6 +70,17 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" x:Key="SubNavButton">
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style BasedOn="{StaticResource SubNavButton}" TargetType="{x:Type Button}" x:Key="SubNavButton_Active">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
         <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" x:Key="ActionButton">
             <Style.Setters>
                 <Setter Property="Background" Value="LightSkyBlue"/>
@@ -106,7 +127,12 @@
     </Window.Resources>
 
     <Grid>
-        <TabControl x:Name="Tabs_Main" Margin="0" TabStripPlacement="Left" BorderThickness="0" Background="{x:Null}">
+        <TabControl 
+            x:Name="Tabs_Main" 
+            Margin="0" 
+            TabStripPlacement="Left" 
+            BorderThickness="0" 
+            Background="{x:Null}">
 
             <TabControl.Resources>
                 <Style TargetType="TabItem">
@@ -159,12 +185,12 @@
                     </DockPanel>
                 </TabItem.Header>
                 <Grid>
-                    <DockPanel Margin="0,0,-0.4,0.4" LastChildFill="True">
+                    <DockPanel Margin="0,0,-0.4,0.4" LastChildFill="True" Style="{StaticResource ApplicationBg}">
                         <TextBlock 
                             x:Name="TextBlock_ParamsTitle" 
                             DockPanel.Dock="Top" 
                             HorizontalAlignment="Left" 
-                            Margin="20,5" 
+                            Margin="20,10,20,15" 
                             TextWrapping="Wrap" 
                             Text="Parameters in Model"
                             VerticalAlignment="Top" 
@@ -326,12 +352,30 @@
                 <TabItem.Header>
                     <DockPanel>
                         <Image Source="Assets/Icons/booklet-fill.png" Style="{StaticResource TabIcon}" />
-                        <TextBlock DockPanel.Dock="Left">Manage Collections</TextBlock>
+                        <TextBlock DockPanel.Dock="Left" Text="Collections"/>
                     </DockPanel>
                 </TabItem.Header>
+                <Grid>
+                    <DockPanel LastChildFill="True" Style="{StaticResource ApplicationBg}">
+                        <Grid x:Name="Grid_Sidebar" Style="{StaticResource SecondaryMenu}" 
+                              MaxWidth="230"
+                              Margin="-2,0,0,0" 
+                              HorizontalAlignment="Left">
+                            <ScrollViewer x:Name="ScrollViewer_SubNav" VerticalScrollBarVisibility="Hidden"
+                                          HorizontalScrollBarVisibility="Hidden"
+                                          PreviewMouseWheel="ListViewScrollViewer_PreviewMouseWheel"
+                                          Margin="0,60,0,15">
+                                <StackPanel x:Name="Stack_SubNav"/>
+                            </ScrollViewer>
+                        </Grid>
+                        <Grid DockPanel.Dock="Right">
+                            <DataGrid x:Name="DataGrid_CollectionParams" Margin="0"/>
+                        </Grid>
+                    </DockPanel>
+                </Grid>
             </TabItem>
 
-            <TabItem Name="Settings">
+            <TabItem Name="Settings" BorderBrush="{x:Null}">
                 <TabItem.Header>
                     <DockPanel>
                         <Image Source="Assets/Icons/settings-5-fill.png" Style="{StaticResource TabIcon}" />

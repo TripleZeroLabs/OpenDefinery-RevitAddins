@@ -53,9 +53,6 @@ namespace OD_ParamManager
             // Instantiate the main Definery object
             Definery = new Definery();
 
-            // Set data passed from the Revit command
-            //RefreshRevitParams();
-
             // Update the UI
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
@@ -190,6 +187,8 @@ namespace OD_ParamManager
 
                 // Update the UI
                 PopulateCollectionsCombo(Definery);
+                PopulateCollectionNav(Definery.AllCollections);
+
                 Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
                 Grid_Login.Visibility = System.Windows.Visibility.Hidden;
             }
@@ -771,6 +770,83 @@ namespace OD_ParamManager
             // Hide the TreeView
             Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
             Grid_Details.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// Populate the Collections menu with Buttons
+        /// </summary>
+        /// <param name="collections"></param>
+        private void PopulateCollectionNav(List<Collection> collections)
+        {
+            var navContainer = LogicalTreeHelper.FindLogicalNode(ScrollViewer_SubNav, "Stack_SubNav") as StackPanel;
+
+            // Always clear the Children in case it is being reloaded
+            navContainer.Children.Clear();
+
+            // Add each Collection to the navigation
+            foreach (var c in collections)
+            {
+                var button = new Button();
+                button.Name = "Button_" + c.Id.ToString();
+                button.Content = c.Name;
+                button.Style = Resources["SubNavButton"] as Style;
+                button.Click += new RoutedEventHandler(Button_Collection_Click);
+                button.ToolTip = c.Name;
+
+                navContainer.Children.Add(button);
+            }
+        }
+
+        /// <summary>
+        /// User clicks Collection in subnav
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Collection_Click(object sender, RoutedEventArgs e)
+        {
+            // Toggle the GUI
+            Button_ToggleActive(sender, e);
+
+            // Retrieve Collection from button context
+            var clickedButton = sender as Button;
+
+            var selectedButtonText = clickedButton.Content;
+            var selectedCollection = Definery.AllCollections.Where(
+                c => c.Name == selectedButtonText.ToString()).FirstOrDefault();
+
+            // Retrieve the Shared Parameters from the Collection
+            var collectionParams = new ObservableCollection<SharedParameter>();
+
+            if (selectedCollection != null)
+            {
+                collectionParams = Collection.GetParameters(Definery, selectedCollection);
+            }
+            else
+            {
+                MessageBox.Show(string.Format("There was an error retrieving {0} from OpenDefinery. Please try again.", selectedButtonText));
+            }
+
+            DataGrid_CollectionParams.ItemsSource = collectionParams;
+        }
+
+        /// <summary>
+        /// Helper method to assign resources for subnav buttons
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_ToggleActive(object sender, RoutedEventArgs e)
+        {
+            // Clear any previously selected button
+            foreach (var i in Stack_SubNav.Children)
+            {
+                var navButton = i as Button;
+
+                navButton.Style = Resources["SubNavButton"] as Style;
+            }
+
+            // Set the active style to the clicked button
+            var clickedButton = sender as Button;
+            clickedButton.Style = Resources["SubNavButton_Active"] as Style;
         }
     }
 }

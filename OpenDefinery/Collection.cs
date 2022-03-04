@@ -90,47 +90,52 @@ namespace OpenDefinery
         public static ObservableCollection<SharedParameter> GetParameters(
             Definery definery, Collection collection)
         {
-            var listOfParams = new List<SharedParameter>();
+            var paramsOut = new ObservableCollection<SharedParameter>();
 
-            var client = new RestClient(Definery.BaseUrl + string.Format(
-                "rest/params/collection/{0}/all?_format=json", collection.Id)
-                );
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
-
-            // Set the pager
-            //MainWindow.Pager = Pager.SetFromParamReponse(response, resetTotals);
-
-            // Logic if the response was OK
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            if (definery != null && collection != null)
             {
-                // Get the SharedParameters as JToken
-                JObject json = JObject.Parse(response.Content);
-                var paramResponse = json.SelectToken("rows");
+                var listOfParams = new List<SharedParameter>();
 
-                if (paramResponse.Count() == 0)
+                var client = new RestClient(Definery.BaseUrl + string.Format(
+                    "rest/params/collection/{0}/all?_format=json", collection.Id)
+                    );
+                client.Timeout = -1;
+                var request = new RestRequest(Method.GET);
+                request.AddHeader("Authorization", "Basic " + definery.AuthCode);
+                IRestResponse response = client.Execute(request);
+
+                // Set the pager
+                //MainWindow.Pager = Pager.SetFromParamReponse(response, resetTotals);
+
+                // Logic if the response was OK
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    Debug.WriteLine("This collection is empty.");
+                    // Get the SharedParameters as JToken
+                    JObject json = JObject.Parse(response.Content);
+                    var paramResponse = json.SelectToken("rows");
+
+                    if (paramResponse.Count() == 0)
+                    {
+                        Debug.WriteLine("This collection is empty.");
+                    }
+                    else
+                    {
+                        // Cast the rows from the reponse to a List of Shared Parameters
+                        listOfParams = JsonConvert.DeserializeObject<List<SharedParameter>>(paramResponse.ToString());
+                    }
                 }
                 else
                 {
-                    // Cast the rows from the reponse to a List of Shared Parameters
-                    listOfParams = JsonConvert.DeserializeObject<List<SharedParameter>>(paramResponse.ToString());
+                    Debug.WriteLine("There was an error getting the parameters.");
                 }
+
+                var parameters = new ObservableCollection<SharedParameter>(listOfParams);
+
+                // Set the Collections
+                paramsOut = SharedParameter.SetCollections(definery, parameters);
             }
-            else
-            {
-                Debug.WriteLine("There was an error getting the parameters.");
-            }
 
-            var parameters = new ObservableCollection<SharedParameter>(listOfParams);
-
-            // Set the Collections
-            var updatedParams = SharedParameter.SetCollections(definery, parameters);
-
-            return updatedParams;
+            return paramsOut;
         }
 
         /// <summary>
