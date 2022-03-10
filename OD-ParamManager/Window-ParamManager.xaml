@@ -12,6 +12,14 @@
             Title="OpenDefinery | Parameter Manager">
 
     <Window.Resources>
+        <Style TargetType="{x:Type TextBlock}" x:Key="H1">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="20,10,20,15"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Light"/>
+        </Style>
         <Style TargetType="{x:Type Grid}" x:Key="SecondaryMenu">
             <Setter Property="Background" Value="LightSkyBlue" />
             <Setter Property="Width" Value="500"/>
@@ -124,8 +132,64 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-    </Window.Resources>
+        <Style BasedOn="{StaticResource {x:Type DataGrid}}" TargetType="{x:Type DataGrid}">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="20"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Visible"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#F1F1F1"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+        </Style>
+        <Style BasedOn="{StaticResource {x:Type DataGridRow}}" TargetType="{x:Type DataGridRow}">
+            <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="Black" />
+            </Style.Resources>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="LightSkyBlue"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F9F9F9"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsSelected" Value="True" />
+                        <Condition Property="IsMouseOver" Value="True" />
+                    </MultiTrigger.Conditions>
+                    <MultiTrigger.Setters>
+                        <Setter Property="Background" Value="LightSkyBlue" />
+                        <Setter Property="Foreground" Value="White"/>
+                    </MultiTrigger.Setters>
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="{x:Type DataGridCell}">
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Border Padding="{TemplateBinding Padding}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                Background="{TemplateBinding Background}" 
+                                SnapsToDevicePixels="True">
 
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        </Style>
+    </Window.Resources>
     <Grid>
         <TabControl 
             x:Name="Tabs_Main" 
@@ -188,14 +252,9 @@
                     <DockPanel Margin="0,0,-0.4,0.4" LastChildFill="True" Style="{StaticResource ApplicationBg}">
                         <TextBlock 
                             x:Name="TextBlock_ParamsTitle" 
+                            Style="{StaticResource H1}"
                             DockPanel.Dock="Top" 
-                            HorizontalAlignment="Left" 
-                            Margin="20,10,20,15" 
-                            TextWrapping="Wrap" 
-                            Text="Parameters in Model"
-                            VerticalAlignment="Top" 
-                            FontSize="24" 
-                            FontWeight="Light"/>
+                            Text="Parameters in Model"/>
                         <Grid Height="55" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
                             <ComboBox 
                             x:Name="Combo_Collections" 
@@ -252,68 +311,12 @@
                         </Grid>
                         <DataGrid 
                             x:Name="DataGrid_Main" 
-                            Margin="20,10,20,14" 
                             AutoGenerateColumns="False" 
-                            GridLinesVisibility="Horizontal"
-                            HorizontalGridLinesBrush="#F1F1F1"
                             SelectionMode="Extended"
                             DockPanel.Dock="Top"
                             HorizontalScrollBarVisibility="Disabled"
                             ItemsSource="{Binding}" 
-                            SelectionChanged="DataGrid_Main_SelectionChanged"
-                            >
-                            <DataGrid.RowStyle>
-                                <Style TargetType="{x:Type DataGridRow}">
-                                    <Style.Resources>
-                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
-                                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
-                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
-                                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="Black" />
-                                    </Style.Resources>
-                                    <Setter Property="FontSize" Value="13"/>
-                                    <Setter Property="Background" Value="Transparent" />
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="LightSkyBlue"/>
-                                            <Setter Property="Foreground" Value="White"/>
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#F9F9F9"/>
-                                        </Trigger>
-                                        <MultiTrigger>
-                                            <MultiTrigger.Conditions>
-                                                <Condition Property="IsSelected" Value="True" />
-                                                <Condition Property="IsMouseOver" Value="True" />
-                                            </MultiTrigger.Conditions>
-                                            <MultiTrigger.Setters>
-                                                <Setter Property="Background" Value="LightSkyBlue" />
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </MultiTrigger.Setters>
-                                        </MultiTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
-                            <DataGrid.CellStyle>
-                                <Style TargetType="{x:Type DataGridCell}">
-                                    <Setter Property="Padding" Value="20"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="{x:Type DataGridCell}">
-                                                <Border Padding="{TemplateBinding Padding}" 
-                                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                                        Background="{TemplateBinding Background}" 
-                                                        SnapsToDevicePixels="True">
-                                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                </Style>
-                            </DataGrid.CellStyle>
+                            SelectionChanged="DataGrid_Main_SelectionChanged">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Standard" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -360,7 +363,7 @@
                         <Grid x:Name="Grid_Sidebar" Style="{StaticResource SecondaryMenu}" 
                               MaxWidth="230"
                               Margin="-2,0,0,0" 
-                              HorizontalAlignment="Left">
+                              HorizontalAlignment="Left" Width="230">
                             <ScrollViewer x:Name="ScrollViewer_SubNav" VerticalScrollBarVisibility="Hidden"
                                           HorizontalScrollBarVisibility="Hidden"
                                           PreviewMouseWheel="ListViewScrollViewer_PreviewMouseWheel"
@@ -368,8 +371,14 @@
                                 <StackPanel x:Name="Stack_SubNav"/>
                             </ScrollViewer>
                         </Grid>
-                        <Grid DockPanel.Dock="Right">
-                            <DataGrid x:Name="DataGrid_CollectionParams" Margin="0"/>
+                        <Grid DockPanel.Dock="Right" Margin="20">
+                                <TextBlock 
+                            x:Name="TextBlock_CollTitle" 
+                            Style="{StaticResource H1}" 
+                            Text="Parameters in Collection" Margin="0,0,0,0"/>
+                                <Grid Margin="0,50,0,0">
+                                    <DataGrid x:Name="DataGrid_CollectionParams" IsReadOnly="True" Margin="0" />
+                                </Grid>
                         </Grid>
                     </DockPanel>
                 </Grid>
@@ -413,7 +422,7 @@
                             NavigateUri="https://app.opendefinery.com/user/register" RequestNavigate="Hyperlink_RequestNavigate"><Run Text="Register"/></Hyperlink></TextBlock>
                 </StackPanel>
             </Grid>
-            <Grid x:Name="Grid_EditParams" Margin="100" Background="White">
+            <Grid x:Name="Grid_EditParams" Margin="100" Background="White" MaxWidth="600">
                 <Button Style="{StaticResource CloseButton}" x:Name="Button_CloseEditParams" HorizontalAlignment="Right" VerticalAlignment="Top" Click="Button_CloseEditParams_Click" FontSize="25" Width="40" Height="40" Content="X"/>
                 <ScrollViewer Margin="20,50,10,50">
                     <StackPanel x:Name="Stack_EditParamForm"/>
