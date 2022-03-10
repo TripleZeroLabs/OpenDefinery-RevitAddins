@@ -136,7 +136,6 @@
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Margin" Value="20"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="VerticalScrollBarVisibility" Value="Visible"/>
             <Setter Property="HorizontalGridLinesBrush" Value="#F1F1F1"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
         </Style>
