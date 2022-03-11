@@ -151,6 +151,8 @@ namespace OpenDefinery
             request.AddHeader("Authorization", "Basic " + definery.AuthCode);
             IRestResponse response = client.Execute(request);
 
+            Debug.WriteLine(response);
+
             // Return the data if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
