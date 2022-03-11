@@ -827,6 +827,12 @@ namespace OD_ParamManager
                 button.Click += new RoutedEventHandler(Button_Collection_Click);
                 button.ToolTip = c.Name;
 
+                if (c.IsPublic == true)
+                {
+                    button.Content += "*";
+                    button.ToolTip += " (public)";
+                }
+
                 navContainer.Children.Add(button);
             }
 
