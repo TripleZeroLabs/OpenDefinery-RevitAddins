@@ -191,7 +191,7 @@ namespace OpenDefinery
         /// </summary>
         /// <param name="definery"></param>
         /// <returns></returns>
-        public static List<Collection> GetAll(Definery definery)
+        public static List<Collection> GetPublished(Definery definery)
         {
             var client = new RestClient(Definery.BaseUrl + "rest/collections/published?_format=json");
             client.Timeout = -1;
@@ -365,7 +365,7 @@ namespace OpenDefinery
                 foreach (var s in strings)
                 {
                     // Get Collection from ID
-                    var foundCollections = definery.AllCollections.Where(o => o.Id.ToString() == s.Trim());
+                    var foundCollections = definery.PublishedCollections.Where(o => o.Id.ToString() == s.Trim());
 
                     foreach (var foundCollection in foundCollections)
                     {
@@ -378,7 +378,7 @@ namespace OpenDefinery
             if (!string.IsNullOrEmpty(collectionsString) && !collectionsString.Contains(","))
             {
                 // Get Collection from ID
-                var foundCollection = definery.AllCollections.Where(o => o.Id.ToString() == collectionsString.Trim()).FirstOrDefault();
+                var foundCollection = definery.PublishedCollections.Where(o => o.Id.ToString() == collectionsString.Trim()).FirstOrDefault();
 
                 // Add Collection to list
                 collections.Add(foundCollection);

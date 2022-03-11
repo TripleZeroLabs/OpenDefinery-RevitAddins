@@ -16,7 +16,6 @@ namespace OpenDefinery
         public string AuthCode { get; set; }
         public List<Collection> MyCollections { get; set; }
         public List<Collection> PublishedCollections { get; set; }
-        public List<Collection> AllCollections { get; set; }
         public Collection SelectedCollection { get; set; }
         public List<SharedParameter> DefineryParameters { get; set; }
         public List<SharedParameter> RevitParameters { get; set; }
@@ -91,7 +90,7 @@ namespace OpenDefinery
                 definery.DataTypes = DataType.GetAll(definery);
                 definery.DataCategories = DataCategory.GetAll(definery);
                 definery.MyCollections = Collection.ByCurrentUser(definery);
-                definery.AllCollections = Collection.GetAll(definery);
+                definery.PublishedCollections = Collection.GetPublished(definery);
 
                 // Clean up Data Category names
                 foreach (var cat in definery.DataCategories)
