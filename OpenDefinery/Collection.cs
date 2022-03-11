@@ -23,6 +23,9 @@ namespace OpenDefinery
         [JsonProperty("author")]
         public string Author { get; set; }
 
+        [JsonProperty("public")]
+        public bool IsPublic { get; set; }
+
         /// <summary>
         /// Retrieve Shared Parameters from a Collection using pagination
         /// </summary>
