@@ -40,6 +40,8 @@ namespace OD_ParamManager
             Grid_Overlay.Visibility = System.Windows.Visibility.Visible;
             Grid_EditParams.Visibility = System.Windows.Visibility.Hidden;
             Grid_Details.Visibility = System.Windows.Visibility.Hidden;
+            Grid_AddCollection.Visibility = System.Windows.Visibility.Hidden;
+
 
             RvtConnector = rvtConnector;
             TextBlock_Version.Text = "Version " + typeof(Window_ParamManager).Assembly.GetName().Version.ToString();
@@ -55,6 +57,33 @@ namespace OD_ParamManager
 
             // Update the UI
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+
+        /// <summary>
+        /// Helper method to reload all Definery data and update the UI
+        /// </summary>
+        /// <param name="definery"></param>
+        private void ReloadDataAndUi(Definery definery)
+        {
+            // Load all of the things to the main Definery object
+            Definery = Definery.LoadData(definery);
+
+            RefreshCollections(definery);
+        }
+
+        /// <summary>
+        /// Reloads the Collections data and repopulates UI
+        /// </summary>
+        /// <param name="definery"></param>
+        private void RefreshCollections(Definery definery)
+        {
+            // Retrieve Data
+            definery.MyCollections = Collection.ByCurrentUser(definery);
+            definery.AllCollections = Collection.GetAll(definery);
+
+            // Update the UI
+            PopulateCollectionsCombo(definery);
+            PopulateCollectionNav(definery.AllCollections);
         }
 
         /// <summary>
@@ -182,12 +211,7 @@ namespace OD_ParamManager
 
             if (!string.IsNullOrEmpty(Definery.CsrfToken))
             {
-                // Load all of the things to the main Definery object
-                Definery = Definery.LoadData(Definery);
-
-                // Update the UI
-                PopulateCollectionsCombo(Definery);
-                PopulateCollectionNav(Definery.AllCollections);
+                ReloadDataAndUi(Definery);
 
                 Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
                 Grid_Login.Visibility = System.Windows.Visibility.Hidden;
@@ -234,6 +258,10 @@ namespace OD_ParamManager
             PopulateEditForm(paramsToEdit);
         }
 
+        /// <summary>
+        /// Populate the fields for the Shared Paramater Edit form
+        /// </summary>
+        /// <param name="parameters"></param>
         private void PopulateEditForm(List<SharedParameter> parameters)
         {
             // Clear any existing UI elements from previous processes
@@ -847,6 +875,115 @@ namespace OD_ParamManager
             // Set the active style to the clicked button
             var clickedButton = sender as Button;
             clickedButton.Style = Resources["SubNavButton_Active"] as Style;
+        }
+
+        /// <summary>
+        /// User clicks the New Collection Button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_NewCollection_Click(object sender, RoutedEventArgs e)
+        {
+            // Clear previous form data
+            TextBox_AddCollName.Text = string.Empty;
+            TextBox_AddCollDescription.Text = string.Empty;
+            CheckBox_AddCollPublic.IsChecked = false;
+
+            // Toggle UI visibility
+            Grid_AddCollection.Visibility = System.Windows.Visibility.Visible;
+            Grid_Overlay.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        /// <summary>
+        /// User clicks close Add Collection button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_CloseAddCollection_Click(object sender, RoutedEventArgs e)
+        {
+            Grid_AddCollection.Visibility = System.Windows.Visibility.Hidden;
+            Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        /// <summary>
+        /// Helper method to check for special characters
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        private bool ContainsSpecialChars(string val)
+        {
+            var allowedChars = new List<char> { '-', '_', '.' };
+            var invalid = false;
+
+            foreach (char c in val)
+            {
+                if (!char.IsWhiteSpace(c))
+                {
+                    if (!char.IsLetterOrDigit(c))
+                    {
+
+                        if (!allowedChars.Contains(c))
+                        {
+                            invalid = true;
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (invalid)
+            {
+                var specialCharList = string.Empty;
+
+                foreach (var c in allowedChars)
+                {
+                    specialCharList += c + " ";
+                }
+
+                MessageBox.Show(string.Format("The Collection name can only include the following special characters: \n{0}", specialCharList));
+            }
+
+            return invalid;
+        }
+
+        /// <summary>
+        /// User clicks ADd to Collection Save button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_AddCollSave_Click(object sender, RoutedEventArgs e)
+        {
+            // Retrieve data from form
+            var inputName = TextBox_AddCollName.Text;
+            var inputDesc = TextBox_AddCollDescription.Text;
+            var isPublic = CheckBox_AddCollPublic.IsChecked;
+
+
+            if (!ContainsSpecialChars(inputName))
+            {
+                if (!string.IsNullOrEmpty(inputName) && !string.IsNullOrEmpty(inputDesc))
+                {
+                    // Create the Collection on OpenDefinery
+                    var collection = Collection.Create(Definery, inputName, inputDesc, isPublic);
+
+                    if (collection != null)
+                    {
+                        RefreshCollections(Definery);
+
+                        Grid_AddCollection.Visibility = System.Windows.Visibility.Hidden;
+                        Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
+                    }
+                    else
+                    {
+                        MessageBox.Show("There was an issue creating the Collection. Please try again.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("The Collection name and description are required.");
+                }
+            }
         }
     }
 }
