@@ -55,6 +55,11 @@
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Opacity" Value=".6"/>
         </Style>
+        <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}" x:Key="SubNavHeader">
+            <Setter Property="Margin" Value="10,10,5,2"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
         <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="{x:Type TextBox}" x:Key="FormInput">
             <Setter Property="Margin" Value="10,0,30,0"/>
             <Setter Property="FontSize" Value="14"/>

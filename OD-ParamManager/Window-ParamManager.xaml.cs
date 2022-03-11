@@ -78,12 +78,12 @@ namespace OD_ParamManager
         private void RefreshCollections(Definery definery)
         {
             // Retrieve Data
+            definery.PublishedCollections = Collection.GetPublished(definery);
             definery.MyCollections = Collection.ByCurrentUser(definery);
-            definery.AllCollections = Collection.GetAll(definery);
 
             // Update the UI
             PopulateCollectionsCombo(definery);
-            PopulateCollectionNav(definery.AllCollections);
+            PopulateCollectionNav(definery.PublishedCollections, definery.MyCollections);
         }
 
         /// <summary>
@@ -124,9 +124,9 @@ namespace OD_ParamManager
             // Add Collections to combobox and set the UI
             var collectionsCombo = new ObservableCollection<Collection>();
 
-            if (definery.AllCollections != null)
+            if (definery.PublishedCollections != null)
             {
-                foreach (var c in definery.AllCollections)
+                foreach (var c in definery.PublishedCollections)
                 {
                     collectionsCombo.Add(c);
                 }
@@ -803,16 +803,22 @@ namespace OD_ParamManager
         /// <summary>
         /// Populate the Collections menu with Buttons
         /// </summary>
-        /// <param name="collections"></param>
-        private void PopulateCollectionNav(List<Collection> collections)
+        /// <param name="publishedCollections"></param>
+        /// <param name="myCollections"></param>
+        private void PopulateCollectionNav(List<Collection> publishedCollections, List<Collection> myCollections)
         {
             var navContainer = LogicalTreeHelper.FindLogicalNode(ScrollViewer_SubNav, "Stack_SubNav") as StackPanel;
 
             // Always clear the Children in case it is being reloaded
             navContainer.Children.Clear();
 
+            var myCollHeader = new TextBlock();
+            myCollHeader.Text = "My Collections";
+            myCollHeader.Style = Resources["SubNavHeader"] as Style;
+            navContainer.Children.Add(myCollHeader);
+
             // Add each Collection to the navigation
-            foreach (var c in collections)
+            foreach (var c in myCollections)
             {
                 var button = new Button();
                 button.Name = "Button_" + c.Id.ToString();
@@ -822,6 +828,27 @@ namespace OD_ParamManager
                 button.ToolTip = c.Name;
 
                 navContainer.Children.Add(button);
+            }
+
+            var publicCollHeader = new TextBlock();
+            publicCollHeader.Text = "Public Collections";
+            publicCollHeader.Style = Resources["SubNavHeader"] as Style;
+            navContainer.Children.Add(publicCollHeader);
+
+            // Add each Collection to the navigation
+            foreach (var c in publishedCollections)
+            {
+                if (!myCollections.Exists(o => o.Id == c.Id))
+                {
+                    var button = new Button();
+                    button.Name = "Button_" + c.Id.ToString();
+                    button.Content = c.Name;
+                    button.Style = Resources["SubNavButton"] as Style;
+                    button.Click += new RoutedEventHandler(Button_Collection_Click);
+                    button.ToolTip = c.Name;
+
+                    navContainer.Children.Add(button);
+                }
             }
         }
 
@@ -839,7 +866,7 @@ namespace OD_ParamManager
             var clickedButton = sender as Button;
 
             var selectedButtonText = clickedButton.Content;
-            var selectedCollection = Definery.AllCollections.Where(
+            var selectedCollection = Definery.PublishedCollections.Where(
                 c => c.Name == selectedButtonText.ToString()).FirstOrDefault();
 
             // Retrieve the Shared Parameters from the Collection
@@ -851,7 +878,17 @@ namespace OD_ParamManager
             }
             else
             {
-                MessageBox.Show(string.Format("There was an error retrieving {0} from OpenDefinery. Please try again.", selectedButtonText));
+                selectedCollection = Definery.MyCollections.Where(
+                    c => c.Name == selectedButtonText.ToString()).FirstOrDefault();
+
+                if (selectedCollection != null)
+                {
+                    collectionParams = Collection.GetParameters(Definery, selectedCollection);
+                }
+                else
+                {
+                    MessageBox.Show(string.Format("There was an error retrieving {0} from OpenDefinery. If the problem persists, please contact i@opendefinery.com.", selectedButtonText));
+                }
             }
 
             DataGrid_CollectionParams.ItemsSource = collectionParams;
@@ -867,14 +904,17 @@ namespace OD_ParamManager
             // Clear any previously selected button
             foreach (var i in Stack_SubNav.Children)
             {
-                var navButton = i as Button;
+                if (i.GetType() == typeof(Button))
+                {
+                    var navButton = i as Button;
 
-                navButton.Style = Resources["SubNavButton"] as Style;
+                    navButton.Style = Resources["SubNavButton"] as Style;
+
+                    // Set the active style to the clicked button
+                    var clickedButton = sender as Button;
+                    clickedButton.Style = Resources["SubNavButton_Active"] as Style;
+                }
             }
-
-            // Set the active style to the clicked button
-            var clickedButton = sender as Button;
-            clickedButton.Style = Resources["SubNavButton_Active"] as Style;
         }
 
         /// <summary>
