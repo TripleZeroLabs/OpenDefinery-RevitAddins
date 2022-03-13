@@ -871,9 +871,9 @@ namespace OD_ParamManager
             // Retrieve Collection from button context
             var clickedButton = sender as Button;
 
-            var selectedButtonText = clickedButton.Content;
+            var clickedButtonId = clickedButton.Name;
             var selectedCollection = Definery.PublishedCollections.Where(
-                c => c.Name == selectedButtonText.ToString()).FirstOrDefault();
+                c => c.Id.ToString() == clickedButtonId.Split('_')[1]).FirstOrDefault();
 
             // Retrieve the Shared Parameters from the Collection
             var collectionParams = new ObservableCollection<SharedParameter>();
@@ -885,7 +885,7 @@ namespace OD_ParamManager
             else
             {
                 selectedCollection = Definery.MyCollections.Where(
-                    c => c.Name == selectedButtonText.ToString()).FirstOrDefault();
+                    c => c.Id.ToString() == clickedButtonId.Split('_')[1]).FirstOrDefault();
 
                 if (selectedCollection != null)
                 {
@@ -893,7 +893,7 @@ namespace OD_ParamManager
                 }
                 else
                 {
-                    MessageBox.Show(string.Format("There was an error retrieving {0} from OpenDefinery. If the problem persists, please contact i@opendefinery.com.", selectedButtonText));
+                    MessageBox.Show(string.Format("There was an error retrieving {0} from OpenDefinery. If the problem persists, please contact i@opendefinery.com.", clickedButtonId));
                 }
             }
 
