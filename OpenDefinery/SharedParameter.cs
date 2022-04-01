@@ -1,5 +1,4 @@
-﻿using KellermanSoftware.CompareNetObjects;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
@@ -158,59 +157,59 @@ namespace OpenDefinery
         /// <param name="definery">The main Definery object provides the basic auth token</param>
         /// <param name="newParameter">The SharedParameter to validate</param>
         /// <returns>True if a match is found, false if not</returns>
-        public static bool HasExactMatch(Definery definery, SharedParameter newParameter)
-        {
-            var foundMatch = false;
+        //public static bool HasExactMatch(Definery definery, SharedParameter newParameter)
+        //{
+        //    var foundMatch = false;
 
-            // Retrieve all Parameters from the GUID
-            var foundParams = FromGuid(definery, newParameter.Guid);
+        //    // Retrieve all Parameters from the GUID
+        //    var foundParams = FromGuid(definery, newParameter.Guid);
 
-            // Logic when one ore more SharedParameter is found in OpenDefinery
-            if (foundParams != null && foundParams.Count() > 1)
-            {
-                foreach (var p in foundParams)
-                {
-                    // Only consider exact match if the current user is the author
-                    if (p.Author == definery.CurrentUser.Id)
-                    {
-                        // Compare the two parameters
-                        CompareLogic compareLogic = new CompareLogic();
+        //    // Logic when one ore more SharedParameter is found in OpenDefinery
+        //    if (foundParams != null && foundParams.Count() > 1)
+        //    {
+        //        foreach (var p in foundParams)
+        //        {
+        //            // Only consider exact match if the current user is the author
+        //            if (p.Author == definery.CurrentUser.Id)
+        //            {
+        //                // Compare the two parameters
+        //                CompareLogic compareLogic = new CompareLogic();
 
-                        compareLogic.Config.MembersToInclude.Add("Guid");
-                        compareLogic.Config.MembersToInclude.Add("Name");
-                        compareLogic.Config.MembersToInclude.Add("DataType");
-                        compareLogic.Config.MembersToInclude.Add("DataCategory");
-                        compareLogic.Config.MembersToInclude.Add("Visible");
-                        compareLogic.Config.MembersToInclude.Add("Description");
-                        compareLogic.Config.MembersToInclude.Add("UserModifiable");
+        //                compareLogic.Config.MembersToInclude.Add("Guid");
+        //                compareLogic.Config.MembersToInclude.Add("Name");
+        //                compareLogic.Config.MembersToInclude.Add("DataType");
+        //                compareLogic.Config.MembersToInclude.Add("DataCategory");
+        //                compareLogic.Config.MembersToInclude.Add("Visible");
+        //                compareLogic.Config.MembersToInclude.Add("Description");
+        //                compareLogic.Config.MembersToInclude.Add("UserModifiable");
 
-                        ComparisonResult result = compareLogic.Compare(newParameter, p);
+        //                ComparisonResult result = compareLogic.Compare(newParameter, p);
 
-                        if (result.AreEqual)
-                        {
-                            // Break the loop if there is any Parameter that is equal
-                            foundMatch = true;
+        //                if (result.AreEqual)
+        //                {
+        //                    // Break the loop if there is any Parameter that is equal
+        //                    foundMatch = true;
 
-                            break;
-                        }
-                        else
-                        {
-                            foundMatch = false;
-                        }
-                    }
-                    else
-                    {
-                        foundMatch = false;
-                    }
-                }
-            }
-            if (foundParams != null && foundParams.Count() == 0)
-            {
-                foundMatch = false;
-            }
+        //                    break;
+        //                }
+        //                else
+        //                {
+        //                    foundMatch = false;
+        //                }
+        //            }
+        //            else
+        //            {
+        //                foundMatch = false;
+        //            }
+        //        }
+        //    }
+        //    if (foundParams != null && foundParams.Count() == 0)
+        //    {
+        //        foundMatch = false;
+        //    }
 
-            return foundMatch;
-        }
+        //    return foundMatch;
+        //}
 
         /// <summary>
         /// Retrieve a page of ShareParameters from OpenDefinery.

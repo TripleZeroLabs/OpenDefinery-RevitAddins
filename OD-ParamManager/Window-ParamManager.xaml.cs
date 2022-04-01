@@ -459,7 +459,7 @@ namespace OD_ParamManager
         {
             ICollectionView cv = CollectionViewSource.GetDefaultView(DataGrid_Main.ItemsSource);
 
-            if (cv.SortDescriptions.Count() == 0)
+            if (cv != null && cv.SortDescriptions.Count() == 0)
             {
                 cv.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
                 cv.Refresh();
