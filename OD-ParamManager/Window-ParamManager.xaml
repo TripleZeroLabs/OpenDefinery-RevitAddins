@@ -261,14 +261,14 @@
                         <TextBlock DockPanel.Dock="Left">Model Parameters</TextBlock>
                     </DockPanel>
                 </TabItem.Header>
-                <Grid>
-                    <DockPanel Margin="0,0,-0.4,0.4" LastChildFill="True" Style="{StaticResource ApplicationBg}">
+                <Grid Background="#FFF9F9F9">
+                    <DockPanel Margin="20" LastChildFill="True" Style="{StaticResource ApplicationBg}" Background="{x:Null}">
                         <TextBlock 
                             x:Name="TextBlock_ParamsTitle" 
                             Style="{StaticResource H1}"
                             DockPanel.Dock="Top" 
-                            Text="Parameters in Model"/>
-                        <Grid Height="55" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="20,0">
+                            Text="Parameters in Model" Margin="0,0,0,15"/>
+                        <Grid Height="55" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0">
                             <ComboBox 
                             x:Name="Combo_Collections" 
                             HorizontalAlignment="Left" 
@@ -329,7 +329,7 @@
                             DockPanel.Dock="Top"
                             HorizontalScrollBarVisibility="Disabled"
                             ItemsSource="{Binding}" 
-                            SelectionChanged="DataGrid_Main_SelectionChanged">
+                            SelectionChanged="DataGrid_Main_SelectionChanged" Margin="0,20,0,0">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Standard" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
