@@ -288,13 +288,13 @@
                                 <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click" Width="100"/>
                                 <Button 
                                 Style="{StaticResource ActionButton}"
-                                x:Name="Button_Details" 
+                                x:Name="Button_Purge" 
                                 Margin="10,0,0,0" 
                                 Padding="10,3"
                                 DockPanel.Dock="Right" 
                                 HorizontalAlignment="Right" 
                                 Height="25" 
-                                Click="Button_Evaluate_Click"
+                                Click="Button_Purge_Click"
                                 ToolTip="Find all model elements which use the selected parameters" Background="White" IsEnabled="False">
                                     <DockPanel>
                                         <Image Source="/OD-ParamManager;component/close-circle-fill.png" Style="{StaticResource ButtonIcon}" />

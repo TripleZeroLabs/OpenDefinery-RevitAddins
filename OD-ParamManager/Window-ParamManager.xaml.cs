@@ -606,12 +606,12 @@ namespace OD_ParamManager
 
                 // Toggle buttons
                 Button_AddToCollection.IsEnabled = true;
-                Button_Details.IsEnabled = true;
+                Button_Purge.IsEnabled = true;
             }
             else
             {
                 Button_AddToCollection.IsEnabled = false;
-                Button_Details.IsEnabled = false;
+                Button_Purge.IsEnabled = false;
             }
         }
 
@@ -626,7 +626,119 @@ namespace OD_ParamManager
         }
 
         /// <summary>
-        /// User clicks the Details button
+        /// User clicks the Purge button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Purge_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGrid_Main.SelectedItems.Count > 0)
+            {
+                // Instantiate a list of Shared Parameters for later use
+                var selectedParams = new List<SharedParameter>();
+
+                foreach (var i in DataGrid_Main.SelectedItems)
+                {
+                    var selectedParam = i as SharedParameter;
+
+                    selectedParams.Add(selectedParam);
+                }
+
+                // Instantiate a collection of parameters to delete from the model
+                ICollection<ElementId> elementIds = new List<ElementId>();
+
+                // Retrieve Element IDs
+                foreach (var p in selectedParams)
+                {
+                    ElementId id = new ElementId(p.ElementId);
+
+                    elementIds.Add(id);
+                }
+
+                var td = new TaskDialog("Purge Selected Shared Parameters");
+                td.Id = "PurgeParams";
+                td.MainIcon = TaskDialogIcon.TaskDialogIconInformation;
+                td.TitleAutoPrefix = false;
+                td.AllowCancellation = true;
+
+                td.MainInstruction = string.Format(
+                        "Are you sure you want to purge the selected {0} Shared Parameters from the current model?",
+                        selectedParams.Count.ToString()
+                        );
+
+                td.MainContent = "Warning: This may result in data loss within this model. Click \"See Details\" below to confirm the Shared Parameters to be deleted.";
+
+                td.ExpandedContent = "";
+
+                foreach (var p in selectedParams)
+                {
+                    td.ExpandedContent += p.Name + " [" + p.Guid + "]\n\n";
+                }
+
+                td.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
+                TaskDialogResult result = td.Show();
+
+                // Delete Shared Parameters from the model if the user confirms
+                if (result == TaskDialogResult.Yes)
+                {
+                    Transaction trans = new Transaction(RvtConnector.Document, "Purge Shared Parameters");
+                    trans.Start();
+
+                    // Instantiate lists of results to write to the log
+                    var successfulDeletes = new List<string>();
+                    var failedDeletes = new List<string>();
+
+                    foreach (var eId in elementIds)
+                    {
+                        try
+                        {
+                            RvtConnector.Document.Delete(eId);
+
+                            successfulDeletes.Add("DELETE SUCCESSFUL\t" + eId.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(string.Format("Error deleting {0}:\n\n" + ex.ToString(), eId.ToString()));
+
+                            failedDeletes.Add("DELETE FAILED\t" + eId.ToString());
+                        }
+                    }
+
+                    trans.Commit();
+
+                    var tdConfirmation = new TaskDialog("Purged Parameters");
+
+                    tdConfirmation.MainInstruction =
+                        string.Format("Successfully purged {0} shared parameters from the model.",
+                        successfulDeletes.Count.ToString());
+
+                    tdConfirmation.ExpandedContent = "";
+
+                    foreach (var fd in failedDeletes)
+                    {
+                        tdConfirmation.ExpandedContent += fd + "\n";
+                    }
+
+                    tdConfirmation.Show();
+
+                    // Refresh parameters in the main Definery object
+                    RefreshRevitParams();
+                    RefreshValidation();
+                    InitCollectionView();
+
+                    // Switch back to the Main Window
+                    Activate();
+                }
+                // Switch back to the main window
+                else
+                {
+                    Activate();
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Method to evaluate if parameters are in use prior to purging
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
