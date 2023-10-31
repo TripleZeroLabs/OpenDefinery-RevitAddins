@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -50,7 +51,7 @@ namespace OD_ParamManager
             
             SelectedFilter = SelectedFilter.All;
             ToggleFilterButtons();
-            ToggleActionButtons();
+            ToggleMainActionButtons();
 
             // Instantiate the main Definery object
             Definery = new Definery();
@@ -591,9 +592,9 @@ namespace OD_ParamManager
         /// <summary>
         /// Helper method to toggle the UI for action buttons
         /// </summary>
-        private void ToggleActionButtons()
+        private void ToggleMainActionButtons()
         {
-            if (DataGrid_Main.SelectedItems != null)
+            if (DataGrid_Main.SelectedItems.Count > 0)
             {
                 // Cast the selected items to Shared Parameters
                 var selectedParams = new List<SharedParameter>();
@@ -603,7 +604,8 @@ namespace OD_ParamManager
                     selectedParams.Add(i as SharedParameter);
                 }
 
-                // Toggle the Details button
+                // Toggle buttons
+                Button_AddToCollection.IsEnabled = true;
                 Button_Details.IsEnabled = true;
             }
             else
@@ -620,7 +622,7 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void DataGrid_Main_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ToggleActionButtons();
+            ToggleMainActionButtons();
         }
 
         /// <summary>
@@ -893,11 +895,19 @@ namespace OD_ParamManager
                 }
                 else
                 {
-                    MessageBox.Show(string.Format("There was an error retrieving {0} from OpenDefinery. If the problem persists, please contact i@opendefinery.com.", clickedButtonId));
+                    MessageBox.Show(
+                        string.Format(
+                            "There was an error retrieving {0} from OpenDefinery. " +
+                            "If the problem persists, please contact i@opendefinery.com.", 
+                            clickedButtonId
+                            )
+                        );
                 }
             }
 
+            // Update the DataGrid
             DataGrid_CollectionParams.ItemsSource = collectionParams;
+            DataGrid_CollectionParams.Items.Refresh();
         }
 
         /// <summary>
@@ -1030,6 +1040,30 @@ namespace OD_ParamManager
                     MessageBox.Show("The Collection name and description are required.");
                 }
             }
+        }
+
+        /// <summary>
+        /// User clicks the Add To Model button from the Collections screen
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_AddToModel_Click(object sender, RoutedEventArgs e)
+        {
+            RvtConnector.AddSelectedParams(DataGrid_CollectionParams);
+        }
+
+        /// <summary>
+        /// User changes the selection in DataGrid_CollectionParams
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DataGrid_CollectionParams_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (DataGrid_CollectionParams.SelectedItems.Count > 0)
+            {
+                Button_AddToModel.IsEnabled = true;
+            }
+            else { Button_AddToModel.IsEnabled = false;}
         }
     }
 }

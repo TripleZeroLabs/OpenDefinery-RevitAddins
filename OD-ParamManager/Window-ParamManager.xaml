@@ -288,23 +288,6 @@
                                 <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click" Width="100"/>
                                 <Button 
                                 Style="{StaticResource ActionButton}"
-                                x:Name="Button_AddToCollection" 
-                                Margin="10,0,0,0"
-                                Padding="10,3"
-                                Click="Button_AddToCollection_Click"
-                                DockPanel.Dock="Right" 
-                                HorizontalAlignment="Right" 
-                                Height="25"
-                                ToolTip="Add the selected parameters to the selected OpenDefinery Collection">
-                                    <DockPanel>
-                                        <Image Source="Assets/Icons/add-circle-fill.png" Style="{StaticResource ButtonIcon}" />
-                                        <TextBlock>
-                                            Add to Collection
-                                        </TextBlock>
-                                    </DockPanel>
-                                </Button>
-                                <Button 
-                                Style="{StaticResource ActionButton}"
                                 x:Name="Button_Details" 
                                 Margin="10,0,0,0" 
                                 Padding="10,3"
@@ -312,11 +295,26 @@
                                 HorizontalAlignment="Right" 
                                 Height="25" 
                                 Click="Button_Evaluate_Click"
-                                ToolTip="Find all model elements which use the selected parameters">
+                                ToolTip="Find all model elements which use the selected parameters" Background="White" IsEnabled="False">
                                     <DockPanel>
-                                        <Image Source="Assets/Icons/database-2-fill.png" Style="{StaticResource ButtonIcon}" />
+                                        <Image Source="/OD-ParamManager;component/close-circle-fill.png" Style="{StaticResource ButtonIcon}" />
+                                        <TextBlock Text="Purge"/>
+                                    </DockPanel>
+                                </Button>
+                                <Button 
+                                Style="{StaticResource ActionButton}"
+                                x:Name="Button_AddToCollection" 
+                                Margin="10,0,0,0"
+                                Padding="10,3"
+                                Click="Button_AddToCollection_Click"
+                                DockPanel.Dock="Right" 
+                                HorizontalAlignment="Right" 
+                                Height="25"
+                                ToolTip="Add the selected parameters to the selected OpenDefinery Collection" IsEnabled="False">
+                                    <DockPanel>
+                                        <Image Source="Assets/Icons/add-circle-fill.png" Style="{StaticResource ButtonIcon}" />
                                         <TextBlock>
-                                            Evaluate
+                                            Add to Collection
                                         </TextBlock>
                                     </DockPanel>
                                 </Button>
@@ -393,8 +391,10 @@
                                     Style="{StaticResource H1}" 
                                     Text="Parameters in Collection" Margin="0,0,0,0"/>
                             <Grid Margin="0,50,0,0">
-                                <DataGrid x:Name="DataGrid_CollectionParams" IsReadOnly="True" Margin="0" />
+                                <DataGrid x:Name="DataGrid_CollectionParams" IsReadOnly="True" Margin="0" SelectionChanged="DataGrid_CollectionParams_SelectionChanged" />
                             </Grid>
+                            <Grid/>
+                            <Button Style="{StaticResource ActionButton}" x:Name="Button_AddToModel" Content="Add to Model" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,0,0" Width="99" Height="25" Click="Button_AddToModel_Click" IsEnabled="False"/>
                         </Grid>
                     </DockPanel>
                 </Grid>

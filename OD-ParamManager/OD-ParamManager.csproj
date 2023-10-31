@@ -105,6 +105,7 @@
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -128,6 +129,8 @@
     <Resource Include="Assets\Icons\checkbox-blank-circle-line.png" />
     <Resource Include="Assets\Icons\checkbox-circle-fill.png" />
     <Resource Include="Assets\Icons\database-2-fill.png" />
+    <Resource Include="Assets\Icons\close-circle-fill.png" />
+    <Content Include="close-circle-fill.png" />
     <Content Include="home-8-fill.png" />
     <Content Include="OD-ParamManager.addin" />
   </ItemGroup>
