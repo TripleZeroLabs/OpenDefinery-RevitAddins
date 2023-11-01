@@ -165,6 +165,11 @@ namespace OD_ParamManager
                 // Maintain filter if one was applied prior to changing selection
                 ApplyExistingFilter();
             }
+            else
+            {
+                DataGrid_Main.ItemsSource = Definery.RevitParameters;
+                DataGrid_Main.Items.Refresh();
+            }
         }
 
         /// <summary>
@@ -1176,6 +1181,18 @@ namespace OD_ParamManager
                 Button_AddToModel.IsEnabled = true;
             }
             else { Button_AddToModel.IsEnabled = false;}
+        }
+
+        /// <summary>
+        /// User clicks the Model Parameters tab
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Tab_ModelParameters_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            RefreshRevitParams();
+            RefreshValidation();
+            InitCollectionView();
         }
     }
 }

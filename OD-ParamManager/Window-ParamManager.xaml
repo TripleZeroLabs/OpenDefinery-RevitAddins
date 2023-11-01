@@ -238,7 +238,7 @@
                 </Style>
             </TabControl.Resources>
 
-            <TabItem Name ="Dashboard">
+            <TabItem x:Name ="Tab_Dashboard">
                 <TabItem.Header>
                     <DockPanel>
                         <Image Source="Assets/Icons/home-8-fill.png" Style="{StaticResource TabIcon}" />
@@ -254,9 +254,9 @@
 
             </TabItem>
 
-            <TabItem Name="Parameters">
+            <TabItem x:Name="Tab_ModelParameters">
                 <TabItem.Header>
-                    <DockPanel>
+                    <DockPanel MouseLeftButtonUp="Tab_ModelParameters_MouseLeftButtonUp">
                         <Image Source="Assets/Icons/building-4-fill.png" Style="{StaticResource TabIcon}" />
                         <TextBlock DockPanel.Dock="Left">Model Parameters</TextBlock>
                     </DockPanel>
@@ -362,7 +362,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Name="Collections">
+            <TabItem x:Name="Tab_Collections">
                 <TabItem.Header>
                     <DockPanel>
                         <Image Source="Assets/Icons/booklet-fill.png" Style="{StaticResource TabIcon}" />
@@ -400,7 +400,7 @@
                 </Grid>
             </TabItem>
 
-            <TabItem Name="Settings" BorderBrush="{x:Null}">
+            <TabItem x:Name="Tab_Settings" BorderBrush="{x:Null}">
                 <TabItem.Header>
                     <DockPanel>
                         <Image Source="Assets/Icons/settings-5-fill.png" Style="{StaticResource TabIcon}" />
