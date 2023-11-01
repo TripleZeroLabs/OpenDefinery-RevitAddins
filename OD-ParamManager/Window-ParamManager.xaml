@@ -297,7 +297,7 @@
                                 Click="Button_Purge_Click"
                                 ToolTip="Find all model elements which use the selected parameters" Background="White" IsEnabled="False">
                                     <DockPanel>
-                                        <Image Source="/OD-ParamManager;component/close-circle-fill.png" Style="{StaticResource ButtonIcon}" />
+                                        <Image Source="Assets/Icons/close-circle-fill.png" Style="{StaticResource ButtonIcon}" />
                                         <TextBlock Text="Purge"/>
                                     </DockPanel>
                                 </Button>
