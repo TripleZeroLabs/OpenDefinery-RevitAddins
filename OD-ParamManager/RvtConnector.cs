@@ -98,7 +98,7 @@ namespace OD_ParamManager
                                 {
                                     FamilyParameter fp = famMan.AddParameter(
                                         extDef,
-                                        BuiltInParameterGroup.PG_GENERAL,
+                                        BuiltInParameterGroup.PG_IDENTITY_DATA,
                                         false
                                     );
 
