@@ -12,9 +12,10 @@ This is an extremely early version of the OpenDefinery Revitᵀᴹ add-in and is
 
 ![](https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/blob/master/OD-ParamManager/images/screenshot.png)
 
-### Current Features (v0.1)
+### Current Features (v0.2)
 - **Parameter Validation:** Iterate through each shared parameter in a project or family and check if it exist in a particular [OpenDefinery Collection](https://app.opendefinery.com/browse/collections). In other words, this tool validates if a project is in compliance with any given standard that is hosted on OpenDefinery.
-- **Purge Shared Parameters:** Identify which shared parameters are being used and completely purge them from the Revit database. The user is able to loop through all elements in the current Revit model and identify which elements contain specific parameters prior to purging.
+- **Add Parameters to Current Family:** Add multiple shared parameters from an [OpenDefinery Collection](https://app.opendefinery.com/browse/collections) to the current family.
+- **Purge Shared Parameters:** Identify which shared parameters are being used and completely purge them from the Revit database.
 - **Manage Collections:** Create new OpenDefinery Collections and add new Shared Parameters to Collections.
 
 ---
