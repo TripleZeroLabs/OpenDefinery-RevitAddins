@@ -131,8 +131,6 @@
     <Resource Include="Assets\Icons\database-2-fill.png" />
     <Resource Include="Assets\Icons\close-circle-fill.png" />
     <Resource Include="Assets\Icons\logo_32x32.png" />
-    <Content Include="close-circle-fill.png" />
-    <Content Include="home-8-fill.png" />
     <Content Include="OpenDefinery-ParamManager.addin" />
   </ItemGroup>
   <ItemGroup>

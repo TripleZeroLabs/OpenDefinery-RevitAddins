@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{07276ADA-9FBC-44C4-A550-31D8F2293673}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>OD_FamEditor</RootNamespace>
+    <AssemblyName>OpenDefinery-FamEditor</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="RevitAPI">
+      <HintPath>..\..\..\..\..\Program Files\Autodesk\Revit 2021\RevitAPI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RevitAPIUI">
+      <HintPath>..\..\..\..\..\Program Files\Autodesk\Revit 2021\RevitAPIUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Class1.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RvtApp.cs" />
+    <Compile Include="RvtCommand.cs" />
+    <Compile Include="RvtConnector.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\logo_32x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="OpenDefinery-FamEditor.addin" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OD-ParamManager\OD-ParamManager.csproj">
+      <Project>{b9a3926d-2293-4a51-82ed-e747addc0604}</Project>
+      <Name>OD-ParamManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OpenDefinery\OpenDefinery.csproj">
+      <Project>{45175336-c17c-40b7-8c2b-176c52b551a3}</Project>
+      <Name>OpenDefinery</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if not exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
+
+if not exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
+
+if not exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2020" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2020"
+if exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2021" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2021"
+if exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2022" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2022"
+if exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"</PostBuildEvent>
+  </PropertyGroup>
+</Project>
