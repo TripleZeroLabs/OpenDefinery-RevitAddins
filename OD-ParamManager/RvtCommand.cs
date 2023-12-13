@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace OD_ParamManager
 {
     [Transaction(TransactionMode.Manual)]
-    public class Command : IExternalCommand
+    public class RvtCommand : IExternalCommand
     {
         public RvtConnector RvtConnector { get; set; }
 

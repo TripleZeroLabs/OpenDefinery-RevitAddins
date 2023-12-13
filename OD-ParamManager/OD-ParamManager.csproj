@@ -16,7 +16,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OD_ParamManager</RootNamespace>
-    <AssemblyName>OD-ParamManager</AssemblyName>
+    <AssemblyName>OpenDefinery-ParamManager</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -113,7 +113,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RvtApp.cs" />
-    <Compile Include="Command.cs" />
+    <Compile Include="RvtCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RvtConnector.cs" />
     <Compile Include="Window-ParamManager.xaml.cs">
@@ -130,9 +130,10 @@
     <Resource Include="Assets\Icons\checkbox-circle-fill.png" />
     <Resource Include="Assets\Icons\database-2-fill.png" />
     <Resource Include="Assets\Icons\close-circle-fill.png" />
+    <Resource Include="Assets\Icons\logo_32x32.png" />
     <Content Include="close-circle-fill.png" />
     <Content Include="home-8-fill.png" />
-    <Content Include="OD-ParamManager.addin" />
+    <Content Include="OpenDefinery-ParamManager.addin" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Window-ParamManager.xaml">
@@ -147,8 +148,20 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if exist "$(AppData)\Autodesk\REVIT\Addins\2021" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\REVIT\Addins\2021"
-if exist "$(AppData)\Autodesk\REVIT\Addins\2021" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\REVIT\Addins\2021"</PostBuildEvent>
+    <PostBuildEvent>if not exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
+
+if not exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
+
+if not exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2020" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2020"
+if exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2021" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2021"
+if exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2022" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2022"
+if exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

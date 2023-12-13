@@ -765,7 +765,7 @@ namespace OD_ParamManager
                     selectedParams.Add(selectedParam);
 
                     // Retrieve the details/usage of the Shared Parameter for UI
-                    var details = Command.GetParamDetails(RvtConnector, selectedParam);
+                    var details = RvtCommand.GetParamDetails(RvtConnector, selectedParam);
 
                     if (details.Count > 0)
                     {

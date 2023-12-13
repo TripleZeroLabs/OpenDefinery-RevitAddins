@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Parameter Manager</Name>
+    <Assembly>.\TripleZeroLabs\OpenDefinery-ParamManager.dll</Assembly>
+    <FullClassName>OD_ParamManager.RvtApp</FullClassName>
+    <ClientId>d97141ec-879d-4296-a3c5-f6a6a4abaafb</ClientId>
+    <VendorId>Triple Zero Labs, LLC</VendorId>
+    <VendorDescription>TripleZero.xyz</VendorDescription>
+  </AddIn>
+</RevitAddIns>
