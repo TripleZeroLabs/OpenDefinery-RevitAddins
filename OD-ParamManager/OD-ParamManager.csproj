@@ -115,7 +115,6 @@
     <Compile Include="RvtApp.cs" />
     <Compile Include="RvtCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RvtConnector.cs" />
     <Compile Include="Window-ParamManager.xaml.cs">
       <DependentUpon>Window-ParamManager.xaml</DependentUpon>
     </Compile>

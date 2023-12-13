@@ -7,20 +7,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 
-namespace OD_FamEditor
+namespace OpenDefinery
 {
     public class RvtConnector
     {
-        Autodesk.Revit.ApplicationServices.Application App { get; set; }
+        public Autodesk.Revit.ApplicationServices.Application App { get; set; }
+        public FilteredElementCollector FamilyInstances { get; set; }
         public Document Document { get; set; }
 
         public RvtConnector(ExternalCommandData commandData)
         {
             UIApplication uiapp = commandData.Application;
             UIDocument uidoc = uiapp.ActiveUIDocument;
-            
+
             App = uiapp.Application;
             Document = uidoc.Document;
         }

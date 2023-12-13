@@ -92,6 +92,7 @@
     <Compile Include="Group.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RvtConnector.cs" />
     <Compile Include="SharedParameter.cs" />
     <Compile Include="Tag.cs" />
     <Compile Include="Ui.cs" />

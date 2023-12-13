@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Triple Zero Labs LLC")]
 [assembly: AssemblyProduct("OpenDefinery")]
-[assembly: AssemblyCopyright("Copyright 2022 (C) Triple Zero Labs LLC")]
+[assembly: AssemblyCopyright("Copyright 2022-2024 Triple Zero Labs LLC")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
