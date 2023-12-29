@@ -1,0 +1,34 @@
+﻿<Window x:Class="OD_FamEditor.Window_FamEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:OD_FamEditor"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBox Grid.Row="1" x:Name="TextBox_DebugOutput" Margin="20,20,20,20" TextWrapping="Wrap" Height="100" VerticalAlignment="Bottom" Visibility="Collapsed"/>
+        <DockPanel Grid.Row="1">
+            <ListBox x:Name="ListBox_FamilyTypes" Width="200" d:ItemsSource="{Binding}" SelectionChanged="ListBox_FamilyTypes_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <StackPanel DockPanel.Dock="Top">
+                <DockPanel>
+                    <TextBlock x:Name="TextBlock_RightPaneTitle" TextWrapping="Wrap" Text="TextBlock" DockPanel.Dock="Top"/>
+                    <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto"/>
+                    </ScrollViewer>
+                </DockPanel>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

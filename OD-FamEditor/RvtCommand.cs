@@ -2,6 +2,7 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using OD_ParamManager;
 using OpenDefinery;
 using System;
 using System.Collections.Generic;
@@ -23,11 +24,9 @@ namespace OD_FamEditor
             // Instantiate the connection to the Revit Model
             var rvtConnector = new RvtConnector(commandData);
 
-            TaskDialog.Show("Success", "Fam Editor successfully executed.");
-
             // Instantiate a main window
-            //var mw = new Window_ParamManager(rvtConnector);
-            //mw.ShowDialog();
+            var mw = new Window_FamEditor(rvtConnector);
+            mw.ShowDialog();
 
             return Result.Succeeded;
         }
