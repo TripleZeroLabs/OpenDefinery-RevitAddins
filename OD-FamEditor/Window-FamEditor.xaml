@@ -21,14 +21,12 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <StackPanel DockPanel.Dock="Top">
-                <DockPanel>
-                    <TextBlock x:Name="TextBlock_RightPaneTitle" TextWrapping="Wrap" Text="TextBlock" DockPanel.Dock="Top"/>
-                    <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto">
-                        <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto"/>
-                    </ScrollViewer>
-                </DockPanel>
-            </StackPanel>
+            <DockPanel>
+                <TextBlock x:Name="TextBlock_RightPaneTitle" TextWrapping="Wrap" Text="TextBlock" DockPanel.Dock="Top"/>
+                <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto" DockPanel.Dock="Top">
+                    <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto"/>
+                </ScrollViewer>
+            </DockPanel>
         </DockPanel>
     </Grid>
 </Window>
