@@ -112,9 +112,7 @@ namespace OD_FamEditor
                         famParam.DataType = Enum.GetName(typeof(ParameterType), dataType);
 
                         var paramGroup = p.Definition.ParameterGroup;
-                        famParam.PropGroup = Enum.GetName(typeof(BuiltInParameterGroup), paramGroup);
-
-                        famParam.IsShared = p.IsShared;
+                        famParam.PropGroup = LabelUtils.GetLabelFor(paramGroup);
 
                         // Add the final FamParam to the output list
                         famParams.Add(famParam);
