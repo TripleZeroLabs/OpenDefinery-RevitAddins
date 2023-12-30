@@ -92,7 +92,7 @@ namespace OD_FamEditor
                 //    }
                 //}
 
-                var famParams = new List<FamParam>();
+                var famParams = new ObservableCollection<FamParam>();
 
                 foreach (var fam in FamEditor.FamilyParams)
                 {
@@ -113,6 +113,8 @@ namespace OD_FamEditor
 
                         var paramGroup = p.Definition.ParameterGroup;
                         famParam.PropGroup = LabelUtils.GetLabelFor(paramGroup);
+
+                        famParam.IsShared = p.IsShared;
 
                         // Add the final FamParam to the output list
                         famParams.Add(famParam);
