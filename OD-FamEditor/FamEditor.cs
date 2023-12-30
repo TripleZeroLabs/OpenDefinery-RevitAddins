@@ -16,7 +16,6 @@ namespace OD_FamEditor
         public Document Doc { get; set; }
         public Dictionary<string, List<FamilyParameter>> FamilyParams { get; set; }
         public List<FamilyType> FamilyTypes { get; set; }
-        //public List<FamilyParameter> FamilyParameters { get; set; }
 
         /// <summary>
         /// Loads all Family Type and Parameter data from the current Revit family
@@ -80,6 +79,10 @@ namespace OD_FamEditor
             return fm.Types;
         }
 
+
+        /// <summary>
+        /// Retrieve all Parameters within the current Family and group them by type.
+        /// </summary>
         public void GetFamParams()
         {
             var debugOutput = string.Empty;
@@ -115,33 +118,6 @@ namespace OD_FamEditor
             List<string> keys = new List<string>(familyParams.Keys);
             keys.Sort();
 
-            //foreach (FamilyType t in fm.Types)
-            //{
-            //    this.FamilyTypes.Add(t);
-
-            //    // Generate debugging information
-            //    string typeName = t.Name;
-            //    debugOutput += string.Format("\n  {0}:", typeName);
-
-            //    foreach (string key in keys)
-            //    {
-            //        FamilyParameter fp = familyParams[key];
-
-            //        if (t.HasValue(fp))
-            //        {
-            //            debugOutput += string.Format(
-            //                "\n    {0} = {1}", key, FamilyParamValueString(t, fp, this.Doc)
-            //                );
-            //        }
-            //        else
-            //        {
-            //            debugOutput += string.Format(
-            //                "\n    {0} = {1}", key, "NO VALUE"
-            //                );
-            //        }
-            //    }
-            //}
-
             this.FamilyParams = familyParams;
         }
 
@@ -158,12 +134,15 @@ namespace OD_FamEditor
           Document doc)
         {
             string value = t.AsValueString(fp);
+
             switch (fp.StorageType)
             {
                 case StorageType.Double:
-                    value =
-                      (double)t.AsDouble(fp)
-                      + " (double)";
+                    var doubleValue =
+                      (double)t.AsDouble(fp);
+
+                    value = doubleValue.ToString();
+
                     break;
 
                 case StorageType.ElementId:
@@ -179,19 +158,39 @@ namespace OD_FamEditor
                     {
                         ElementId id = t.AsElementId(fp);
                         Element e = doc.GetElement(id);
-                        value = id.ToString() + " ("
-                          + e.Name + ")";
+                        value = id.ToString();
                     }
+
                     break;
 
                 case StorageType.Integer:
-                    value = t.AsInteger(fp).ToString()
-                      + " (int)";
+                    if (fp.Definition.ParameterType == ParameterType.YesNo)
+                    {
+                        var intValue = t.AsInteger(fp).ToString();
+
+                        if (intValue == "1")
+                        {
+                            value = "YES";
+                        }
+                        else if (intValue == "0")
+                        {
+                            value = "NO";
+                        }
+                        else
+                        {
+                            value = "NULL";
+                        }
+                    }
+                    else
+                    {
+                        value = t.AsInteger(fp).ToString();
+                    }
+
                     break;
 
                 case StorageType.String:
-                    value = "'" + t.AsString(fp)
-                      + "' (string)";
+                    value = "'" + t.AsString(fp);
+
                     break;
             }
             return value;

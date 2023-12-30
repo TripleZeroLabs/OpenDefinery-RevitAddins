@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FamEditor.cs" />
+    <Compile Include="FamParam.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RvtApp.cs" />
     <Compile Include="RvtCommand.cs" />

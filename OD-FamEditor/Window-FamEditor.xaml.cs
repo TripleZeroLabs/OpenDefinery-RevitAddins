@@ -56,18 +56,7 @@ namespace OD_FamEditor
                 // Set the Family Types to the ListBox
                 ListBox_FamilyTypes.ItemsSource = FamEditor.FamilyTypes;
                 ListBox_FamilyTypes.SelectedItem = ListBox_FamilyTypes.Items[0];
-
-                RefreshUi(this);
             }
-        }
-
-        /// <summary>
-        /// Refreshes all UI elements
-        /// </summary>
-        /// <param name="win"></param>
-        static void RefreshUi(Window_FamEditor win)
-        {
-
         }
 
         /// <summary>
@@ -90,20 +79,49 @@ namespace OD_FamEditor
                 // Get the Parameters for the selected family
                 FamEditor.GetFamParams();
 
-                // Instantiate a dictionary of Parameter values as strings
-                var paramStrings = new Dictionary<string, string>();
+                //// DEBUG: Instantiate a dictionary of Parameter values as strings
+                //var paramStrings = new Dictionary<string, string>();
+
+                //foreach (var fam in FamEditor.FamilyParams)
+                //{
+                //    foreach (var p in fam.Value)
+                //    {
+                //        paramStrings[p.Definition.Name] = FamEditor.FamilyParamValueString(
+                //            SelectedFamType, p, FamEditor.Doc
+                //            );
+                //    }
+                //}
+
+                var famParams = new List<FamParam>();
 
                 foreach (var fam in FamEditor.FamilyParams)
                 {
                     foreach (var p in fam.Value)
                     {
-                        paramStrings[p.Definition.Name] = FamEditor.FamilyParamValueString(
-                            SelectedFamType, p, FamEditor.Doc
+                        var famParam = new FamParam();
+
+                        famParam.Name = p.Definition.Name;
+                        famParam.FamilyTypeName = fam.Key;
+                        famParam.Value = FamEditor.FamilyParamValueString(
+                            SelectedFamType,
+                            p,
+                            FamEditor.Doc
                             );
+
+                        var dataType = p.Definition.ParameterType;
+                        famParam.DataType = Enum.GetName(typeof(ParameterType), dataType);
+
+                        var paramGroup = p.Definition.ParameterGroup;
+                        famParam.PropGroup = Enum.GetName(typeof(BuiltInParameterGroup), paramGroup);
+
+                        famParam.IsShared = p.IsShared;
+
+                        // Add the final FamParam to the output list
+                        famParams.Add(famParam);
                     }
                 }
 
-                DataGrid_Params.ItemsSource = paramStrings;
+                DataGrid_Params.ItemsSource = famParams;
             }
         }
     }
