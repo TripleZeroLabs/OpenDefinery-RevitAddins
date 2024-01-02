@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OD_FamEditor
 {
-    internal class FamParam
+    public class FamParam
     {
         public string Name { get; set; }
         public string FamilyTypeName { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using OpenDefinery;
 using System;
@@ -26,8 +27,9 @@ namespace OD_FamEditor
     /// </summary>
     public partial class Window_FamEditor : Window
     {
-        public FamilyType SelectedFamType { get; set; }
         public FamEditor FamEditor { get; set; }
+        public FamilyType SelectedFamType { get; set; }
+        public ObservableCollection<FamParam> SelectedFamParams { get; set; }
 
         public Window_FamEditor(RvtConnector rvtConnector)
         {
@@ -60,6 +62,83 @@ namespace OD_FamEditor
         }
 
         /// <summary>
+        /// Update the view to show/edit Parameters in the window.
+        /// </summary>
+        private void RefreshParamView()
+        {
+            // First clear all children and content from previous Family Type selection
+            foreach (UIElement c in StackPanel_Params.Children)
+            {
+                var element = c as FrameworkElement;
+                try
+                {
+                    UnregisterName(element.Name);
+
+                    if (c.GetType() == typeof(Expander))
+                    {
+                        var expander = c as Expander;
+                        var expanderContent = expander.Content as StackPanel;
+
+                        UnregisterName(expanderContent.Name);
+                    }
+                }
+                catch {}
+            }
+
+            StackPanel_Params.Children.Clear();
+
+            // Sort thhe Property Groups and add Children to the Stack Panel
+            SelectedFamParams.OrderBy(x => x.PropGroup);
+            
+            SelectedFamParams.OrderBy(x => x.Name);
+
+            var propGroups = SelectedFamParams.Select(x => x.PropGroup).Distinct();
+
+            foreach (var g in propGroups)
+            {
+                var cleanName = g.Replace(' ', '_');
+
+                // First we need to clean up any previous registered names
+                //UnregisterName("expander_" + cleanName);
+                //UnregisterName("expanderContent_" + cleanName);
+
+                // Create new UI elements
+                var expander = new Expander();
+                expander.IsExpanded = true;
+                expander.Header = g;
+                expander.Name = "expander_" + cleanName;
+                StackPanel_Params.Children.Add(expander);
+                RegisterName(expander.Name, expander);
+
+                var groupStackPanel = new StackPanel();
+                groupStackPanel.Name = "expanderContent_" + cleanName;
+                expander.Content = groupStackPanel;
+                RegisterName(groupStackPanel.Name, groupStackPanel);
+            }
+
+            // Add each Parameter as children to the appropriaate Expander
+            foreach (var p in SelectedFamParams)
+            {
+                var cleanGroupName = p.PropGroup.Replace(' ', '_');
+
+                var groupExpander = StackPanel_Params.FindName("expander_" + cleanGroupName) as Expander;
+                var groupContent = groupExpander.FindName("expanderContent_" + cleanGroupName) as StackPanel;
+
+                var labelName = new TextBlock();
+                labelName.Height = Double.NaN;
+                labelName.Text = p.Name;
+
+                groupContent.Children.Add(labelName);
+
+                var textBoxValue = new System.Windows.Controls.TextBox();
+                textBoxValue.Height = Double.NaN;
+                textBoxValue.Text = p.Value;
+
+                groupContent.Children.Add(textBoxValue);
+            }
+        }
+
+        /// <summary>
         /// Family Type ListBox selection changes
         /// </summary>
         /// <param name="sender"></param>
@@ -74,8 +153,6 @@ namespace OD_FamEditor
             // Update the title text
             if (ListBox_FamilyTypes.SelectedItems.Count > 0)
             {
-                TextBlock_RightPaneTitle.Text = SelectedFamType.Name;
-
                 // Get the Parameters for the selected family
                 FamEditor.GetFamParams();
 
@@ -98,6 +175,7 @@ namespace OD_FamEditor
                 {
                     foreach (var p in fam.Value)
                     {
+                        // Instantiate the FamParam and add it to the list
                         var famParam = new FamParam();
 
                         famParam.Name = p.Definition.Name;
@@ -121,7 +199,13 @@ namespace OD_FamEditor
                     }
                 }
 
-                DataGrid_Params.ItemsSource = famParams;
+                // Set the list of Parameters
+                SelectedFamParams = famParams;
+
+                DataGrid_Params.ItemsSource = SelectedFamParams;
+
+                // Refresh the UI to display the Parameters
+                RefreshParamView();
             }
         }
     }

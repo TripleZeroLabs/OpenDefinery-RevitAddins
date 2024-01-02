@@ -7,26 +7,24 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <Grid>
+    <Grid Name="LayoutRoot">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <TextBox Grid.Row="1" x:Name="TextBox_DebugOutput" Margin="20,20,20,20" TextWrapping="Wrap" Height="100" VerticalAlignment="Bottom" Visibility="Collapsed"/>
         <DockPanel Grid.Row="1">
-            <ListBox x:Name="ListBox_FamilyTypes" Width="200" d:ItemsSource="{Binding}" SelectionChanged="ListBox_FamilyTypes_SelectionChanged">
+            <ListBox x:Name="ListBox_FamilyTypes" MinWidth="200" d:ItemsSource="{Binding}" SelectionChanged="ListBox_FamilyTypes_SelectionChanged" Width="Auto">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <DockPanel>
-                <TextBlock x:Name="TextBlock_RightPaneTitle" TextWrapping="Wrap" Text="TextBlock" DockPanel.Dock="Top"/>
-                <ScrollViewer ScrollViewer.VerticalScrollBarVisibility="Auto" DockPanel.Dock="Top">
-                    <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto"/>
-                </ScrollViewer>
-            </DockPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="StackPanel_Params"></StackPanel>
+            </ScrollViewer>
+            <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Hidden"/>
         </DockPanel>
     </Grid>
 </Window>
