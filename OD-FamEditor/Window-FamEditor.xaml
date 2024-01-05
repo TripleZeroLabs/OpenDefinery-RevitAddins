@@ -81,10 +81,12 @@
                     </GroupStyle>
                 </DataGrid.GroupStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn  Header="Name" Binding="{Binding Name}" SortDirection="Ascending" IsReadOnly="True" />
-                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
-                    <DataGridTextColumn Header="DataType" Binding="{Binding DataType}" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Shared" Binding="{Binding IsShared}" IsReadOnly="True" />
+                    <DataGridTextColumn  Header="Name" Binding="{Binding FamilyParameter.Definition.Name}" SortDirection="Ascending" IsReadOnly="True" />
+                    <DataGridTemplateColumn Header="Value" Binding="{Binding Value}">
+                    </DataGridTemplateColumn>
+                    <!--<DataGridTextColumn Header="Value" Binding="{Binding Value}" />-->
+                    <DataGridTextColumn Header="DataType" Binding="{Binding FamilyParameter.Definition.ParameterType}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Shared" Binding="{Binding FamilyParameter.IsShared}" IsReadOnly="True" />
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>

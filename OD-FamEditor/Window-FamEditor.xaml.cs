@@ -32,7 +32,7 @@ namespace OD_FamEditor
     {
         public FamEditor FamEditor { get; set; }
         public FamilyType SelectedFamType { get; set; }
-        public ObservableCollection<FamParam> SelectedFamParams { get; set; }
+        public ObservableCollection<FamEditorParameter> SelectedFamParams { get; set; }
 
         public Window_FamEditor(RvtConnector rvtConnector)
         {
@@ -71,87 +71,11 @@ namespace OD_FamEditor
         {
             // Groups Parameters based on Property Name
             ListCollectionView collectionView = new ListCollectionView(SelectedFamParams);
+
             collectionView.GroupDescriptions.Add(new PropertyGroupDescription("PropGroup"));
 
             DataGrid_Params.ItemsSource = collectionView;
         }
-
-        ///// <summary>
-        ///// Update the view to show/edit Parameters in the window.
-        ///// </summary>
-        //private void RefreshParamFormView()
-        //{
-        //    // First clear all children and content from previous Family Type selection
-        //    foreach (UIElement c in StackPanel_Params.Children)
-        //    {
-        //        var element = c as FrameworkElement;
-        //        try
-        //        {
-        //            UnregisterName(element.Name);
-
-        //            if (c.GetType() == typeof(Expander))
-        //            {
-        //                var expander = c as Expander;
-        //                var expanderContent = expander.Content as StackPanel;
-
-        //                UnregisterName(expanderContent.Name);
-        //            }
-        //        }
-        //        catch {}
-        //    }
-
-        //    StackPanel_Params.Children.Clear();
-
-        //    // Sort thhe Property Groups and add Children to the Stack Panel
-        //    SelectedFamParams.OrderBy(x => x.PropGroup);
-            
-        //    SelectedFamParams.OrderBy(x => x.Name);
-
-        //    var propGroups = SelectedFamParams.Select(x => x.PropGroup).Distinct();
-
-        //    foreach (var g in propGroups)
-        //    {
-        //        var cleanName = g.Replace(' ', '_');
-
-        //        // First we need to clean up any previous registered names
-        //        //UnregisterName("expander_" + cleanName);
-        //        //UnregisterName("expanderContent_" + cleanName);
-
-        //        // Create new UI elements
-        //        var expander = new Expander();
-        //        expander.IsExpanded = true;
-        //        expander.Header = g;
-        //        expander.Name = "expander_" + cleanName;
-        //        StackPanel_Params.Children.Add(expander);
-        //        RegisterName(expander.Name, expander);
-
-        //        var groupStackPanel = new StackPanel();
-        //        groupStackPanel.Name = "expanderContent_" + cleanName;
-        //        expander.Content = groupStackPanel;
-        //        RegisterName(groupStackPanel.Name, groupStackPanel);
-        //    }
-
-        //    // Add each Parameter as children to the appropriaate Expander
-        //    foreach (var p in SelectedFamParams)
-        //    {
-        //        var cleanGroupName = p.PropGroup.Replace(' ', '_');
-
-        //        var groupExpander = StackPanel_Params.FindName("expander_" + cleanGroupName) as Expander;
-        //        var groupContent = groupExpander.FindName("expanderContent_" + cleanGroupName) as StackPanel;
-
-        //        var labelName = new TextBlock();
-        //        labelName.Height = Double.NaN;
-        //        labelName.Text = p.Name;
-
-        //        groupContent.Children.Add(labelName);
-
-        //        var textBoxValue = new System.Windows.Controls.TextBox();
-        //        textBoxValue.Height = Double.NaN;
-        //        textBoxValue.Text = p.Value;
-
-        //        groupContent.Children.Add(textBoxValue);
-        //    }
-        //}
 
         /// <summary>
         /// Family Type ListBox selection changes
@@ -184,32 +108,21 @@ namespace OD_FamEditor
                 //    }
                 //}
 
-                var famParams = new ObservableCollection<FamParam>();
-
+                var famParams = new ObservableCollection<FamEditorParameter>();
                 foreach (var fam in FamEditor.FamilyParams)
                 {
                     foreach (var p in fam.Value)
                     {
-                        // Instantiate the FamParam and add it to the list
-                        var famParam = new FamParam();
-
-                        famParam.Name = p.Definition.Name;
-                        famParam.FamilyTypeName = SelectedFamType.Name;
-                        famParam.Value = FamEditor.FamilyParamValueString(
-                            SelectedFamType,
-                            p,
-                            FamEditor.Doc
-                            );
-
-                        var dataType = p.Definition.ParameterType;
-                        famParam.DataType = Enum.GetName(typeof(ParameterType), dataType);
+                        var famParam = new FamEditorParameter();
+                        famParam.FamilyParameter = p;
+                        
+                        // Retrieve the value of the Parameter
+                        famParam.Value = FamEditor.FamilyParamValue(
+                            SelectedFamType, p, FamEditor.Doc);
 
                         var paramGroup = p.Definition.ParameterGroup;
                         famParam.PropGroup = LabelUtils.GetLabelFor(paramGroup);
 
-                        famParam.IsShared = p.IsShared;
-
-                        // Add the final FamParam to the output list
                         famParams.Add(famParam);
                     }
                 }
@@ -219,9 +132,6 @@ namespace OD_FamEditor
 
                 // Refresh the UI to display the Parameters in the table view
                 RefreshParamTableView();
-
-                // Refresh the UI to display the Parameters in the form view
-                //RefreshParamFormView();
             }
         }
     }

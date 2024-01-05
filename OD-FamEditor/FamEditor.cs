@@ -25,7 +25,7 @@ namespace OD_FamEditor
         public FamilyTypeSet LoadData()
         {
             // String for showing debug information in the UI
-            var debugOutput = "";
+            //var debugOutput = "";
 
             // Instantiate the Family Manager to begin editing the family
             var fm = this.Doc.FamilyManager;
@@ -57,19 +57,19 @@ namespace OD_FamEditor
             {
                 this.FamilyTypes.Add(t);
 
-                // Generate debugging information
-                string typeName = t.Name;
-                debugOutput += string.Format("\n  {0}:", typeName);
-                foreach (string key in keys)
-                {
-                    FamilyParameter fp = fps[key];
-                    if (t.HasValue(fp))
-                    {
-                        debugOutput += string.Format(
-                            "\n    {0} = {1}", key, FamilyParamValueString(t, fp, this.Doc)
-                            );
-                    }
-                }
+                //// Generate debugging information
+                //string typeName = t.Name;
+                //debugOutput += string.Format("\n  {0}:", typeName);
+                //foreach (string key in keys)
+                //{
+                //    FamilyParameter fp = fps[key];
+                //    if (t.HasValue(fp))
+                //    {
+                //        debugOutput += string.Format(
+                //            "\n    {0} = {1}", key, FamilyParamValueString(t, fp, this.Doc)
+                //            );
+                //    }
+                //}
             }
 
             // If the family has no types named, the enumeration is 0
@@ -85,9 +85,6 @@ namespace OD_FamEditor
         /// </summary>
         public void GetFamParams()
         {
-            var debugOutput = string.Empty;
-            var dictOutput = new Dictionary<FamilyType, List<FamilyParameter>>();
-
             var allParameters = this.Doc.FamilyManager.Parameters;
 
             int n = allParameters.Size;
@@ -106,7 +103,7 @@ namespace OD_FamEditor
                 {
                     familyParams[name].Add(fp);
                 }
-                // If it is a new Family Type, creat the list of Parameters 
+                // If it is a new Family Type, create the list of Parameters 
                 else
                 {
                     var newParamList = new List<FamilyParameter>();
@@ -120,6 +117,75 @@ namespace OD_FamEditor
 
             this.FamilyParams = familyParams;
         }
+
+        public static object FamilyParamValue(
+          FamilyType t,
+          FamilyParameter fp,
+          Document doc)
+        {
+            object value = t.AsValueString(fp);
+
+            switch (fp.StorageType)
+            {
+                case StorageType.Double:
+                    var doubleValue =
+                      (double)t.AsDouble(fp);
+
+                    value = doubleValue;
+
+                    break;
+
+                case StorageType.ElementId:
+                    if (fp.Definition.ParameterType == ParameterType.Image)
+                    {
+                        value = "{{ Image }}";
+                    }
+                    else if (fp.Definition.ParameterType == ParameterType.Material)
+                    {
+                        value = "{{ Material }}";
+                    }
+                    else
+                    {
+                        ElementId id = t.AsElementId(fp);
+                        Element e = doc.GetElement(id);
+                        value = id.ToString();
+                    }
+
+                    break;
+
+                case StorageType.Integer:
+                    if (fp.Definition.ParameterType == ParameterType.YesNo)
+                    {
+                        var intValue = t.AsInteger(fp).ToString();
+
+                        if (intValue == "1")
+                        {
+                            value = true;
+                        }
+                        else if (intValue == "0")
+                        {
+                            value = false;
+                        }
+                        else
+                        {
+                            value = null;
+                        }
+                    }
+                    else
+                    {
+                        value = t.AsInteger(fp).ToString();
+                    }
+
+                    break;
+
+                case StorageType.String:
+                    value = "'" + t.AsString(fp);
+
+                    break;
+            }
+            return value;
+        }
+
 
         /// <summary>
         /// Helper method to cast any Parameter datatype to a string
