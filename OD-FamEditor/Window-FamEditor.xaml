@@ -20,13 +20,18 @@
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="BlueGrey" SecondaryColor="Blue" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            
+            <Style TargetType="Expander">
+                <Setter Property="Margin" Value="10,10,0,10"/>
+            </Style>
+
+            <Style TargetType="TextBlock" x:Key="ExpanderCount">
+                <Setter Property="Margin" Value="5,0,0,0"/>
+            </Style>
+
             <Style TargetType="TextBox">
                 <Setter Property="Margin" Value="5" />
                 <Setter Property="Width" Value="360" />
-            </Style>
-
-            <Style TargetType="TextBlock">
-                <Setter Property="Margin" Value="5"/>
             </Style>
         </ResourceDictionary>
     </Window.Resources>
@@ -45,15 +50,41 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Name="ScrollViewer_ParamForm">
-                <StackPanel x:Name="StackPanel_Params"></StackPanel>
-            </ScrollViewer>
-            <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Hidden" AutoGenerateColumns="False">
+            <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Visible" AutoGenerateColumns="False" SelectionUnit="FullRow">
+                <DataGrid.Resources>
+                    <SolidColorBrush x:Key="MaterialDesignTextBoxBorder" Color="Transparent"/>
+                </DataGrid.Resources>
+                <DataGrid.GroupStyle>
+                    <GroupStyle>
+                        <GroupStyle.ContainerStyle>
+                            <Style TargetType="{x:Type GroupItem}">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                            <Expander IsExpanded="True">
+                                                <Expander.Header>
+                                                    <DockPanel>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                                        <TextBlock  Style="{StaticResource ExpanderCount}" 
+                                                                    Text="{Binding ItemCount, StringFormat=({0})}" />
+                                                    </DockPanel>
+                                                </Expander.Header>
+                                                <Expander.Content>
+                                                    <ItemsPresenter />
+                                                </Expander.Content>
+                                            </Expander>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </GroupStyle.ContainerStyle>
+                    </GroupStyle>
+                </DataGrid.GroupStyle>
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                    <DataGridTextColumn  Header="Name" Binding="{Binding Name}" SortDirection="Ascending" IsReadOnly="True" />
                     <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
-                    <DataGridTextColumn Header="DataType" Binding="{Binding DataType}" />
-                    <DataGridTextColumn Header="Shared Type" Binding="{Binding IsShared}" />
+                    <DataGridTextColumn Header="DataType" Binding="{Binding DataType}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Shared" Binding="{Binding IsShared}" IsReadOnly="True" />
                 </DataGrid.Columns>
             </DataGrid>
         </DockPanel>

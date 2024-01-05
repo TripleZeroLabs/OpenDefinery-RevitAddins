@@ -5,6 +5,7 @@ using OpenDefinery;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -63,90 +64,94 @@ namespace OD_FamEditor
             }
         }
 
-        private void RefreshParamTableView()
-        {
-            DataGrid_Params.ItemsSource = SelectedFamParams;
-            ScrollViewer_ParamForm.Visibility = System.Windows.Visibility.Hidden;
-
-            DataGrid_Params.Visibility = System.Windows.Visibility.Visible;
-        }
-
         /// <summary>
         /// Update the view to show/edit Parameters in the window.
         /// </summary>
-        private void RefreshParamFormView()
+        private void RefreshParamTableView()
         {
-            // First clear all children and content from previous Family Type selection
-            foreach (UIElement c in StackPanel_Params.Children)
-            {
-                var element = c as FrameworkElement;
-                try
-                {
-                    UnregisterName(element.Name);
+            // Groups Parameters based on Property Name
+            ListCollectionView collectionView = new ListCollectionView(SelectedFamParams);
+            collectionView.GroupDescriptions.Add(new PropertyGroupDescription("PropGroup"));
 
-                    if (c.GetType() == typeof(Expander))
-                    {
-                        var expander = c as Expander;
-                        var expanderContent = expander.Content as StackPanel;
-
-                        UnregisterName(expanderContent.Name);
-                    }
-                }
-                catch {}
-            }
-
-            StackPanel_Params.Children.Clear();
-
-            // Sort thhe Property Groups and add Children to the Stack Panel
-            SelectedFamParams.OrderBy(x => x.PropGroup);
-            
-            SelectedFamParams.OrderBy(x => x.Name);
-
-            var propGroups = SelectedFamParams.Select(x => x.PropGroup).Distinct();
-
-            foreach (var g in propGroups)
-            {
-                var cleanName = g.Replace(' ', '_');
-
-                // First we need to clean up any previous registered names
-                //UnregisterName("expander_" + cleanName);
-                //UnregisterName("expanderContent_" + cleanName);
-
-                // Create new UI elements
-                var expander = new Expander();
-                expander.IsExpanded = true;
-                expander.Header = g;
-                expander.Name = "expander_" + cleanName;
-                StackPanel_Params.Children.Add(expander);
-                RegisterName(expander.Name, expander);
-
-                var groupStackPanel = new StackPanel();
-                groupStackPanel.Name = "expanderContent_" + cleanName;
-                expander.Content = groupStackPanel;
-                RegisterName(groupStackPanel.Name, groupStackPanel);
-            }
-
-            // Add each Parameter as children to the appropriaate Expander
-            foreach (var p in SelectedFamParams)
-            {
-                var cleanGroupName = p.PropGroup.Replace(' ', '_');
-
-                var groupExpander = StackPanel_Params.FindName("expander_" + cleanGroupName) as Expander;
-                var groupContent = groupExpander.FindName("expanderContent_" + cleanGroupName) as StackPanel;
-
-                var labelName = new TextBlock();
-                labelName.Height = Double.NaN;
-                labelName.Text = p.Name;
-
-                groupContent.Children.Add(labelName);
-
-                var textBoxValue = new System.Windows.Controls.TextBox();
-                textBoxValue.Height = Double.NaN;
-                textBoxValue.Text = p.Value;
-
-                groupContent.Children.Add(textBoxValue);
-            }
+            DataGrid_Params.ItemsSource = collectionView;
         }
+
+        ///// <summary>
+        ///// Update the view to show/edit Parameters in the window.
+        ///// </summary>
+        //private void RefreshParamFormView()
+        //{
+        //    // First clear all children and content from previous Family Type selection
+        //    foreach (UIElement c in StackPanel_Params.Children)
+        //    {
+        //        var element = c as FrameworkElement;
+        //        try
+        //        {
+        //            UnregisterName(element.Name);
+
+        //            if (c.GetType() == typeof(Expander))
+        //            {
+        //                var expander = c as Expander;
+        //                var expanderContent = expander.Content as StackPanel;
+
+        //                UnregisterName(expanderContent.Name);
+        //            }
+        //        }
+        //        catch {}
+        //    }
+
+        //    StackPanel_Params.Children.Clear();
+
+        //    // Sort thhe Property Groups and add Children to the Stack Panel
+        //    SelectedFamParams.OrderBy(x => x.PropGroup);
+            
+        //    SelectedFamParams.OrderBy(x => x.Name);
+
+        //    var propGroups = SelectedFamParams.Select(x => x.PropGroup).Distinct();
+
+        //    foreach (var g in propGroups)
+        //    {
+        //        var cleanName = g.Replace(' ', '_');
+
+        //        // First we need to clean up any previous registered names
+        //        //UnregisterName("expander_" + cleanName);
+        //        //UnregisterName("expanderContent_" + cleanName);
+
+        //        // Create new UI elements
+        //        var expander = new Expander();
+        //        expander.IsExpanded = true;
+        //        expander.Header = g;
+        //        expander.Name = "expander_" + cleanName;
+        //        StackPanel_Params.Children.Add(expander);
+        //        RegisterName(expander.Name, expander);
+
+        //        var groupStackPanel = new StackPanel();
+        //        groupStackPanel.Name = "expanderContent_" + cleanName;
+        //        expander.Content = groupStackPanel;
+        //        RegisterName(groupStackPanel.Name, groupStackPanel);
+        //    }
+
+        //    // Add each Parameter as children to the appropriaate Expander
+        //    foreach (var p in SelectedFamParams)
+        //    {
+        //        var cleanGroupName = p.PropGroup.Replace(' ', '_');
+
+        //        var groupExpander = StackPanel_Params.FindName("expander_" + cleanGroupName) as Expander;
+        //        var groupContent = groupExpander.FindName("expanderContent_" + cleanGroupName) as StackPanel;
+
+        //        var labelName = new TextBlock();
+        //        labelName.Height = Double.NaN;
+        //        labelName.Text = p.Name;
+
+        //        groupContent.Children.Add(labelName);
+
+        //        var textBoxValue = new System.Windows.Controls.TextBox();
+        //        textBoxValue.Height = Double.NaN;
+        //        textBoxValue.Text = p.Value;
+
+        //        groupContent.Children.Add(textBoxValue);
+        //    }
+        //}
 
         /// <summary>
         /// Family Type ListBox selection changes
