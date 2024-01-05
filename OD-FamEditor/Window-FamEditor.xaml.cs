@@ -35,9 +35,6 @@ namespace OD_FamEditor
 
         public Window_FamEditor(RvtConnector rvtConnector)
         {
-            Assembly.LoadFrom(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "MaterialDesignThemes.Wpf.dll"));
-            Assembly.LoadFrom(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "MaterialDesignColors.dll"));
-
             InitializeComponent();
 
             // Instatiate a main FamEditor class
@@ -66,10 +63,18 @@ namespace OD_FamEditor
             }
         }
 
+        private void RefreshParamTableView()
+        {
+            DataGrid_Params.ItemsSource = SelectedFamParams;
+            ScrollViewer_ParamForm.Visibility = System.Windows.Visibility.Hidden;
+
+            DataGrid_Params.Visibility = System.Windows.Visibility.Visible;
+        }
+
         /// <summary>
         /// Update the view to show/edit Parameters in the window.
         /// </summary>
-        private void RefreshParamView()
+        private void RefreshParamFormView()
         {
             // First clear all children and content from previous Family Type selection
             foreach (UIElement c in StackPanel_Params.Children)
@@ -184,7 +189,7 @@ namespace OD_FamEditor
                         var famParam = new FamParam();
 
                         famParam.Name = p.Definition.Name;
-                        famParam.FamilyTypeName = fam.Key;
+                        famParam.FamilyTypeName = SelectedFamType.Name;
                         famParam.Value = FamEditor.FamilyParamValueString(
                             SelectedFamType,
                             p,
@@ -207,10 +212,11 @@ namespace OD_FamEditor
                 // Set the list of Parameters
                 SelectedFamParams = famParams;
 
-                DataGrid_Params.ItemsSource = SelectedFamParams;
+                // Refresh the UI to display the Parameters in the table view
+                RefreshParamTableView();
 
-                // Refresh the UI to display the Parameters
-                RefreshParamView();
+                // Refresh the UI to display the Parameters in the form view
+                //RefreshParamFormView();
             }
         }
     }

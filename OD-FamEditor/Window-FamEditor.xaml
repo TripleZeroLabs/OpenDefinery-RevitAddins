@@ -20,6 +20,14 @@
                 <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="BlueGrey" SecondaryColor="Blue" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="TextBox">
+                <Setter Property="Margin" Value="5" />
+                <Setter Property="Width" Value="360" />
+            </Style>
+
+            <Style TargetType="TextBlock">
+                <Setter Property="Margin" Value="5"/>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -28,8 +36,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBox Grid.Row="1" x:Name="TextBox_DebugOutput" Margin="20,20,20,20" TextWrapping="Wrap" Height="100" VerticalAlignment="Bottom" Visibility="Collapsed"/>
-        <DockPanel Grid.Row="1">
+        <TextBox x:Name="TextBox_DebugOutput" Margin="64,0,220,20" TextWrapping="Wrap" Height="100" VerticalAlignment="Bottom" Visibility="Collapsed" Grid.Column="1"/>
+        <DockPanel Grid.ColumnSpan="2">
             <ListBox x:Name="ListBox_FamilyTypes" MinWidth="200" d:ItemsSource="{Binding}" SelectionChanged="ListBox_FamilyTypes_SelectionChanged" Width="Auto">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -37,10 +45,17 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Name="ScrollViewer_ParamForm">
                 <StackPanel x:Name="StackPanel_Params"></StackPanel>
             </ScrollViewer>
-            <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Hidden"/>
+            <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Hidden" AutoGenerateColumns="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
+                    <DataGridTextColumn Header="DataType" Binding="{Binding DataType}" />
+                    <DataGridTextColumn Header="Shared Type" Binding="{Binding IsShared}" />
+                </DataGrid.Columns>
+            </DataGrid>
         </DockPanel>
     </Grid>
 </Window>
