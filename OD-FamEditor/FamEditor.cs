@@ -136,20 +136,23 @@ namespace OD_FamEditor
                     break;
 
                 case StorageType.ElementId:
-                    if (fp.Definition.ParameterType == ParameterType.Image)
-                    {
-                        value = "{{ Image }}";
-                    }
-                    else if (fp.Definition.ParameterType == ParameterType.Material)
-                    {
-                        value = "{{ Material }}";
-                    }
-                    else
-                    {
-                        ElementId id = t.AsElementId(fp);
-                        Element e = doc.GetElement(id);
-                        value = id.ToString();
-                    }
+                    //if (fp.Definition.ParameterType == ParameterType.Image)
+                    //{
+                    //    value = "{{ Image }}";
+                    //}
+                    //else if (fp.Definition.ParameterType == ParameterType.Material)
+                    //{
+                    //    value = "{{ Material }}";
+                    //}
+                    //else
+                    //{
+                    //    ElementId id = t.AsElementId(fp);
+                    //    Element e = doc.GetElement(id);
+                    //    value = id.ToString();
+                    //}
+
+                    ElementId id = t.AsElementId(fp);
+                    value = id.ToString();
 
                     break;
 
@@ -179,7 +182,7 @@ namespace OD_FamEditor
                     break;
 
                 case StorageType.String:
-                    value = "'" + t.AsString(fp);
+                    value = t.AsString(fp);
 
                     break;
             }
@@ -212,20 +215,23 @@ namespace OD_FamEditor
                     break;
 
                 case StorageType.ElementId:
-                    if (fp.Definition.ParameterType == ParameterType.Image)
-                    {
-                        value = "Image";
-                    }
-                    else if (fp.Definition.ParameterType == ParameterType.Material)
-                    {
-                        value = "Material";
-                    }
-                    else
-                    {
-                        ElementId id = t.AsElementId(fp);
-                        Element e = doc.GetElement(id);
-                        value = id.ToString();
-                    }
+                    //if (fp.Definition.ParameterType == ParameterType.Image)
+                    //{
+                    //    value = "Image";
+                    //}
+                    //else if (fp.Definition.ParameterType == ParameterType.Material)
+                    //{
+                    //    value = "Material";
+                    //}
+                    //else
+                    //{
+                    //    ElementId id = t.AsElementId(fp);
+                    //    Element e = doc.GetElement(id);
+                    //    value = id.ToString();
+                    //}
+
+                    ElementId id = t.AsElementId(fp);
+                    value = id.ToString();
 
                     break;
 
@@ -255,11 +261,18 @@ namespace OD_FamEditor
                     break;
 
                 case StorageType.String:
-                    value = "'" + t.AsString(fp);
+                    value = t.AsString(fp);
 
                     break;
             }
             return value;
         }
+    }
+
+    public class FamEditorParameter
+    {
+        public FamilyParameter FamilyParameter { get; set; }
+        public object Value { get; set; }
+        public string PropGroup { get; set; }
     }
 }

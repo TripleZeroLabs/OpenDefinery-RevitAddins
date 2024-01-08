@@ -6,32 +6,28 @@
              xmlns:local="clr-namespace:OD_FamEditor"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
-             TextElement.FontWeight="Regular"
-             TextElement.FontSize="13"
-             TextOptions.TextFormattingMode="Ideal"
-             TextOptions.TextRenderingMode="Auto"
-             FontFamily="{DynamicResource MaterialDesignFont}">
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
 
     <Window.Resources>
         <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <materialDesign:BundledTheme BaseTheme="Light" PrimaryColor="BlueGrey" SecondaryColor="Blue" />
-                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-            
+            <Style TargetType="ScrollViewer" x:Key="ScrollViewer_ParamForm">
+                <Setter Property="Width" Value="100"/>
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="Height" Value="Auto" />
+            </Style>
+
+            <Style TargetType="TextBlock" x:Key="TextBlock_FormLabel">
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Margin" Value="0,15,0,5" />
+            </Style>
+
+            <Style TargetType="TextBox" x:Key="TextBox_Default">
+                <Setter Property="Padding" Value="3" />
+                <Setter Property="BorderThickness" Value="0,0,0,1" />
+            </Style>
+
             <Style TargetType="Expander">
-                <Setter Property="Margin" Value="10,10,0,10"/>
-            </Style>
-
-            <Style TargetType="TextBlock" x:Key="ExpanderCount">
-                <Setter Property="Margin" Value="5,0,0,0"/>
-            </Style>
-
-            <Style TargetType="TextBox">
-                <Setter Property="Margin" Value="5" />
-                <Setter Property="Width" Value="360" />
+                <Setter Property="Margin" Value="10"/>
             </Style>
         </ResourceDictionary>
     </Window.Resources>
@@ -42,15 +38,16 @@
         </Grid.RowDefinitions>
 
         <TextBox x:Name="TextBox_DebugOutput" Margin="64,0,220,20" TextWrapping="Wrap" Height="100" VerticalAlignment="Bottom" Visibility="Collapsed" Grid.Column="1"/>
-        <DockPanel Grid.ColumnSpan="2">
-            <ListBox x:Name="ListBox_FamilyTypes" MinWidth="200" d:ItemsSource="{Binding}" SelectionChanged="ListBox_FamilyTypes_SelectionChanged" Width="Auto">
+        <DockPanel LastChildFill="True" VerticalAlignment="Stretch">
+            <ListBox x:Name="ListBox_FamilyTypes" MinWidth="200" d:ItemsSource="{Binding}" SelectionChanged="ListBox_FamilyTypes_SelectionChanged" Width="Auto" VerticalContentAlignment="Top">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Visible" AutoGenerateColumns="False" SelectionUnit="FullRow">
+
+            <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Collapsed" AutoGenerateColumns="False" SelectionUnit="FullRow" d:IsHidden="True">
                 <DataGrid.Resources>
                     <SolidColorBrush x:Key="MaterialDesignTextBoxBorder" Color="Transparent"/>
                 </DataGrid.Resources>
@@ -82,13 +79,16 @@
                 </DataGrid.GroupStyle>
                 <DataGrid.Columns>
                     <DataGridTextColumn  Header="Name" Binding="{Binding FamilyParameter.Definition.Name}" SortDirection="Ascending" IsReadOnly="True" />
-                    <DataGridTemplateColumn Header="Value" Binding="{Binding Value}">
-                    </DataGridTemplateColumn>
-                    <!--<DataGridTextColumn Header="Value" Binding="{Binding Value}" />-->
+                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
                     <DataGridTextColumn Header="DataType" Binding="{Binding FamilyParameter.Definition.ParameterType}" IsReadOnly="True"/>
                     <DataGridTextColumn Header="Shared" Binding="{Binding FamilyParameter.IsShared}" IsReadOnly="True" />
                 </DataGrid.Columns>
             </DataGrid>
+            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="Auto">
+                <ScrollViewer x:Name="ScrollViewer_ParamForm" VerticalAlignment="Stretch">
+                    <StackPanel x:Name="StackPanel_Params" HorizontalAlignment="Left"/>
+                </ScrollViewer>
+            </Grid>
         </DockPanel>
     </Grid>
 </Window>

@@ -69,12 +69,111 @@ namespace OD_FamEditor
         /// </summary>
         private void RefreshParamTableView()
         {
+            // Toggle UI
+            ScrollViewer_ParamForm.Visibility = System.Windows.Visibility.Collapsed;
+            DataGrid_Params.Visibility = System.Windows.Visibility.Visible;
+
             // Groups Parameters based on Property Name
             ListCollectionView collectionView = new ListCollectionView(SelectedFamParams);
 
             collectionView.GroupDescriptions.Add(new PropertyGroupDescription("PropGroup"));
 
             DataGrid_Params.ItemsSource = collectionView;
+        }
+
+        /// <summary>
+        /// Update the view to show/edit Parameters in the window.
+        /// </summary>
+        private void RefreshParamFormView()
+        {
+            // Toggle UI
+            DataGrid_Params.Visibility = System.Windows.Visibility.Collapsed;
+            ScrollViewer_ParamForm.Visibility = System.Windows.Visibility.Visible;
+
+            // First clear all children and content from previous Family Type selection
+            foreach (UIElement c in StackPanel_Params.Children)
+            {
+                var element = c as FrameworkElement;
+                try
+                {
+                    UnregisterName(element.Name);
+
+                    if (c.GetType() == typeof(Expander))
+                    {
+                        var expander = c as Expander;
+                        var expanderContent = expander.Content as StackPanel;
+
+                        UnregisterName(expanderContent.Name);
+                    }
+                }
+                catch { }
+            }
+
+            StackPanel_Params.Children.Clear();
+
+            // Sort thhe Property Groups and add Children to the Stack Panel
+            SelectedFamParams.OrderBy(x => x.PropGroup);
+
+            SelectedFamParams.OrderBy(x => x.FamilyParameter.Definition.Name);
+
+            var propGroups = SelectedFamParams.Select(x => x.PropGroup).Distinct();
+
+            foreach (var g in propGroups)
+            {
+                var cleanName = g.Replace(' ', '_');
+
+                // First we need to clean up any previous registered names
+                //UnregisterName("expander_" + cleanName);
+                //UnregisterName("expanderContent_" + cleanName);
+
+                // Create new UI elements
+                var expander = new Expander();
+                expander.IsExpanded = true;
+                expander.Header = g;
+                expander.Name = "expander_" + cleanName;
+                StackPanel_Params.Children.Add(expander);
+                RegisterName(expander.Name, expander);
+
+                var groupStackPanel = new StackPanel();
+                groupStackPanel.Name = "expanderContent_" + cleanName;
+                expander.Content = groupStackPanel;
+                RegisterName(groupStackPanel.Name, groupStackPanel);
+            }
+
+            // Add each Parameter as children to the appropriaate Expander
+            foreach (var p in SelectedFamParams)
+            {
+                var cleanGroupName = p.PropGroup.Replace(' ', '_');
+
+                var groupExpander = StackPanel_Params.FindName("expander_" + cleanGroupName) as Expander;
+                var groupContent = groupExpander.FindName("expanderContent_" + cleanGroupName) as StackPanel;
+
+                var labelName = new TextBlock();
+                labelName.Style = this.FindResource("TextBlock_FormLabel") as Style;
+
+                labelName.Name = "Label_ParamName";
+                labelName.Text = p.FamilyParameter.Definition.Name;
+
+                groupContent.Children.Add(labelName);
+
+                if (p.FamilyParameter.Definition.ParameterType == ParameterType.YesNo)
+                {
+                    var checkBoxValue = new System.Windows.Controls.CheckBox();
+
+                    checkBoxValue.IsChecked = (bool)p.Value;
+
+                    groupContent.Children.Add(checkBoxValue);
+                }
+                else
+                {
+                    var textBoxValue = new System.Windows.Controls.TextBox();
+                    textBoxValue.Style = this.FindResource("TextBox_Default") as Style;
+
+                    textBoxValue.Text = p.Value as string;
+
+                    groupContent.Children.Add(textBoxValue);
+                }
+            }
         }
 
         /// <summary>
@@ -131,7 +230,10 @@ namespace OD_FamEditor
                 SelectedFamParams = famParams;
 
                 // Refresh the UI to display the Parameters in the table view
-                RefreshParamTableView();
+                //RefreshParamTableView();
+
+                // Refresh the UI to display the Parameters in the form view
+                RefreshParamFormView();
             }
         }
     }
