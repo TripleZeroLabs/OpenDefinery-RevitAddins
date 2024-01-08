@@ -148,44 +148,53 @@ namespace OpenDefinery
         /// <returns>A list of Collection objects</returns>
         public static List<Collection> ByCurrentUser(Definery definery)
         {
-            var client = new RestClient(Definery.BaseUrl + "rest/collections?_format=json");
-            client.Timeout = -1;
             var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
 
-            Debug.WriteLine(response);
-
-            // Return the data if the response was OK
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            // Check if the user is authenticated first since an anonymous user has no Collections
+            if (!string.IsNullOrEmpty(definery.AuthCode))
             {
-                // If the user has no Collections, it returns an empty array
-                // Only process the response if it is not an empty array
-                if (response.Content != "[]")
+                var client = new RestClient(Definery.BaseUrl + "rest/collections?_format=json");
+                client.Timeout = -1;
+
+                request.AddHeader("Authorization", "Basic " + definery.AuthCode);
+
+                IRestResponse response = client.Execute(request);
+
+                try
                 {
-                    try
-                    {
-                        var collections = JsonConvert.DeserializeObject<List<Collection>>(response.Content);
+                    var collections = JsonConvert.DeserializeObject<List<Collection>>(response.Content);
 
-                        return collections;
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.ToString());
-
-                        return null;
-                    }
+                    return collections;
                 }
-                else
+                catch (Exception ex)
                 {
+                    Debug.WriteLine(ex.ToString());
+
                     return null;
                 }
             }
+
+            // Only retrieve published Collections if the user is not authenticated
             else
             {
-                Debug.WriteLine(response.StatusCode.ToString());
+                var client = new RestClient(Definery.BaseUrl + "rest/collections/published?_format=json");
+                client.Timeout = -1;
 
-                return null;
+                IRestResponse response = client.Execute(request);
+
+                try
+                {
+                    var collections = JsonConvert.DeserializeObject<List<Collection>>(response.Content);
+
+                    return collections;
+                }
+
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+
+                    return null;
+                }
             }
         }
 
@@ -199,7 +208,12 @@ namespace OpenDefinery
             var client = new RestClient(Definery.BaseUrl + "rest/collections/published?_format=json");
             client.Timeout = -1;
             var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
+
+            if (!string.IsNullOrEmpty(definery.AuthCode))
+            {
+                request.AddHeader("Authorization", "Basic " + definery.AuthCode);
+            }
+
             IRestResponse response = client.Execute(request);
 
             // Return the data if the response was OK

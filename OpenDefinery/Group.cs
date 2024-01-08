@@ -125,7 +125,12 @@ namespace OpenDefinery
                 var client = new RestClient(Definery.BaseUrl + "rest/groups?_format=json");
                 client.Timeout = -1;
                 var request = new RestRequest(Method.GET);
-                request.AddHeader("Authorization", "Basic " + definery.AuthCode);
+
+                if (!string.IsNullOrEmpty(definery.AuthCode))
+                {
+                    request.AddHeader("Authorization", "Basic " + definery.AuthCode);
+                }
+
                 IRestResponse response = client.Execute(request);
                 Console.WriteLine(response.Content);
 

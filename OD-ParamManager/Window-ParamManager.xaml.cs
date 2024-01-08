@@ -39,8 +39,9 @@ namespace OD_ParamManager
         {
             InitializeComponent();
 
-            // Set the intial fields and UI
-            Grid_Overlay.Visibility = System.Windows.Visibility.Visible;
+            // Set the ability for anonymous users to use the addin
+            var loginRequired = false;
+
             Grid_EditParams.Visibility = System.Windows.Visibility.Hidden;
             Grid_Details.Visibility = System.Windows.Visibility.Hidden;
             Grid_AddCollection.Visibility = System.Windows.Visibility.Hidden;
@@ -64,6 +65,20 @@ namespace OD_ParamManager
 
             // Update the UI
             Title = "OpenDefinery Parameter Manager" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            // Initialize the window
+            if (loginRequired)
+            {
+                Grid_Overlay.Visibility = System.Windows.Visibility.Visible;
+                Grid_Login.Visibility = System.Windows.Visibility.Visible;
+            }
+            else
+            {
+                Grid_Overlay.Visibility = System.Windows.Visibility.Hidden;
+                Grid_Login.Visibility = System.Windows.Visibility.Hidden;
+
+                ReloadDataAndUi(Definery);
+            }
         }
 
         /// <summary>

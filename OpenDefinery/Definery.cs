@@ -83,39 +83,36 @@ namespace OpenDefinery
         /// </summary>
         public static Definery LoadData(Definery definery)
         {
-            if (!string.IsNullOrEmpty(definery.AuthCode))
+            // Load the data from OpenDefinery
+            definery.Groups = Group.GetAll(definery);
+            definery.DataTypes = DataType.GetAll(definery);
+            definery.DataCategories = DataCategory.GetAll(definery);
+            definery.MyCollections = Collection.ByCurrentUser(definery);
+            definery.PublishedCollections = Collection.GetPublished(definery);
+
+            // Clean up Data Category names
+            foreach (var cat in definery.DataCategories)
             {
-                // Load the data from OpenDefinery
-                definery.Groups = Group.GetAll(definery);
-                definery.DataTypes = DataType.GetAll(definery);
-                definery.DataCategories = DataCategory.GetAll(definery);
-                definery.MyCollections = Collection.ByCurrentUser(definery);
-                definery.PublishedCollections = Collection.GetPublished(definery);
-
-                // Clean up Data Category names
-                foreach (var cat in definery.DataCategories)
-                {
-                    var splitName = cat.Name.Split('_');
-                    cat.Name = splitName[1];
-                }
-
-                // Sort the lists for future use by UI
-                definery.DataTypes.Sort(delegate (DataType x, DataType y)
-                {
-                    if (x.Name == null && y.Name == null) return 0;
-                    else if (x.Name == null) return -1;
-                    else if (y.Name == null) return 1;
-                    else return x.Name.CompareTo(y.Name);
-                });
-
-                definery.DataCategories.Sort(delegate (DataCategory x, DataCategory y)
-                {
-                    if (x.Name == null && y.Name == null) return 0;
-                    else if (x.Name == null) return -1;
-                    else if (y.Name == null) return 1;
-                    else return x.Name.CompareTo(y.Name);
-                });
+                var splitName = cat.Name.Split('_');
+                cat.Name = splitName[1];
             }
+
+            // Sort the lists for future use by UI
+            definery.DataTypes.Sort(delegate (DataType x, DataType y)
+            {
+                if (x.Name == null && y.Name == null) return 0;
+                else if (x.Name == null) return -1;
+                else if (y.Name == null) return 1;
+                else return x.Name.CompareTo(y.Name);
+            });
+
+            definery.DataCategories.Sort(delegate (DataCategory x, DataCategory y)
+            {
+                if (x.Name == null && y.Name == null) return 0;
+                else if (x.Name == null) return -1;
+                else if (y.Name == null) return 1;
+                else return x.Name.CompareTo(y.Name);
+            });
 
             return definery;
         }
