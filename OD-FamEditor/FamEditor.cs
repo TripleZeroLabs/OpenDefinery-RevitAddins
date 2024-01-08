@@ -118,6 +118,13 @@ namespace OD_FamEditor
             this.FamilyParams = familyParams;
         }
 
+        /// <summary>
+        /// Get the value of a FamilyParameter
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="fp"></param>
+        /// <param name="doc"></param>
+        /// <returns></returns>
         public static object FamilyParamValue(
           FamilyType t,
           FamilyParameter fp,
