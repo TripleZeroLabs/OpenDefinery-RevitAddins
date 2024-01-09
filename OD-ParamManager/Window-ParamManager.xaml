@@ -287,6 +287,18 @@
                                 <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterInCollection" Content="In Collection" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25" Padding="10,0" Margin="0,0,10,-0.2" Click="Button_FilterInCollection_Click" Width="75"/>
                                 <Button Style="{StaticResource FilterButton}" x:Name="Button_FilterNotInCollection" Content="Not In Collection" HorizontalAlignment="Left" VerticalAlignment="Center" Height="25" Padding="10,0" Margin="0,0,10,0" Click="Button_FilterNotInCollection_Click" Width="100"/>
                                 <Button 
+                                    Style="{StaticResource ActionButton}"
+                                    x:Name="Button_Replace" 
+                                    Padding="10,3"
+                                    DockPanel.Dock="Right" 
+                                    Click="Button_Replace_Click"
+                                    ToolTip="Replace the selected parameter" Background="White" IsEnabled="False" Margin="10,0,0,0">
+                                    <DockPanel>
+                                        <Image Source="/OpenDefinery-ParamManager;component/Assets/Icons/swap-horizontal.png" Style="{StaticResource ButtonIcon}" />
+                                        <TextBlock Text="Replace"/>
+                                    </DockPanel>
+                                </Button>
+                                <Button 
                                 Style="{StaticResource ActionButton}"
                                 x:Name="Button_Purge" 
                                 Margin="10,0,0,0" 
@@ -295,9 +307,9 @@
                                 HorizontalAlignment="Right" 
                                 Height="25" 
                                 Click="Button_Purge_Click"
-                                ToolTip="Find all model elements which use the selected parameters" Background="White" IsEnabled="False">
+                                ToolTip="Delete selected parameters from the model" Background="White" IsEnabled="False">
                                     <DockPanel>
-                                        <Image Source="Assets/Icons/close-circle-fill.png" Style="{StaticResource ButtonIcon}" />
+                                        <Image Source="/OpenDefinery-ParamManager;component/Assets/Icons/close-circle-fill.png" Style="{StaticResource ButtonIcon}" />
                                         <TextBlock Text="Purge"/>
                                     </DockPanel>
                                 </Button>

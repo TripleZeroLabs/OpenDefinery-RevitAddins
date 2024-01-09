@@ -23,7 +23,7 @@ namespace OD_ParamManager
     /// </summary>
     public partial class Window_ParamManager : Window
     {
-        private Definery Definery { get; set; }
+        public Definery Definery { get; set; }
         private RvtConnector RvtConnector { get; set; }
         private List<SharedParameter> ParamsToEdit { get; set; }
         public FilteredElementCollector FamilyInstances { get; set; }
@@ -199,7 +199,7 @@ namespace OD_ParamManager
         /// <param name="dG">DataGrid with current selection</param>
         public void AddSelectedParams(System.Windows.Controls.DataGrid dG)
         {
-            var parmsToAdd = new List<SharedParameter>();
+            var paramsToAdd = new List<SharedParameter>();
 
             // Add each selected row to the Collection
             foreach (var p in dG.SelectedItems)
@@ -207,28 +207,29 @@ namespace OD_ParamManager
                 // Get current Shared Parameter as a SharedParameter object
                 var selectedParam = p as SharedParameter;
 
-                parmsToAdd.Add(selectedParam);
+                paramsToAdd.Add(selectedParam);
             }
 
             // Family Manager logic
             if (RvtConnector.Document.IsFamilyDocument)
             {
-                // Generate a temporary Shared Parameter text file
-                var paramTable = SharedParameter.CreateParamTable(parmsToAdd);
-                var tempFolder = System.IO.Path.GetTempPath();
-                var tempParamTextFile =
-                    string.Format(
-                        tempFolder + "OpenDefineryTempParameters_" + Guid.NewGuid().ToString() + ".txt"
-                        );
+                //// Generate a temporary Shared Parameter text file
+                //var paramTable = SharedParameter.CreateParamTable(parmsToAdd);
+                //var tempFolder = System.IO.Path.GetTempPath();
+                //var tempParamTextFile =
+                //    string.Format(
+                //        tempFolder + "OpenDefineryTempParameters_" + Guid.NewGuid().ToString() + ".txt"
+                //        );
 
-                // Write the string the text file
-                File.WriteAllText(tempParamTextFile, paramTable);
+                //// Write the string the text file
+                //File.WriteAllText(tempParamTextFile, paramTable);
 
-                // Load all Shared Parameters
-                LoadFromTxt(tempParamTextFile);
+                //// Load all Shared Parameters
+                //LoadFromTxt(tempParamTextFile);
 
-                // Delete the temporary file
-                File.Delete(tempParamTextFile);
+                //// Delete the temporary file
+                //File.Delete(tempParamTextFile);
+                RvtConnector.CreateParams(paramsToAdd);
             }
             else
             {
@@ -236,112 +237,6 @@ namespace OD_ParamManager
                     "This feature only works on Revit Families at this time.",
                     "Coming Soon"
                     );
-            }
-        }
-
-        /// <summary>
-        /// Add Shared Parameters to the current model from a text file
-        /// </summary>
-        /// <param name="parmsTxtFilePath"></param>
-        public void LoadFromTxt(string parmsTxtFilePath)
-        {
-            if (RvtConnector.App.SharedParametersFilename != null)
-            {
-                // Store the current shared parameters file in a variable temporarily to reassign later
-                var previousParamTxtFile = RvtConnector.App.SharedParametersFilename;
-
-                // Set the shared parameters file to the temporary file
-                RvtConnector.App.SharedParametersFilename = parmsTxtFilePath;
-
-                DefinitionFile spFile = null;
-
-                try
-                {
-                    spFile = RvtConnector.App.OpenSharedParameterFile();
-                }
-
-                catch (Exception ex)
-                {
-                    TaskDialog.Show("Error opening shared parameter file",
-                        "There was an error opening the shared parameter text file.\n\n" + ex.ToString()
-                        );
-                }
-
-                if (spFile != null)
-                {
-                    // Instantiate a FamilyManager instance to modify the famile
-                    FamilyManager famMan = RvtConnector.Document.FamilyManager;
-
-                    // Instantiate a list of the existing parameters
-                    var existfamilyPar = famMan.GetParameters();
-
-                    // Loop through all Groups in the shared parameter text file
-                    using (Transaction t = new Transaction(RvtConnector.Document))
-                    {
-                        t.Start("Add Shared Parameters");
-
-                        // Instantiate lists for output later
-                        var successful = new List<ExternalDefinition>();
-                        var failed = new List<ExternalDefinition>();
-
-                        // Get each group in the shared parameter file
-                        foreach (DefinitionGroup dG in spFile.Groups)
-                        {
-                            var v = (from ExternalDefinition d in dG.Definitions select d);
-
-                            // Get each parameter in the current group
-                            foreach (ExternalDefinition extDef in v)
-                            {
-                                try
-                                {
-                                    FamilyParameter fp = famMan.AddParameter(
-                                        extDef,
-                                        BuiltInParameterGroup.PG_IDENTITY_DATA,
-                                        false
-                                    );
-
-                                    successful.Add(extDef);
-                                }
-                                catch (Exception ex)
-                                {
-                                    TaskDialog.Show("Error Adding " + extDef.Name, ex.ToString());
-
-                                    failed.Add(extDef);
-                                }
-                            }
-
-                        }
-                        t.Commit();
-
-                        // Output results in Message Box
-                        var transactionStatusString = string.Empty;
-
-                        if (successful.Count > 0)
-                        {
-                            transactionStatusString += "Parameters added succesfully:\n";
-
-                            foreach (ExternalDefinition e in successful)
-                            {
-                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
-                            }
-                        }
-
-                        if (failed.Count > 0)
-                        {
-                            transactionStatusString += "\nParameters failed:\n";
-
-                            foreach (ExternalDefinition e in failed)
-                            {
-                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
-                            }
-                        }
-
-                        TaskDialog.Show("Finished Adding Parameters", transactionStatusString);
-                    }
-
-                    // Reset the shared parameters text file back to the original
-                    RvtConnector.App.SharedParametersFilename = previousParamTxtFile;
-                }
             }
         }
 
@@ -620,7 +515,7 @@ namespace OD_ParamManager
 
                 castedParam.ElementId = Convert.ToInt32(e.Id.IntegerValue);
 
-                revitParams.Add(castedParam);
+                revitParams.Add(castedParam);    
             }
 
             Definery.RevitParameters = revitParams;
@@ -788,8 +683,18 @@ namespace OD_ParamManager
             }
             else
             {
+                Button_Replace.IsEnabled = false;
                 Button_AddToCollection.IsEnabled = false;
                 Button_Purge.IsEnabled = false;
+            }
+
+            if (DataGrid_Main.SelectedItems.Count == 1)
+            {
+                Button_Replace.IsEnabled = true;
+            }
+            else
+            {
+                Button_Replace.IsEnabled = false;
             }
         }
 
@@ -899,13 +804,7 @@ namespace OD_ParamManager
 
                     tdConfirmation.Show();
 
-                    // Refresh parameters in the main Definery object
-                    RefreshRevitParams();
-                    RefreshValidation();
-                    InitCollectionView();
-
-                    // Switch back to the Main Window
-                    Activate();
+                    Refresh();
                 }
                 // Switch back to the main window
                 else
@@ -1287,7 +1186,9 @@ namespace OD_ParamManager
                     specialCharList += c + " ";
                 }
 
-                MessageBox.Show(string.Format("The Collection name can only include the following special characters: \n{0}", specialCharList));
+                MessageBox.Show(string.Format(
+                    "The Collection name can only include the following special characters: \n{0}", specialCharList)
+                    );
             }
 
             return invalid;
@@ -1365,7 +1266,10 @@ namespace OD_ParamManager
             {
                 Button_AddToModel.IsEnabled = true;
             }
-            else { Button_AddToModel.IsEnabled = false;}
+            else 
+            {
+                Button_AddToModel.IsEnabled = false;
+            }
         }
 
         /// <summary>
@@ -1375,9 +1279,82 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void Tab_ModelParameters_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
+            Refresh();
+        }
+
+        /// <summary>
+        /// User clicks the Replace button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Replace_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGrid_Main.SelectedItems.Count == 1 &&
+                DataGrid_Main.SelectedItems.Count > 0)
+            {
+                var selectedParam = DataGrid_Main.SelectedItem as SharedParameter;
+                var newParam = new SharedParameter();
+
+                // Launch the Parameter selection window
+                var paramSelector = new Window_ParamSelector(this);
+                paramSelector.Owner = this;
+                paramSelector.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                var psResult = paramSelector.ShowDialog();
+
+                // Continue replacement if a Parameter was selected
+                if (psResult == true)
+                {
+                    newParam = paramSelector.SelectedParameter;
+
+                    RvtConnector.ReplaceParameter(selectedParam.ElementId, newParam);
+
+                    Refresh();
+
+                    // Prompt the user to either delete the existing parameter or not
+                    TaskDialog td = new TaskDialog("Purge Existing Parameter?");
+
+                    td.MainIcon = TaskDialogIcon.TaskDialogIconWarning;
+                    td.AllowCancellation = false;
+                    td.MainInstruction = "Purge existing parameter?";
+                    td.MainContent = "Deleting the existing parameter may result in data loss.";
+                    td.FooterText = string.Format(
+                        "Note that formulas and parameter values for each family type have been set to \"{0}\".", newParam.Name);
+                    td.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
+
+                    TaskDialogResult tdRes = td.Show();
+
+                    if (tdRes == TaskDialogResult.Yes)
+                    {
+                        // Delete the existing parameter
+                        Transaction trans = new Transaction(RvtConnector.Document, string.Format("Delete parameter \"{0}\"", selectedParam.Name));
+                        trans.Start();
+                        RvtConnector.Document.Delete(new ElementId(selectedParam.ElementId));
+                        trans.Commit();
+                    }
+                    else
+                    {
+                        // Do nothing
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Error: Must select one parameter for this operation.");
+            }
+        }
+
+        /// <summary>
+        /// Method to run every time a change to the Revit DB has occured.
+        /// </summary>
+        private void Refresh()
+        {
+            // Refresh parameters in the main Definery object
             RefreshRevitParams();
             RefreshValidation();
             InitCollectionView();
+
+            // Switch back to the Main Window
+            Activate();
         }
     }
 }

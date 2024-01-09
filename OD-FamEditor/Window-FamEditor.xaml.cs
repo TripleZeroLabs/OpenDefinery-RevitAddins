@@ -216,7 +216,7 @@ namespace OD_FamEditor
                         famParam.FamilyParameter = p;
                         
                         // Retrieve the value of the Parameter
-                        famParam.Value = FamEditor.FamilyParamValue(
+                        famParam.Value = RvtConnector.GetValue(
                             SelectedFamType, p, FamEditor.Doc);
 
                         var paramGroup = p.Definition.ParameterGroup;

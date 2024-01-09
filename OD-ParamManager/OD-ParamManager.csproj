@@ -81,6 +81,8 @@
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
@@ -118,6 +120,9 @@
     <Compile Include="Window-ParamManager.xaml.cs">
       <DependentUpon>Window-ParamManager.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Window-ParamSelector.xaml.cs">
+      <DependentUpon>Window-ParamSelector.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\add-circle-fill.png" />
@@ -130,10 +135,15 @@
     <Resource Include="Assets\Icons\database-2-fill.png" />
     <Resource Include="Assets\Icons\close-circle-fill.png" />
     <Resource Include="Assets\Icons\logo_32x32.png" />
+    <Resource Include="Assets\Icons\swap-horizontal.png" />
     <Content Include="OpenDefinery-ParamManager.addin" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Window-ParamManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Window-ParamSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
