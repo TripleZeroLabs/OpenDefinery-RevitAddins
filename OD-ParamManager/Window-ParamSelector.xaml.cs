@@ -29,10 +29,13 @@ namespace OD_ParamManager
 
             ParamManager = paramManager;
 
-            Button_Confirm.IsEnabled = false;
-
+            // Load data
             ComboBox_ParamSelector.ItemsSource = paramManager.Definery.PublishedCollections;
             ComboBox_ParamSelector.DisplayMemberPath = "Name";
+
+            // Toggle UI
+            StackPanel_ParamSelector.Visibility = Visibility.Collapsed;
+            Button_Confirm.IsEnabled = false;
         }
 
         private void ComboBox_ParamSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -42,8 +45,14 @@ namespace OD_ParamManager
             var selectedCollection = ComboBox_ParamSelector.SelectedItem as Collection;
             var parameters = Collection.GetParameters(ParamManager.Definery, selectedCollection);
 
-            ListBox_ParamSelector.ItemsSource = parameters;
-            ListBox_ParamSelector.DisplayMemberPath = "Name";
+            if (ComboBox_ParamSelector.SelectedItem != null)
+            {
+                ListBox_ParamSelector.ItemsSource = parameters;
+                ListBox_ParamSelector.DisplayMemberPath = "Name";
+
+                // Toggle UI
+                StackPanel_ParamSelector.Visibility = Visibility.Visible;
+            }
         }
 
         private void Button_Confirm_Click(object sender, RoutedEventArgs e)

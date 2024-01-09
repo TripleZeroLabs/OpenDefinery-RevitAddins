@@ -5,12 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:OD_ParamManager"
              mc:Ignorable="d" 
-             d:DesignHeight="450" ResizeMode="NoResize" Width="400">
+             Height="Auto" ResizeMode="NoResize" Width="400">
     <Grid>
         <DockPanel LastChildFill="True" Margin="20,20,20,20">
+            <TextBlock Text="Select a Collection" DockPanel.Dock="Top" Margin="0,0,0,5" ></TextBlock>
             <ComboBox x:Name="ComboBox_ParamSelector" DockPanel.Dock="Top" VerticalAlignment="Top" SelectionChanged="ComboBox_ParamSelector_SelectionChanged"/>
-            <StackPanel Height="Auto">
-                <ListBox x:Name="ListBox_ParamSelector" Height="540" d:ItemsSource="{Binding}" Margin="0,20,0,0" DockPanel.Dock="Top" SelectionChanged="ListBox_ParamSelector_SelectionChanged"/>
+            <StackPanel x:Name="StackPanel_ParamSelector"  Height="Auto" Visibility="Collapsed">
+                <TextBlock Text="Select a Replacement Parameter" Margin="0,10,0,5"></TextBlock>
+                <ListBox x:Name="ListBox_ParamSelector" Height="505" d:ItemsSource="{Binding}" Margin="0,0,0,0" DockPanel.Dock="Top" SelectionChanged="ListBox_ParamSelector_SelectionChanged"/>
                 <Button x:Name="Button_Confirm" Content="Select Parameter" DockPanel.Dock="Top" Click="Button_Confirm_Click" Margin="0,10,0,0" Height="28"/>
             </StackPanel>
         </DockPanel>

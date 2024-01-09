@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
+using Newtonsoft.Json.Linq;
 using OpenDefinery;
 using System;
 using System.Collections;
@@ -92,7 +93,35 @@ namespace OpenDefinery
                                             fm.CurrentType = ft;
 
                                             // Set the Parameter value
-                                            fm.Set(newFamilyParameter, currentValString.Value);
+                                            switch (p.StorageType)
+                                            {
+                                                case StorageType.Double:
+                                                    var doubleValue =
+                                                    (double)ft.AsDouble(p);
+
+                                                    fm.Set(newFamilyParameter, doubleValue);
+
+                                                    break;
+
+                                                case StorageType.ElementId:
+                                                    ElementId id = ft.AsElementId(p);
+                                                    fm.Set(newFamilyParameter, id);
+
+                                                    break;
+
+                                                case StorageType.Integer:
+                                                    int integerValue = (int)ft.AsInteger(p);
+                                                    fm.Set(newFamilyParameter, integerValue);
+
+                                                    break;
+
+                                                case StorageType.String:
+                                                    fm.Set(newFamilyParameter, ft.AsString(p));
+
+                                                    break;
+                                            }
+
+                                            //fm.Set(newFamilyParameter, value);
                                         }
 
                                         catch (Exception ex)
