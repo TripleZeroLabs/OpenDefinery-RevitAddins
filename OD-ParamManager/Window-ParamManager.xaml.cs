@@ -28,7 +28,7 @@ namespace OD_ParamManager
         private List<SharedParameter> ParamsToEdit { get; set; }
         public FilteredElementCollector FamilyInstances { get; set; }
 
-        private Collection SelectedCollection { get; set; }
+        public Collection SelectedCollection { get; set; }
         private static SelectedFilter SelectedFilter {get;set;}
 
         /// <summary>

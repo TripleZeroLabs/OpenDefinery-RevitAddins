@@ -36,6 +36,12 @@ namespace OD_ParamManager
             // Toggle UI
             StackPanel_ParamSelector.Visibility = Visibility.Collapsed;
             Button_Confirm.IsEnabled = false;
+
+            if (paramManager.SelectedCollection != null)
+            {
+                // Set the Collection if there is one selected
+                ComboBox_ParamSelector.SelectedItem = paramManager.SelectedCollection;
+            }
         }
 
         private void ComboBox_ParamSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
