@@ -87,8 +87,8 @@ namespace OpenDefinery
             definery.Groups = Group.GetAll(definery);
             definery.DataTypes = DataType.GetAll(definery);
             definery.DataCategories = DataCategory.GetAll(definery);
-            definery.MyCollections = Collection.ByCurrentUser(definery);
-            definery.PublishedCollections = Collection.GetPublished(definery);
+            //definery.MyCollections = Collection.ByCurrentUser(definery);
+            //definery.PublishedCollections = Collection.GetPublished(definery);
 
             // Clean up Data Category names
             foreach (var cat in definery.DataCategories)

@@ -89,7 +89,6 @@ namespace OD_ParamManager
         {
             // Load all of the things to the main Definery object
             Definery = Definery.LoadData(definery);
-
             RefreshCollections(definery);
         }
 
@@ -187,7 +186,7 @@ namespace OD_ParamManager
                 ApplyExistingFilter();
             }
             else
-            {
+            {   
                 DataGrid_Main.ItemsSource = Definery.RevitParameters;
                 DataGrid_Main.Items.Refresh();
             }
@@ -238,6 +237,8 @@ namespace OD_ParamManager
                     "Coming Soon"
                     );
             }
+
+            Focus();
         }
 
         /// <summary>
@@ -1292,48 +1293,75 @@ namespace OD_ParamManager
             if (DataGrid_Main.SelectedItems.Count == 1 &&
                 DataGrid_Main.SelectedItems.Count > 0)
             {
-                var selectedParam = DataGrid_Main.SelectedItem as SharedParameter;
-                var newParam = new SharedParameter();
-
-                // Launch the Parameter selection window
-                var paramSelector = new Window_ParamSelector(this);
-                paramSelector.Owner = this;
-                paramSelector.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                var psResult = paramSelector.ShowDialog();
-
-                // Continue replacement if a Parameter was selected
-                if (psResult == true)
+                // Only execute if the current Document is a Revit Family
+                if (!RvtConnector.Document.IsFamilyDocument)
                 {
-                    newParam = paramSelector.SelectedParameter;
+                    var td = new TaskDialog("Feature Not Available");
+                    td.MainInstruction = "This feature is not available in Revit Projects, only Revit Families.";
+                    td.MainContent = "Error: Please open a Revit Family to use this feature.";
+                    td.MainIcon = TaskDialogIcon.TaskDialogIconError;
+                    td.Show();
+                    Focus();
+                }
+                else
+                {
+                    var selectedParam = DataGrid_Main.SelectedItem as SharedParameter;
+                    var newParam = new SharedParameter();
 
-                    RvtConnector.ReplaceParameter(selectedParam.ElementId, newParam);
+                    // Launch the Parameter selection window
+                    var paramSelector = new Window_ParamSelector(this);
+                    paramSelector.Owner = this;
+                    paramSelector.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    var psResult = paramSelector.ShowDialog();
 
-                    Refresh();
-
-                    // Prompt the user to either delete the existing parameter or not
-                    TaskDialog td = new TaskDialog("Purge Existing Parameter?");
-
-                    td.MainIcon = TaskDialogIcon.TaskDialogIconWarning;
-                    td.AllowCancellation = false;
-                    td.MainInstruction = "Purge existing parameter?";
-                    td.MainContent = "Deleting the existing parameter may result in data loss.";
-                    td.FooterText = string.Format(
-                        "Note that formulas and parameter values for each family type have been set to \"{0}\".", newParam.Name);
-                    td.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
-
-                    TaskDialogResult tdRes = td.Show();
-
-                    if (tdRes == TaskDialogResult.Yes)
+                    // Continue replacement if a Parameter was selected
+                    if (psResult == true)
                     {
-                        // Delete the existing parameter
-                        Transaction trans = new Transaction(RvtConnector.Document, string.Format("Delete parameter \"{0}\"", selectedParam.Name));
-                        trans.Start();
-                        RvtConnector.Document.Delete(new ElementId(selectedParam.ElementId));
-                        trans.Commit();
-                    }
-                    else
-                    {
-                        // Do nothing
+                        newParam = paramSelector.SelectedParameter;
+
+                        var successful = RvtConnector.ReplaceParameter(RvtConnector, selectedParam.ElementId, newParam);
+
+                        if (successful == true)
+                        {
+                            // Prompt the user to either delete the existing parameter or not
+                            TaskDialog td = new TaskDialog("Purge Existing Parameter?");
+
+                            td.MainIcon = TaskDialogIcon.TaskDialogIconWarning;
+                            td.AllowCancellation = false;
+                            td.MainInstruction = "Purge existing parameter?";
+                            td.MainContent = "Deleting the existing parameter may result in data loss.";
+                            td.FooterText = string.Format(
+                                "Note that formulas and parameter values for each family type have been set to \"{0}\".", newParam.Name);
+                            td.CommonButtons = TaskDialogCommonButtons.Yes | TaskDialogCommonButtons.No;
+
+                            TaskDialogResult tdRes = td.Show();
+
+                            if (tdRes == TaskDialogResult.Yes)
+                            {
+                                // Delete the existing parameter
+                                Transaction trans = new Transaction(RvtConnector.Document, string.Format("Delete parameter \"{0}\"", selectedParam.Name));
+                                trans.Start();
+                                RvtConnector.Document.Delete(new ElementId(selectedParam.ElementId));
+                                trans.Commit();
+                            }
+                            else
+                            {
+                                // Do nothing
+                            }
+
+                            // Update the data and UI
+                            Refresh();
+                            Focus();
+                        }
+                        else
+                        {
+                            var td = new TaskDialog("Replace Parameter Failed");
+                            td.MainInstruction = "The shared parameter was not replaced.";
+                            td.MainIcon = TaskDialogIcon.TaskDialogIconError;
+                            td.Show();
+
+                            Focus();
+                        }
                     }
                 }
             }

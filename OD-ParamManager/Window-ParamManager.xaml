@@ -339,7 +339,7 @@
                             DockPanel.Dock="Top"
                             HorizontalScrollBarVisibility="Disabled"
                             ItemsSource="{Binding}" 
-                            SelectionChanged="DataGrid_Main_SelectionChanged" Margin="0,20,0,0">
+                            SelectionChanged="DataGrid_Main_SelectionChanged" Margin="0,20,0,0" CanUserAddRows="False">
                             <DataGrid.Columns>
                                 <DataGridTemplateColumn Header="Standard" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>

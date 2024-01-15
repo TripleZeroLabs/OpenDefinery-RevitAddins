@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace OpenDefinery
 {
@@ -33,11 +34,15 @@ namespace OpenDefinery
         /// </summary>
         /// <param name="elementId">The Revit Element ID of the existing Parameter to be replaced</param>
         /// <param name="sharedParameter">The new OpenDefinery SharedParameter</param>
-        public void ReplaceParameter(int elementId, SharedParameter sharedParameter)
+        /// <returns>True if the replacement was successful.</returns>
+        public bool ReplaceParameter(RvtConnector rvtConnector, int elementId, SharedParameter sharedParameter)
         {
+            var success = false;
+
             // Retrieve the SharedParameterElement from the Revit DB by its Element ID
             var elemId = new ElementId(elementId);
             var existingParam = this.Document.GetElement(elemId) as SharedParameterElement;
+            var existingParamDef = existingParam.GetDefinition();
 
             // Add the OpenDefinery SharedParameter to the Family
             var singleItemList = new List<SharedParameter>
@@ -121,6 +126,7 @@ namespace OpenDefinery
                                                     break;
                                             }
 
+                                            success = true;
                                             //fm.Set(newFamilyParameter, value);
                                         }
 
@@ -135,8 +141,25 @@ namespace OpenDefinery
                                     // Replace Parameter in formulas
                                     if (!string.IsNullOrEmpty(p.Formula))
                                     {
-                                        if (p.Formula.Contains(existingParam.Name))
+
+                                        // Set the formula for names that are the entire formula
+                                        if (p.Formula == existingParamDef.Name)
                                         {
+                                            // Start the transaction
+                                            Transaction trans = new Transaction(Document, "Replace Parameter");
+                                            trans.Start();
+                                            fm.SetFormula(p, sharedParameter.Name);
+                                            trans.Commit();
+
+                                            success = true;
+                                        }
+                                        // TODO: Use regex to find if the parameter name is in the formula
+                                        else if (Regex.IsMatch(
+                                            p.Formula.Replace(" ", ""), 
+                                            string.Format("[\\[+<>-]{0}[+<>-\\]]", existingParam.Name)))
+                                        { 
+                                            //TaskDialog.Show("Param Found", "Found in formula: " + existingParam.Name);
+
                                             var currentFormula = p.Formula;
                                             var newFormula = p.Formula.Replace(existingParam.Name, sharedParameter.Name);
                                             try
@@ -144,13 +167,18 @@ namespace OpenDefinery
                                                 // Start the transaction
                                                 Transaction trans = new Transaction(Document, "Replace Parameter");
                                                 trans.Start();
-
                                                 fm.SetFormula(p, newFormula);
                                                 trans.Commit();
+
+                                                success = true;
                                             }
                                             catch (Exception e)
                                             {
-                                                TaskDialog.Show("Error while setting the formula", e.ToString() + "\n\n" + e.Message);
+                                                TaskDialog.Show(
+                                                    "Error while setting the formula", e.ToString() + "\n\n" + 
+                                                    e.Message + "\n\nFormula: " + newFormula);
+
+                                                success = false;
                                             }
                                         }
                                     }
@@ -171,6 +199,20 @@ namespace OpenDefinery
                 // If the active Document is  project, loop through all loaded families
                 else
                 {
+                    var td = new TaskDialog("Feature Not Available");
+                    td.MainInstruction = "This feature is not available in Revit Projects, only Revit Families.";
+                    td.MainContent = "Error: Please open a Revit Family to use this feature.";
+                    td.MainIcon = TaskDialogIcon.TaskDialogIconError;
+                    td.Show();
+                    //var newParamElementId = CreateParams(singleItemList).FirstOrDefault();
+                    //var newParam = Document.GetElement(newParamElementId) as SharedParameterElement;
+                    //var newParamDef = newParam.GetDefinition();
+
+
+
+                    //Document.ParameterBindings.Insert(newParam, )
+                    //existingParam.get_Parameter
+
                     // Reassociate parameters
                     //foreach (var ap in p.AssociatedParameters)
                     //{
@@ -187,6 +229,8 @@ namespace OpenDefinery
                     "Please select another parameter."
                     );
             }
+
+            return success;
         }
 
         /// <summary>
@@ -207,16 +251,16 @@ namespace OpenDefinery
             File.WriteAllText(tempParamTextFile, paramTable);
 
             // Load all Shared Parameters
-            var addeParams = LoadAllParams(tempParamTextFile);
+            var addedParams = LoadAllParams(tempParamTextFile);
 
             // Delete the temporary file
             File.Delete(tempParamTextFile);
 
-            return addeParams;
+            return addedParams;
         }
 
         /// <summary>
-        /// Add Shared Parameters to the current model from a text file
+        /// Add Shared Parameters to the current Revit Family from a text file
         /// </summary>
         /// <param name="parmsTxtFilePath"></param>
         public List<ElementId> LoadAllParams(string parmsTxtFilePath)
@@ -247,7 +291,8 @@ namespace OpenDefinery
                         );
                 }
 
-                if (spFile != null)
+                // Logic to run if the current Document is a Revit Family
+                if (spFile != null && this.Document.IsFamilyDocument)
                 {
                     // Instantiate a FamilyManager instance to modify the famile
                     FamilyManager famMan = this.Document.FamilyManager;
@@ -278,6 +323,69 @@ namespace OpenDefinery
 
                                     successful.Add(extDef);
                                     output.Add(fp.Id);
+                                }
+                                catch (Exception ex)
+                                {
+                                    TaskDialog.Show("Error Adding " + extDef.Name, ex.ToString());
+                                    failed.Add(extDef);
+                                }
+                            }
+
+                        }
+                        t.Commit();
+
+                        // Output results in Message Box
+                        var transactionStatusString = string.Empty;
+
+                        if (successful.Count > 0)
+                        {
+                            transactionStatusString += "Parameters added succesfully:\n";
+
+                            foreach (ExternalDefinition e in successful)
+                            {
+                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
+                            }
+                        }
+
+                        if (failed.Count > 0)
+                        {
+                            transactionStatusString += "\nParameters failed:\n";
+
+                            foreach (ExternalDefinition e in failed)
+                            {
+                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
+                            }
+                        }
+
+                        //TaskDialog.Show("Finished Adding Parameters", transactionStatusString);
+                    }
+
+                }
+                // Logic to execute when the current Document is a project
+                else if (spFile != null && !this.Document.IsFamilyDocument)
+                {
+                    // Loop through all Groups in the shared parameter text file
+                    using (Transaction t = new Transaction(this.Document))
+                    {
+                        t.Start("Add Shared Parameters");
+
+                        // Get each group in the shared parameter file
+                        foreach (DefinitionGroup dG in spFile.Groups)
+                        {
+                            var v = (from ExternalDefinition d in dG.Definitions select d);
+
+                            // Get each parameter in the current group
+                            foreach (ExternalDefinition extDef in v)
+                            {
+                                try
+                                {
+                                    var newParam = SharedParameterElement.Create(
+                                        this.Document,
+                                        extDef
+                                    );
+
+                                    successful.Add(extDef);
+                                    output.Add(newParam.Id);
                                 }
                                 catch (Exception ex)
                                 {
@@ -316,9 +424,10 @@ namespace OpenDefinery
                         //TaskDialog.Show("Finished Adding Parameters", transactionStatusString);
                     }
 
-                    // Reset the shared parameters text file back to the original
-                    this.App.SharedParametersFilename = previousParamTxtFile;
                 }
+
+                // Reset the shared parameters text file back to the original
+                this.App.SharedParametersFilename = previousParamTxtFile;
             }
 
             return output;
@@ -480,6 +589,12 @@ namespace OpenDefinery
             return value;
         }
 
+        /// <summary>
+        /// Set the value of a Family Parameter
+        /// </summary>
+        /// <param name="fm"></param>
+        /// <param name="fp"></param>
+        /// <param name="value"></param>
         public static void SetValue(
           FamilyManager fm,
           FamilyParameter fp,
