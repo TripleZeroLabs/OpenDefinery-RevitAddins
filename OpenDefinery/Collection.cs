@@ -34,11 +34,11 @@ namespace OpenDefinery
         /// <param name="itemsPerPage">The number of items to return per page. Acceptable values are 5, 10, 25, 50, 100.</param>
         /// <param name="offset">The offset of items to skip pages</param>
         /// <param name="resetTotals">Clear the total pages and items from the pager to start over?</param>
-        /// <returns>A list of SharedParameter objects</returns>
-        public static ObservableCollection<SharedParameter> GetParameters(
+        /// <returns>A list of DefineryParameter objects</returns>
+        public static ObservableCollection<DefineryParameter> GetParameters(
             Definery definery, Collection collection, int itemsPerPage, int offset, bool resetTotals)
         {
-            var listOfParams = new List<SharedParameter>();
+            var listOfParams = new List<DefineryParameter>();
 
             var client = new RestClient(Definery.BaseUrl + string.Format(
                 "rest/params/collection/{0}?_format=json&items_per_page={1}&offset={2}", collection.Id, itemsPerPage, offset)
@@ -65,7 +65,7 @@ namespace OpenDefinery
                 else
                 {
                     // Cast the rows from the reponse to a List of Shared Parameters
-                    listOfParams = JsonConvert.DeserializeObject<List<SharedParameter>>(paramResponse.ToString());
+                    listOfParams = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
                 }
             }
             else
@@ -73,10 +73,10 @@ namespace OpenDefinery
                 Debug.WriteLine("There was an error getting the parameters.");
             }
 
-            var parameters = new ObservableCollection<SharedParameter>(listOfParams);
+            var parameters = new ObservableCollection<DefineryParameter>(listOfParams);
 
             // Set the Collections
-            var updatedParams = SharedParameter.SetCollections(definery, parameters);
+            var updatedParams = DefineryParameter.SetCollections(definery, parameters);
 
             return updatedParams;
         }
@@ -89,15 +89,15 @@ namespace OpenDefinery
         /// <param name="itemsPerPage">The number of items to return per page. Acceptable values are 5, 10, 25, 50, 100.</param>
         /// <param name="offset">The offset of items to skip pages</param>
         /// <param name="resetTotals">Clear the total pages and items from the pager to start over?</param>
-        /// <returns>A list of SharedParameter objects</returns>
-        public static ObservableCollection<SharedParameter> GetParameters(
+        /// <returns>A list of DefineryParameter objects</returns>
+        public static ObservableCollection<DefineryParameter> GetParameters(
             Definery definery, Collection collection)
         {
-            var paramsOut = new ObservableCollection<SharedParameter>();
+            var paramsOut = new ObservableCollection<DefineryParameter>();
 
             if (definery != null && collection != null)
             {
-                var listOfParams = new List<SharedParameter>();
+                var listOfParams = new List<DefineryParameter>();
 
                 var client = new RestClient(Definery.BaseUrl + string.Format(
                     "rest/params/collection/{0}/all?_format=json", collection.Id)
@@ -124,7 +124,7 @@ namespace OpenDefinery
                     else
                     {
                         // Cast the rows from the reponse to a List of Shared Parameters
-                        listOfParams = JsonConvert.DeserializeObject<List<SharedParameter>>(paramResponse.ToString());
+                        listOfParams = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
                     }
                 }
                 else
@@ -132,10 +132,10 @@ namespace OpenDefinery
                     Debug.WriteLine("There was an error getting the parameters.");
                 }
 
-                var parameters = new ObservableCollection<SharedParameter>(listOfParams);
+                var parameters = new ObservableCollection<DefineryParameter>(listOfParams);
 
                 // Set the Collections
-                paramsOut = SharedParameter.SetCollections(definery, parameters);
+                paramsOut = DefineryParameter.SetCollections(definery, parameters);
             }
 
             return paramsOut;
@@ -370,7 +370,7 @@ namespace OpenDefinery
         /// <param name="definery">The main Definery object</param>
         /// <param name="collectionsString">A comma separated values string of Collection IDs</param>
         /// <returns></returns>
-        public static SharedParameter GetFromString(Definery definery, SharedParameter parameter, string collectionsString)
+        public static DefineryParameter GetFromString(Definery definery, DefineryParameter parameter, string collectionsString)
         {
             var collections = new List<Collection>();
 
@@ -401,7 +401,7 @@ namespace OpenDefinery
                 collections.Add(foundCollection);
             }
             
-            // Set the new list to the SharedParameter property and return
+            // Set the new list to the DefineryParameter property and return
             parameter.Collections = collections;
 
             return parameter;
@@ -413,7 +413,7 @@ namespace OpenDefinery
         /// <param name="definery"></param>
         /// <param name="collection"></param>
         /// <returns></returns>
-        public static List<SharedParameter> GetLiteParams(Definery definery, Collection collection)
+        public static List<DefineryParameter> GetLiteParams(Definery definery, Collection collection)
         {
             // Make the API call
             var client = new RestClient(Definery.BaseUrl + string.Format("rest/lite/collection/{0}?_format=json", collection.Id.ToString()));
@@ -424,7 +424,7 @@ namespace OpenDefinery
 
             try
             {
-                var parameters = JsonConvert.DeserializeObject<List<SharedParameter>>(response.Content);
+                var parameters = JsonConvert.DeserializeObject<List<DefineryParameter>>(response.Content);
 
                 return parameters;
             }
@@ -445,10 +445,10 @@ namespace OpenDefinery
         /// <param name="revitParams">A list of shared parameters extracted from Revit</param>
         /// <param name="odParams">A list of Shared Parameters retrieved from OpenDefinery</param>
         /// <returns>The list of validated Shared Parameters or null if there was an issue</returns>
-        public static List<SharedParameter> ValidateParameters(
+        public static List<DefineryParameter> ValidateParameters(
             Definery definery, 
             Collection collection, 
-            List<SharedParameter> revitParams)
+            List<DefineryParameter> revitParams)
         {
             // Set the selected Collection
             if (definery != null && collection != null)
@@ -460,7 +460,7 @@ namespace OpenDefinery
                 if (odParams != null)
                 {
                     // Instantiate a new list for the validated parameters
-                    var validatedParams = new List<SharedParameter>();
+                    var validatedParams = new List<DefineryParameter>();
 
                     // Loop through Revit parameters to see if it appears in the OpenDefinery Collection
                     foreach (var p in revitParams)
@@ -473,7 +473,7 @@ namespace OpenDefinery
                         if (foundOdParams.Count() == 1)
                         {
                             // Set additional data before adding to the list
-                            validatedParams.Add(SharedParameter.SetDefineryData(foundOdParams.FirstOrDefault(), p));
+                            validatedParams.Add(DefineryParameter.SetDefineryData(foundOdParams.FirstOrDefault(), p));
                         }
                         else if (foundOdParams.Count() == 0)
                         {
@@ -489,7 +489,7 @@ namespace OpenDefinery
                             Debug.WriteLine(string.Format("Multiple parameters with GUID {0} found. Returning first for now.", p.Guid.ToString()));
 
                             // Set additional data before adding to the list
-                            validatedParams.Add(SharedParameter.SetDefineryData(foundOdParams.FirstOrDefault(), p));
+                            validatedParams.Add(DefineryParameter.SetDefineryData(foundOdParams.FirstOrDefault(), p));
                         }
                     }
 

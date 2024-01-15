@@ -22,7 +22,7 @@ namespace OD_ParamManager
     public partial class Window_ParamSelector : Window
     {
         private Window_ParamManager ParamManager {  get; set; }
-        public SharedParameter SelectedParameter { get; set; }
+        public DefineryParameter SelectedParameter { get; set; }
         public Window_ParamSelector(Window_ParamManager paramManager)
         {
             InitializeComponent();
@@ -65,7 +65,7 @@ namespace OD_ParamManager
         {
             if (ListBox_ParamSelector.SelectedItem != null)
             {
-                SelectedParameter = ListBox_ParamSelector.SelectedItem as SharedParameter;
+                SelectedParameter = ListBox_ParamSelector.SelectedItem as DefineryParameter;
                 DialogResult = true;
                 Close();
             }

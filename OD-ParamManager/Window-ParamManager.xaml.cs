@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,7 +26,7 @@ namespace OD_ParamManager
     {
         public Definery Definery { get; set; }
         private RvtConnector RvtConnector { get; set; }
-        private List<SharedParameter> ParamsToEdit { get; set; }
+        private List<DefineryParameter> ParamsToEdit { get; set; }
         public FilteredElementCollector FamilyInstances { get; set; }
 
         public Collection SelectedCollection { get; set; }
@@ -198,13 +199,13 @@ namespace OD_ParamManager
         /// <param name="dG">DataGrid with current selection</param>
         public void AddSelectedParams(System.Windows.Controls.DataGrid dG)
         {
-            var paramsToAdd = new List<SharedParameter>();
+            var paramsToAdd = new List<DefineryParameter>();
 
             // Add each selected row to the Collection
             foreach (var p in dG.SelectedItems)
             {
-                // Get current Shared Parameter as a SharedParameter object
-                var selectedParam = p as SharedParameter;
+                // Get current Shared Parameter as a DefineryParameter object
+                var selectedParam = p as DefineryParameter;
 
                 paramsToAdd.Add(selectedParam);
             }
@@ -213,7 +214,7 @@ namespace OD_ParamManager
             if (RvtConnector.Document.IsFamilyDocument)
             {
                 //// Generate a temporary Shared Parameter text file
-                //var paramTable = SharedParameter.CreateParamTable(parmsToAdd);
+                //var paramTable = DefineryParameter.CreateParamTable(parmsToAdd);
                 //var tempFolder = System.IO.Path.GetTempPath();
                 //var tempParamTextFile =
                 //    string.Format(
@@ -318,13 +319,13 @@ namespace OD_ParamManager
             SelectedCollection = Combo_Collections.SelectedItem as Collection;
 
             // Instantiate a list of parameters to pass to the data grid
-            var paramsToEdit = new List<SharedParameter>();
+            var paramsToEdit = new List<DefineryParameter>();
 
             // Add each selected row to the Collection
             foreach (var p in DataGrid_Main.SelectedItems)
             {
-                // Get current Shared Parameter as a SharedParameter object
-                var selectedParam = p as SharedParameter;
+                // Get current Shared Parameter as a DefineryParameter object
+                var selectedParam = p as DefineryParameter;
 
                 paramsToEdit.Add(selectedParam);
             }
@@ -337,7 +338,7 @@ namespace OD_ParamManager
         /// Populate the fields for the Shared Paramater Edit form
         /// </summary>
         /// <param name="parameters"></param>
-        private void PopulateEditForm(List<SharedParameter> parameters)
+        private void PopulateEditForm(List<DefineryParameter> parameters)
         {
             // Clear any existing UI elements from previous processes
             Stack_EditParamForm.Children.Clear();
@@ -346,7 +347,7 @@ namespace OD_ParamManager
             var formElements = new List<UIElement>();
 
             // Add to list of parameters for later use
-            ParamsToEdit = new List<SharedParameter>();
+            ParamsToEdit = new List<DefineryParameter>();
 
             foreach (var p in parameters)
             {
@@ -428,7 +429,7 @@ namespace OD_ParamManager
         /// <param name="e"></param>
         private void Button_SaveParams_Click(object sender, RoutedEventArgs e)
         {
-            var newParams = new List<SharedParameter>();
+            var newParams = new List<DefineryParameter>();
 
             foreach (var p in ParamsToEdit)
             {
@@ -446,7 +447,7 @@ namespace OD_ParamManager
 
                     if (!string.IsNullOrEmpty(newName.Text))
                     {
-                        var newParam = SharedParameter.Create(Definery, p, SelectedCollection.Id, p.DefineryId, newName.Text, newDesc.Text);
+                        var newParam = DefineryParameter.Create(Definery, p, SelectedCollection.Id, p.DefineryId, newName.Text, newDesc.Text);
 
                         newParams.Add(newParam);
                     }
@@ -491,32 +492,67 @@ namespace OD_ParamManager
         private void RefreshRevitParams()
         {
             // Instantiate a list to store the shared parameters from the current Revit model
-            var revitParams = new List<SharedParameter>();
+            var revitParams = new List<DefineryParameter>();
 
             // Collect shared parameters as elements
-            FilteredElementCollector collector
+            FilteredElementCollector sharedParamCollector
                 = new FilteredElementCollector(RvtConnector.Document)
                 .WhereElementIsNotElementType();
 
-            collector.OfClass(typeof(SharedParameterElement));
+            sharedParamCollector.OfClass(typeof(SharedParameterElement));
 
             // Add each parameter to the list
-            foreach (Element e in collector)
+            foreach (Element e in sharedParamCollector)
             {
                 SharedParameterElement param = e as SharedParameterElement;
                 Definition def = param.GetDefinition();
 
                 var dataType = DataType.GetByParamTypeName(def.ParameterType.ToString(), Definery.DataTypes);
 
-                // Cast the SharedParameterElement to a "lite" OpenDefinery SharedParameter
+                // Cast the SharedParameterElement to a "lite" OpenDefinery DefineryParameter
                 // TODO: Retrieve all Revit parameter data such as the DATACATEGORY
-                var castedParam = new SharedParameter(
-                    param.GuidValue, def.Name, dataType.Name, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty
+                var castedParam = new DefineryParameter(
+                    param.GuidValue, 
+                    def.Name, 
+                    dataType.Name, 
+                    string.Empty, 
+                    string.Empty, 
+                    string.Empty, 
+                    string.Empty, 
+                    string.Empty,
+                    true
                     );
 
                 castedParam.ElementId = Convert.ToInt32(e.Id.IntegerValue);
 
                 revitParams.Add(castedParam);    
+            }
+
+            // Retrieve family parameters (not shared)
+            FamilyManager fm = RvtConnector.Document.FamilyManager;
+
+            foreach (FamilyParameter fp in fm.Parameters)
+            {
+                var intDef = fp.Definition as InternalDefinition;
+
+                if (!fp.IsShared && intDef.BuiltInParameter == BuiltInParameter.INVALID)
+                {
+                var castedParam = new DefineryParameter(
+                    Guid.Empty,
+                    fp.Definition.Name,
+                    fp.Definition.ParameterType.ToString(),
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    false
+                    );
+
+                castedParam.ElementId = fp.Id.IntegerValue;
+
+                revitParams.Add(castedParam);
+                }
             }
 
             Definery.RevitParameters = revitParams;
@@ -603,7 +639,7 @@ namespace OD_ParamManager
 
             cv.Filter = o =>
             {
-                SharedParameter p = o as SharedParameter;
+                DefineryParameter p = o as DefineryParameter;
 
                 return p != null;
             };
@@ -625,7 +661,7 @@ namespace OD_ParamManager
 
                 cv.Filter = o =>
                 {
-                    SharedParameter p = o as SharedParameter;
+                    DefineryParameter p = o as DefineryParameter;
 
                     return p.IsStandard == true;
                 };
@@ -652,7 +688,7 @@ namespace OD_ParamManager
 
                 cv.Filter = o =>
                 {
-                    SharedParameter p = o as SharedParameter;
+                    DefineryParameter p = o as DefineryParameter;
 
                     return p.IsStandard == false;
                 };
@@ -671,11 +707,11 @@ namespace OD_ParamManager
             if (DataGrid_Main.SelectedItems.Count > 0)
             {
                 // Cast the selected items to Shared Parameters
-                var selectedParams = new List<SharedParameter>();
+                var selectedParams = new List<DefineryParameter>();
 
                 foreach (var i in DataGrid_Main.SelectedItems)
                 {
-                    selectedParams.Add(i as SharedParameter);
+                    selectedParams.Add(i as DefineryParameter);
                 }
 
                 // Toggle buttons
@@ -719,11 +755,11 @@ namespace OD_ParamManager
             if (DataGrid_Main.SelectedItems.Count > 0)
             {
                 // Instantiate a list of Shared Parameters for later use
-                var selectedParams = new List<SharedParameter>();
+                var selectedParams = new List<DefineryParameter>();
 
                 foreach (var i in DataGrid_Main.SelectedItems)
                 {
-                    var selectedParam = i as SharedParameter;
+                    var selectedParam = i as DefineryParameter;
 
                     selectedParams.Add(selectedParam);
                 }
@@ -829,11 +865,11 @@ namespace OD_ParamManager
                 var listOfDetails = new Dictionary<string, List<string>>();
 
                 // Instantiate a list of Shared Parameters for later use
-                var selectedParams = new List<SharedParameter>();
+                var selectedParams = new List<DefineryParameter>();
 
                 foreach (var i in DataGrid_Main.SelectedItems)
                 {
-                    var selectedParam = i as SharedParameter;
+                    var selectedParam = i as DefineryParameter;
 
                     selectedParams.Add(selectedParam);
 
@@ -1068,7 +1104,7 @@ namespace OD_ParamManager
                 c => c.Id.ToString() == clickedButtonId.Split('_')[1]).FirstOrDefault();
 
             // Retrieve the Shared Parameters from the Collection
-            var collectionParams = new ObservableCollection<SharedParameter>();
+            var collectionParams = new ObservableCollection<DefineryParameter>();
 
             if (selectedCollection != null)
             {
@@ -1305,8 +1341,8 @@ namespace OD_ParamManager
                 }
                 else
                 {
-                    var selectedParam = DataGrid_Main.SelectedItem as SharedParameter;
-                    var newParam = new SharedParameter();
+                    var selectedParam = DataGrid_Main.SelectedItem as DefineryParameter;
+                    var newParam = new DefineryParameter();
 
                     // Launch the Parameter selection window
                     var paramSelector = new Window_ParamSelector(this);

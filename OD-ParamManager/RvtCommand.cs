@@ -36,7 +36,7 @@ namespace OD_ParamManager
         /// <param name="mw">The Window instance to pass make active after purging</param>
         /// <param name="doc">The current Revit Document</param>
         /// <param name="paramsToDelete">The list of OpenDefinery Shared Parameters to delete</param>
-        public static bool PurgeParameters(Window_ParamManager mw, Document doc, List<SharedParameter> paramsToDelete)
+        public static bool PurgeParameters(Window_ParamManager mw, Document doc, List<DefineryParameter> paramsToDelete)
         {
             // Instantiate a collection of parameters to delete from the model
             ICollection<ElementId> elementIds = new List<ElementId>();
@@ -111,7 +111,7 @@ namespace OD_ParamManager
         /// <param name="doc">The Document to search</param>
         /// <param name="odParam">An OpenDefinery Shared Parameter</param>
         /// <returns></returns>
-        public static Dictionary<string, List<string>> GetParamDetails(RvtConnector rvtConnector, SharedParameter odParam)
+        public static Dictionary<string, List<string>> GetParamDetails(RvtConnector rvtConnector, DefineryParameter odParam)
         {
             var output = new Dictionary<string, List<string>>();
 

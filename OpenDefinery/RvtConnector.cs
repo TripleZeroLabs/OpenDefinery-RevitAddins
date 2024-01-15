@@ -30,12 +30,12 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Replace an existing Revit Shared Parameter with and OpenDefinery SharedParameter
+        /// Replace an existing Revit Shared Parameter with and OpenDefinery DefineryParameter
         /// </summary>
         /// <param name="elementId">The Revit Element ID of the existing Parameter to be replaced</param>
-        /// <param name="sharedParameter">The new OpenDefinery SharedParameter</param>
+        /// <param name="sharedParameter">The new OpenDefinery DefineryParameter</param>
         /// <returns>True if the replacement was successful.</returns>
-        public bool ReplaceParameter(RvtConnector rvtConnector, int elementId, SharedParameter sharedParameter)
+        public bool ReplaceParameter(RvtConnector rvtConnector, int elementId, DefineryParameter sharedParameter)
         {
             var success = false;
 
@@ -44,8 +44,8 @@ namespace OpenDefinery
             var existingParam = this.Document.GetElement(elemId) as SharedParameterElement;
             var existingParamDef = existingParam.GetDefinition();
 
-            // Add the OpenDefinery SharedParameter to the Family
-            var singleItemList = new List<SharedParameter>
+            // Add the OpenDefinery DefineryParameter to the Family
+            var singleItemList = new List<DefineryParameter>
             {
                 sharedParameter
             };
@@ -60,7 +60,7 @@ namespace OpenDefinery
                     FamilyManager fm = Document.FamilyManager;
 
                     // Check if the Parameter already exists
-                    if (fm.get_Parameter(sharedParameter.Guid) == null)
+                    if (fm.get_Parameter((Guid)sharedParameter.Guid) == null)
                     {
                         // Add the new Parameter to the current Family
                         var newParamElementId = CreateParams(singleItemList).FirstOrDefault();
@@ -237,10 +237,10 @@ namespace OpenDefinery
         /// Add OpenDefinery Parameters to the current Document
         /// </summary>
         /// <param name="paramsToAdd"></param>
-        public List<ElementId> CreateParams(List<SharedParameter> paramsToAdd)
+        public List<ElementId> CreateParams(List<DefineryParameter> paramsToAdd)
         {
             // Generate a temporary Shared Parameter text file
-            var paramTable = SharedParameter.CreateParamTable(paramsToAdd);
+            var paramTable = DefineryParameter.CreateParamTable(paramsToAdd);
             var tempFolder = System.IO.Path.GetTempPath();
             var tempParamTextFile =
                 string.Format(

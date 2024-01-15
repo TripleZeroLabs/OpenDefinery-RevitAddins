@@ -364,6 +364,29 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Shared" Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Image x:Name="IsShared" Source="Assets/Icons/checkbox-circle-fill.png">
+                                                <Image.Style>
+                                                    <Style TargetType="{x:Type Image}">
+                                                        <Setter Property="Width" Value="18"></Setter>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+                                            <DataTemplate.Triggers>
+                                                <DataTrigger Binding="{Binding Path=IsShared}" Value="True">
+                                                    <Setter Property="Source" Value="Assets/Icons/checkbox-circle-fill.png" TargetName="IsShared"/>
+                                                    <Setter Property="Opacity" Value="1"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=IsShared}" Value="False">
+                                                    <Setter Property="Source" Value="Assets/Icons/checkbox-blank-circle-line.png" TargetName="IsShared"/>
+                                                    <Setter Property="Opacity" Value=".1"/>
+                                                </DataTrigger>
+                                            </DataTemplate.Triggers>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn Binding="{Binding Name}" Header="Name" IsReadOnly="True" Width="300" SortDirection="Ascending"/>
                                 <DataGridTextColumn Binding="{Binding Guid}" Header="GUID" IsReadOnly="True" Width="300"/>
                                 <DataGridTextColumn Binding="{Binding DataType}" Header="Data Type" IsReadOnly="True" Width="150"/>

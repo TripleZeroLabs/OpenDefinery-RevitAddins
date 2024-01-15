@@ -17,10 +17,10 @@ namespace OpenDefinery
         public List<Collection> MyCollections { get; set; }
         public List<Collection> PublishedCollections { get; set; }
         public Collection SelectedCollection { get; set; }
-        public List<SharedParameter> DefineryParameters { get; set; }
-        public List<SharedParameter> RevitParameters { get; set; }
-        public List<SharedParameter> ValidatedParams { get; set; }
-        public ObservableCollection<SharedParameter> Parameters { get; set; }
+        public List<DefineryParameter> DefineryParameters { get; set; }
+        public List<DefineryParameter> RevitParameters { get; set; }
+        public List<DefineryParameter> ValidatedParams { get; set; }
+        public ObservableCollection<DefineryParameter> Parameters { get; set; }
         public List<DataType> DataTypes { get; set; }
         public List<DataCategory> DataCategories { get; set; }
         public List<Group> Groups { get; set; }
