@@ -156,10 +156,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
-
 if not exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
-
 if not exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
+if not exist "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs"
 
 if exist "$(AppData)\Autodesk\Revit\Addins\2020" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2020"
 if exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"

@@ -23,7 +23,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>5</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -106,6 +106,9 @@ if exist "$(AppData)\Autodesk\Revit\Addins\2021" copy "$(ProjectDir)*.addin" "$(
 if exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
 
 if exist "$(AppData)\Autodesk\Revit\Addins\2022" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2022"
-if exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"</PostBuildEvent>
+if exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2023" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2023"
+if exist "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs"</PostBuildEvent>
   </PropertyGroup>
 </Project>
