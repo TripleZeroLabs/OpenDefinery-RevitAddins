@@ -30,194 +30,331 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Replace an existing Revit Shared Parameter with and OpenDefinery DefineryParameter
+        /// Create a Shared Parameter from OpenDefinery and copy the values for all Family Types.
+        /// Note that this also replaces any instances of the existing Parameter in existing formulas
+        /// throughout the Family.
         /// </summary>
-        /// <param name="elementId">The Revit Element ID of the existing Parameter to be replaced</param>
-        /// <param name="sharedParameter">The new OpenDefinery DefineryParameter</param>
-        /// <returns>True if the replacement was successful.</returns>
-        public bool ReplaceParameter(RvtConnector rvtConnector, int elementId, DefineryParameter sharedParameter)
+        /// <param name="fm"></param>
+        /// <param name="sourceParam"></param>
+        /// <param name="defineryParam"></param>
+        /// <returns></returns>
+        public bool CopyParamValues(
+            FamilyManager fm,
+            SharedParameterElement sourceParam,
+            DefineryParameter defineryParam)
         {
-            var success = false;
+            bool success = false;
 
-            // Retrieve the SharedParameterElement from the Revit DB by its Element ID
-            var elemId = new ElementId(elementId);
-            var existingParam = this.Document.GetElement(elemId) as SharedParameterElement;
-            var existingParamDef = existingParam.GetDefinition();
-
-            // Add the OpenDefinery DefineryParameter to the Family
+            // Instantiate Parameter data
             var singleItemList = new List<DefineryParameter>
-            {
-                sharedParameter
-            };
-
-            // Check if the parameter already exists
-            var existingDataType = existingParam.GetDefinition().ParameterType.ToString().ToUpper();
-            if (existingDataType == sharedParameter.DataType)
-            {
-                // If the active Document is a Revit Family, replace the Parameter
-                if (Document.IsFamilyDocument)
                 {
-                    FamilyManager fm = Document.FamilyManager;
+                    defineryParam
+                };
 
-                    // Check if the Parameter already exists
-                    if (fm.get_Parameter((Guid)sharedParameter.Guid) == null)
+            var newParamElementId = CreateParams(singleItemList).FirstOrDefault();
+            var newParam = Document.GetElement(newParamElementId) as SharedParameterElement;
+            var existingParamDef = sourceParam.GetDefinition();
+
+
+            // Loop through all Family Types to update the value for each type
+            foreach (FamilyType ft in fm.Types)
+            {
+                if (ft.Name != " ")
+                {
+                    var newFamilyParameter = fm.get_Parameter(newParam.GuidValue);
+
+                    // Retrieve all Parameters in the Family
+                    IList<FamilyParameter> allParams = fm.GetParameters();
+
+                    var paranValues = new Dictionary<FamilyParameter, string>();
+                    foreach (var p in allParams)
                     {
-                        // Add the new Parameter to the current Family
-                        var newParamElementId = CreateParams(singleItemList).FirstOrDefault();
-                        var newParam = Document.GetElement(newParamElementId) as SharedParameterElement;
-
-                        // Loop through all Family Types to update the value for each type
-                        foreach (FamilyType ft in fm.Types)
+                        // Copy the value to the new Parameter
+                        if (p.Id == sourceParam.Id)
                         {
-                            if (ft.Name != " ")
+                            var currentVal = GetValue(
+                                ft, p, this.Document);
+
+                            var currentValString = new StringParameterValue(currentVal.ToString());
+
+                            Transaction transSetValue = new Transaction(Document, "Set Parameter Value");
+
+                            transSetValue.Start();
+
+                            try
                             {
-                                var newFamilyParameter = fm.get_Parameter(newParam.GuidValue);
+                                // Set the current type first since the Set() method only allows to set
+                                // the Parameter of the current FamilylType
+                                fm.CurrentType = ft;
 
-                                // Retrieve all Parameters in the Family
-                                IList<FamilyParameter> allParams = fm.GetParameters();
-
-                                var paranValues = new Dictionary<FamilyParameter, string>();
-                                foreach (var p in allParams)
+                                // Set the Parameter value
+                                switch (p.StorageType)
                                 {
-                                    // Copy the value to the new Parameter
-                                    if (p.Id == existingParam.Id)
-                                    {
-                                        var currentVal = GetValue(
-                                            ft, p, this.Document);
+                                    case StorageType.Double:
+                                        var doubleValue =
+                                        (double)ft.AsDouble(p);
 
-                                        var currentValString = new StringParameterValue(currentVal.ToString());
+                                        fm.Set(newFamilyParameter, doubleValue);
 
-                                        Transaction trans = new Transaction(Document, "Set Parameter Value");
+                                        break;
 
-                                        trans.Start();
+                                    case StorageType.ElementId:
+                                        ElementId id = ft.AsElementId(p);
+                                        fm.Set(newFamilyParameter, id);
 
-                                        try
-                                        {
-                                            // Set the current type first since the Set() method only allows to set
-                                            // the Parameter of the current FamilylType
-                                            fm.CurrentType = ft;
+                                        break;
 
-                                            // Set the Parameter value
-                                            switch (p.StorageType)
-                                            {
-                                                case StorageType.Double:
-                                                    var doubleValue =
-                                                    (double)ft.AsDouble(p);
+                                    case StorageType.Integer:
+                                        int integerValue = (int)ft.AsInteger(p);
+                                        fm.Set(newFamilyParameter, integerValue);
 
-                                                    fm.Set(newFamilyParameter, doubleValue);
+                                        break;
 
-                                                    break;
+                                    case StorageType.String:
+                                        fm.Set(newFamilyParameter, ft.AsString(p));
 
-                                                case StorageType.ElementId:
-                                                    ElementId id = ft.AsElementId(p);
-                                                    fm.Set(newFamilyParameter, id);
+                                        break;
+                                }
 
-                                                    break;
+                                success = true;
+                            }
 
-                                                case StorageType.Integer:
-                                                    int integerValue = (int)ft.AsInteger(p);
-                                                    fm.Set(newFamilyParameter, integerValue);
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex.ToString());
 
-                                                    break;
+                                success = false;
+                            }
 
-                                                case StorageType.String:
-                                                    fm.Set(newFamilyParameter, ft.AsString(p));
+                            transSetValue.Commit();
 
-                                                    break;
-                                            }
+                        }
 
-                                            success = true;
-                                            //fm.Set(newFamilyParameter, value);
-                                        }
+                        // Replace Parameter in formulas
+                        if (!string.IsNullOrEmpty(p.Formula))
+                        {
 
-                                        catch (Exception ex)
-                                        {
-                                            Debug.WriteLine(ex.ToString());
-                                        }
+                            // Set the formula for names that are the entire formula
+                            if (p.Formula == existingParamDef.Name)
+                            {
+                                // Start the transaction
+                                Transaction transSetFormula = new Transaction(Document, "Replace Parameter");
+                                transSetFormula.Start();
+                                fm.SetFormula(p, defineryParam.Name);
+                                transSetFormula.Commit();
 
-                                        trans.Commit();
-                                    }
+                                success = true;
+                            }
+                            // TODO: Use regex to find if the parameter name is in the formula
+                            //else if (Regex.IsMatch(
+                            //    p.Formula.Replace(" ", ""),
+                            //    string.Format("[+<>*//^[-]|({0})|[+<>*//^)-]]", sourceParam.Name)))
+                            else if (p.Formula.Contains(sourceParam.Name))
+                            {
+                                //TaskDialog.Show("Param Found", "Found in formula: " + sourceParam.Name);
 
-                                    // Replace Parameter in formulas
-                                    if (!string.IsNullOrEmpty(p.Formula))
-                                    {
+                                var currentFormula = p.Formula;
+                                var newFormula = p.Formula.Replace(sourceParam.Name, defineryParam.Name);
+                                    
+                                try
+                                {
+                                    // Start the transaction
+                                    Transaction transSetFormula = new Transaction(Document, "Replace Parameter");
+                                    transSetFormula.Start();
+                                    fm.SetFormula(p, newFormula);
+                                    transSetFormula.Commit();
 
-                                        // Set the formula for names that are the entire formula
-                                        if (p.Formula == existingParamDef.Name)
-                                        {
-                                            // Start the transaction
-                                            Transaction trans = new Transaction(Document, "Replace Parameter");
-                                            trans.Start();
-                                            fm.SetFormula(p, sharedParameter.Name);
-                                            trans.Commit();
+                                    success = true;
+                                }
+                                catch (Exception e)
+                                {
+                                    TaskDialog.Show(
+                                        "Error while setting the formula", e.ToString() + "\n\n" +
+                                        e.Message + "\n\nFormula: " + newFormula);
 
-                                            success = true;
-                                        }
-                                        // TODO: Use regex to find if the parameter name is in the formula
-                                        else if (Regex.IsMatch(
-                                            p.Formula.Replace(" ", ""), 
-                                            string.Format("[\\[+<>-]{0}[+<>-\\]]", existingParam.Name)))
-                                        { 
-                                            //TaskDialog.Show("Param Found", "Found in formula: " + existingParam.Name);
-
-                                            var currentFormula = p.Formula;
-                                            var newFormula = p.Formula.Replace(existingParam.Name, sharedParameter.Name);
-                                            try
-                                            {
-                                                // Start the transaction
-                                                Transaction trans = new Transaction(Document, "Replace Parameter");
-                                                trans.Start();
-                                                fm.SetFormula(p, newFormula);
-                                                trans.Commit();
-
-                                                success = true;
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                TaskDialog.Show(
-                                                    "Error while setting the formula", e.ToString() + "\n\n" + 
-                                                    e.Message + "\n\nFormula: " + newFormula);
-
-                                                success = false;
-                                            }
-                                        }
-                                    }
+                                    success = false;
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        TaskDialog.Show(
-                        "Shared Parameter Exists", 
-                        string.Format(
-                            "The shared parameter \"{0}\" already exists in this family. Please select another parameter.", 
-                            sharedParameter.Name)
-                        );
-                    }
                 }
-                // If the active Document is  project, loop through all loaded families
+            }
+
+            return success;
+        }
+
+        /// <summary>
+        /// Replace an existing Revit Shared Parameter with and OpenDefinery DefineryParameter
+        /// </summary>
+        /// <param name="elementId">The Revit Element ID of the existing Parameter to be replaced</param>
+        /// <param name="defineryParam">The new OpenDefinery DefineryParameter</param>
+        /// <returns>True if the replacement was successful.</returns>
+        public bool ReplaceParameterInFamilly(
+            RvtConnector rvtConnector, 
+            int elementId, 
+            DefineryParameter defineryParam)
+        {
+            var success = false;
+
+            // Retrieve the existing Parameter Element from the Revit DB by its Element ID
+            var elemId = new ElementId(elementId);
+            var existingSharedParam = this.Document.GetElement(elemId) as SharedParameterElement;
+            Definition existingDef = null;
+
+            // If the Element cast returns null, assume it is not a Shared Parameter
+            if (existingSharedParam == null)
+            {
+                var existingFamParam = this.Document.GetElement(elemId) as ParameterElement;
+                existingDef = existingFamParam.GetDefinition();
+            }
+            else
+            {
+                existingDef = existingSharedParam.GetDefinition();
+            }
+
+            // Check if the parameter data types match
+            var existingDataType = existingDef.ParameterType.ToString().ToUpper();
+
+            if (existingDataType == defineryParam.DataType)
+            {
+                FamilyManager fm = Document.FamilyManager;
+
+                // Check if the Parameter already exists
+                if (fm.get_Parameter(defineryParam.Guid) == null)
+                {
+                    // Copy the Parameter values from existing to new
+                    success = CopyParamValues(fm, existingSharedParam, defineryParam);
+
+                    //// Loop through all Family Types to update the value for each type
+                    //foreach (FamilyType ft in fm.Types)
+                    //{
+                    //    if (ft.Name != " ")
+                    //    {
+                    //        var newFamilyParameter = fm.get_Parameter(destinationParam.GuidValue);
+
+                    //        // Retrieve all Parameters in the Family
+                    //        IList<FamilyParameter> allParams = fm.GetParameters();
+
+                    //        var paranValues = new Dictionary<FamilyParameter, string>();
+                    //        foreach (var p in allParams)
+                    //        {
+                    //            // Copy the value to the new Parameter
+                    //            if (p.Id == sourceParam.Id)
+                    //            {
+                    //                var currentVal = GetValue(
+                    //                    ft, p, this.Document);
+
+                    //                var currentValString = new StringParameterValue(currentVal.ToString());
+
+                    //                Transaction transSetValue = new Transaction(Document, "Set Parameter Value");
+
+                    //                transSetValue.Start();
+
+                    //                try
+                    //                {
+                    //                    // Set the current type first since the Set() method only allows to set
+                    //                    // the Parameter of the current FamilylType
+                    //                    fm.CurrentType = ft;
+
+                    //                    // Set the Parameter value
+                    //                    switch (p.StorageType)
+                    //                    {
+                    //                        case StorageType.Double:
+                    //                            var doubleValue =
+                    //                            (double)ft.AsDouble(p);
+
+                    //                            fm.Set(newFamilyParameter, doubleValue);
+
+                    //                            break;
+
+                    //                        case StorageType.ElementId:
+                    //                            ElementId id = ft.AsElementId(p);
+                    //                            fm.Set(newFamilyParameter, id);
+
+                    //                            break;
+
+                    //                        case StorageType.Integer:
+                    //                            int integerValue = (int)ft.AsInteger(p);
+                    //                            fm.Set(newFamilyParameter, integerValue);
+
+                    //                            break;
+
+                    //                        case StorageType.String:
+                    //                            fm.Set(newFamilyParameter, ft.AsString(p));
+
+                    //                            break;
+                    //                    }
+
+                    //                    success = true;
+                    //                    //fm.Set(newFamilyParameter, value);
+                    //                }
+
+                    //                catch (Exception ex)
+                    //                {
+                    //                    Debug.WriteLine(ex.ToString());
+                    //                }
+
+                    //                transSetValue.Commit();
+                    //            }
+
+                    //            // Replace Parameter in formulas
+                    //            if (!string.IsNullOrEmpty(p.Formula))
+                    //            {
+
+                    //                // Set the formula for names that are the entire formula
+                    //                if (p.Formula == existingParamDef.Name)
+                    //                {
+                    //                    // Start the transaction
+                    //                    Transaction transSetValue = new Transaction(Document, "Replace Parameter");
+                    //                    transSetValue.Start();
+                    //                    fm.SetFormula(p, defineryParam.Name);
+                    //                    transSetValue.Commit();
+
+                    //                    success = true;
+                    //                }
+                    //                // TODO: Use regex to find if the parameter name is in the formula
+                    //                else if (Regex.IsMatch(
+                    //                    p.Formula.Replace(" ", ""),
+                    //                    string.Format("[\\[+<>-]{0}[+<>-\\]]", sourceParam.Name)))
+                    //                {
+                    //                    //TaskDialog.Show("Param Found", "Found in formula: " + sourceParam.Name);
+
+                    //                    var currentFormula = p.Formula;
+                    //                    var newFormula = p.Formula.Replace(sourceParam.Name, defineryParam.Name);
+                    //                    try
+                    //                    {
+                    //                        // Start the transaction
+                    //                        Transaction transSetValue = new Transaction(Document, "Replace Parameter");
+                    //                        transSetValue.Start();
+                    //                        fm.SetFormula(p, newFormula);
+                    //                        transSetValue.Commit();
+
+                    //                        success = true;
+                    //                    }
+                    //                    catch (Exception e)
+                    //                    {
+                    //                        TaskDialog.Show(
+                    //                            "Error while setting the formula", e.ToString() + "\n\n" +
+                    //                            e.Message + "\n\nFormula: " + newFormula);
+
+                    //                        success = false;
+                    //                    }
+                    //                }
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                }
                 else
                 {
-                    var td = new TaskDialog("Feature Not Available");
-                    td.MainInstruction = "This feature is not available in Revit Projects, only Revit Families.";
-                    td.MainContent = "Error: Please open a Revit Family to use this feature.";
-                    td.MainIcon = TaskDialogIcon.TaskDialogIconError;
-                    td.Show();
-                    //var newParamElementId = CreateParams(singleItemList).FirstOrDefault();
-                    //var newParam = Document.GetElement(newParamElementId) as SharedParameterElement;
-                    //var newParamDef = newParam.GetDefinition();
+                    TaskDialog.Show(
+                    "Shared Parameter Exists",
+                    string.Format(
+                        "The shared parameter \"{0}\" already exists in this family. Please select another parameter.",
+                        defineryParam.Name)
+                    );
 
-
-
-                    //Document.ParameterBindings.Insert(newParam, )
-                    //existingParam.get_Parameter
-
-                    // Reassociate parameters
-                    //foreach (var ap in p.AssociatedParameters)
-                    //{
-
-                    //}
+                    success = false;
                 }
             }
 
@@ -228,6 +365,8 @@ namespace OpenDefinery
                     "DataType Error", "The DataType of the selected parameter does not match the parameter to be replaced. " +
                     "Please select another parameter."
                     );
+
+                success = false;
             }
 
             return success;

@@ -1355,7 +1355,7 @@ namespace OD_ParamManager
                     {
                         newParam = paramSelector.SelectedParameter;
 
-                        var successful = RvtConnector.ReplaceParameter(RvtConnector, selectedParam.ElementId, newParam);
+                        var successful = RvtConnector.ReplaceParameterInFamilly(RvtConnector, selectedParam.ElementId, newParam);
 
                         if (successful == true)
                         {
