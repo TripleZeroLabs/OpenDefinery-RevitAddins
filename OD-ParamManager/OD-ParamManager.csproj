@@ -159,6 +159,7 @@
 if not exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
 if not exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
 if not exist "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs"
+if not exist "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs"
 
 if exist "$(AppData)\Autodesk\Revit\Addins\2020" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2020"
 if exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
@@ -170,7 +171,10 @@ if exist "$(AppData)\Autodesk\Revit\Addins\2022" copy "$(ProjectDir)*.addin" "$(
 if exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
 
 if exist "$(AppData)\Autodesk\Revit\Addins\2023" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2023"
-if exist "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs"</PostBuildEvent>
+if exist "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs"
+
+if exist "$(AppData)\Autodesk\Revit\Addins\2024" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2024"
+if exist "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
