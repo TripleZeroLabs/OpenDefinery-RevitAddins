@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>OpenDefinery.Theme</RootNamespace>
+    <AssemblyName>OpenDefinery.Theme</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <!-- No Revit API. This library rides the shared R22-R27 -> TFM mapping in
+         Directory.Build.props (net48 / net8.0-windows / net10.0-windows), so a
+         ProjectReference from any add-in config resolves to the matching runtime. -->
+  </PropertyGroup>
+
+</Project>

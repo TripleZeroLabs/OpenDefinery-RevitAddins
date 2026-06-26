@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace OD_FamEditor
 {
@@ -123,5 +122,6 @@ namespace OD_FamEditor
         public FamilyParameter FamilyParameter { get; set; }
         public object Value { get; set; }
         public string PropGroup { get; set; }
+        public string DataType { get; set; }
     }
 }

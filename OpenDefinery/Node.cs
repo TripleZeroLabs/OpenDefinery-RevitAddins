@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,130 +12,130 @@ namespace OpenDefinery
     /// </summary>
     class Node
     {
-        [JsonProperty("nid")]
+        [JsonPropertyName("nid")]
         public Nid[] Nid { get; set; }
 
-        [JsonProperty("uuid")]
+        [JsonPropertyName("uuid")]
         public Uuid[] Uuid { get; set; }
 
-        [JsonProperty("vid")]
+        [JsonPropertyName("vid")]
         public Nid[] Vid { get; set; }
 
-        [JsonProperty("langcode")]
+        [JsonPropertyName("langcode")]
         public Langcode[] Langcode { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public TypeElement[] Type { get; set; }
 
-        [JsonProperty("revision_timestamp")]
+        [JsonPropertyName("revision_timestamp")]
         public RevisionTimestamp[] RevisionTimestamp { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public DefaultLangcode[] Status { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         public Langcode[] Title { get; set; }
 
-        [JsonProperty("created")]
+        [JsonPropertyName("created")]
         public Changed[] Created { get; set; }
 
-        [JsonProperty("changed")]
+        [JsonPropertyName("changed")]
         public Changed[] Changed { get; set; }
 
-        [JsonProperty("promote")]
+        [JsonPropertyName("promote")]
         public DefaultLangcode[] Promote { get; set; }
 
-        [JsonProperty("sticky")]
+        [JsonPropertyName("sticky")]
         public DefaultLangcode[] Sticky { get; set; }
 
-        [JsonProperty("default_langcode")]
+        [JsonPropertyName("default_langcode")]
         public DefaultLangcode[] DefaultLangcode { get; set; }
 
-        [JsonProperty("revision_translation_affected")]
+        [JsonPropertyName("revision_translation_affected")]
         public DefaultLangcode[] RevisionTranslationAffected { get; set; }
 
-        [JsonProperty("path")]
+        [JsonPropertyName("path")]
         public Path[] Path { get; set; }
 
-        [JsonProperty("field_guid")]
+        [JsonPropertyName("field_guid")]
         public FieldGuid[] FieldGuid { get; set; }
     }
 
     public partial class FieldGuid
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public Guid Value { get; set; }
     }
 
     public partial class Changed
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public DateTimeOffset Value { get; set; }
 
-        [JsonProperty("lang")]
+        [JsonPropertyName("lang")]
         public string Lang { get; set; }
 
-        [JsonProperty("format")]
+        [JsonPropertyName("format")]
         public string Format { get; set; }
     }
 
     public partial class DefaultLangcode
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public bool Value { get; set; }
 
-        [JsonProperty("lang")]
+        [JsonPropertyName("lang")]
         public string Lang { get; set; }
     }
 
     public partial class Uuid
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public Guid Value { get; set; }
     }
 
     public partial class Langcode
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public string Value { get; set; }
 
-        [JsonProperty("lang")]
+        [JsonPropertyName("lang")]
         public string Lang { get; set; }
     }
 
     public partial class Nid
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public int Value { get; set; }
     }
 
     public partial class Path
     {
-        [JsonProperty("alias")]
+        [JsonPropertyName("alias")]
         public object Alias { get; set; }
 
-        [JsonProperty("pid")]
+        [JsonPropertyName("pid")]
         public object Pid { get; set; }
 
-        [JsonProperty("langcode")]
+        [JsonPropertyName("langcode")]
         public string Langcode { get; set; }
 
-        [JsonProperty("lang")]
+        [JsonPropertyName("lang")]
         public string Lang { get; set; }
     }
 
     public partial class RevisionTimestamp
     {
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public DateTimeOffset Value { get; set; }
 
-        [JsonProperty("format")]
+        [JsonPropertyName("format")]
         public string Format { get; set; }
     }
 
     public partial class TypeElement
     {
-        [JsonProperty("target_id")]
+        [JsonPropertyName("target_id")]
         public string TargetId { get; set; }
     }
 }

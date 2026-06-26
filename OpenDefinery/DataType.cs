@@ -1,21 +1,20 @@
-﻿using Newtonsoft.Json;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace OpenDefinery
 {
     public class DataType
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("param_type_name")]
+        [JsonPropertyName("param_type_name")]
         public string ParameterTypeName { get; set; }
 
         /// <summary>
@@ -25,29 +24,15 @@ namespace OpenDefinery
         /// <returns>A list of DataType objects.</returns>
         public static List<DataType> GetAll(Definery definery)
         {
-            var dataTypes = new List<DataType>();
+            var response = OdHttp.Get(Definery.BaseUrl + "rest/datatypes?_format=json", definery);
 
-            var client = new RestClient(Definery.BaseUrl + "rest/datatypes?_format=json");
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-
-            if (!string.IsNullOrEmpty(definery.AuthCode))
-            {
-                request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            }
-
-            IRestResponse response = client.Execute(request);
-            Console.WriteLine(response.Content);
-
-            dataTypes = JsonConvert.DeserializeObject<List<DataType>>(response.Content);
-
-            return dataTypes;
+            return OdJson.Deserialize<List<DataType>>(response.Content);
         }
 
         /// <summary>
         /// Retrieve the DataType object from OpenDefinery from the name.
         /// </summary>
-        /// <param name="allDataTypes">A list of all DataTypes typically sourced from the main Definery object.</param>
+        /// <param name="definery">The main Definery object.</param>
         /// <param name="dataTypeName">The name the DataType to retrieve.</param>
         /// <returns>The DataType object.</returns>
         public static DataType GetFromName(Definery definery, string dataTypeName)
@@ -97,12 +82,8 @@ namespace OpenDefinery
         }
 
         /// <summary>
-        /// Retrieve a DataType from it's ParameterType Enumeration
-        /// (https://www.revitapidocs.com/2017/f38d847e-207f-b59a-3bd6-ebea80d5be63.htm)
+        /// Retrieve a DataType from its ParameterType Enumeration name.
         /// </summary>
-        /// <param name="dataTypeName"></param>
-        /// <param name="dataTypes"></param>
-        /// <returns></returns>
         public static DataType GetByParamTypeName(string dataTypeName, List<DataType> dataTypes)
         {
             var dataType = dataTypes.Where(

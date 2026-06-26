@@ -1,197 +1,33 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-      None
-    </ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{B9A3926D-2293-4A51-82ED-E747ADDC0604}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OD_ParamManager</RootNamespace>
     <AssemblyName>OpenDefinery-ParamManager</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <UseWPF>true</UseWPF>
+    <!-- This add-in uses the Revit API -->
+    <UseRevitApi>true</UseRevitApi>
+    <!-- Opt in to the post-build Revit Addins deployment (see Directory.Build.targets) -->
+    <IsRevitAddin>true</IsRevitAddin>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <StartAction>Program</StartAction>
-    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2019\Revit.exe</StartProgram>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <StartAction>Program</StartAction>
-    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2019\Revit.exe</StartProgram>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenDefinery, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\OpenDefinery\bin\Debug\OpenDefinery.dll</HintPath>
-    </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="RestSharp, Version=106.15.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\packages\RestSharp.106.15.0\lib\net452\RestSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="RevitAPI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="RevitAPIUI">
-      <HintPath>C:\Program Files\Autodesk\Revit 2021\RevitAPIUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Text.Encodings.Web, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encodings.Web.6.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Text.Json, Version=6.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Json.6.0.1\lib\net461\System.Text.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="WindowsBase" />
+    <ProjectReference Include="..\OpenDefinery\OpenDefinery.csproj" />
+    <ProjectReference Include="..\OpenDefinery.Theme\OpenDefinery.Theme.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="RvtApp.cs" />
-    <Compile Include="RvtCommand.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Window-ParamManager.xaml.cs">
-      <DependentUpon>Window-ParamManager.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Window-ParamSelector.xaml.cs">
-      <DependentUpon>Window-ParamSelector.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\Icons\add-circle-fill.png" />
-    <Resource Include="Assets\Icons\booklet-fill.png" />
-    <Resource Include="Assets\Icons\building-4-fill.png" />
-    <Resource Include="Assets\Icons\home-8-fill.png" />
-    <Resource Include="Assets\Icons\settings-5-fill.png" />
-    <Resource Include="Assets\Icons\checkbox-blank-circle-line.png" />
-    <Resource Include="Assets\Icons\checkbox-circle-fill.png" />
-    <Resource Include="Assets\Icons\database-2-fill.png" />
-    <Resource Include="Assets\Icons\close-circle-fill.png" />
-    <Resource Include="Assets\Icons\logo_32x32.png" />
-    <Resource Include="Assets\Icons\swap-horizontal.png" />
-    <Content Include="OpenDefinery-ParamManager.addin" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="Window-ParamManager.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Window-ParamSelector.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
+
+  <!-- Newtonsoft/RestSharp removed (Revit/Dynamo DLL-conflict sources). HTTP + JSON now
+       flow through the core's OdHttp/OdJson (HttpClient + System.Text.Json), which is
+       pulled in transitively via the OpenDefinery project reference. -->
   <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if not exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
-if not exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
-if not exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
-if not exist "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs"
-if not exist "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs" mkdir "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs"
 
-if exist "$(AppData)\Autodesk\Revit\Addins\2020" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2020"
-if exist "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2020\TripleZeroLabs"
+  <ItemGroup>
+    <!-- Ribbon/UI icons referenced via pack:// URIs -->
+    <Resource Include="Assets\Icons\*.png" />
+    <!-- Revit add-in manifest (deployment handled in Phase 5) -->
+    <None Include="OpenDefinery-ParamManager.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
-if exist "$(AppData)\Autodesk\Revit\Addins\2021" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2021"
-if exist "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2021\TripleZeroLabs"
-
-if exist "$(AppData)\Autodesk\Revit\Addins\2022" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2022"
-if exist "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2022\TripleZeroLabs"
-
-if exist "$(AppData)\Autodesk\Revit\Addins\2023" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2023"
-if exist "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2023\TripleZeroLabs"
-
-if exist "$(AppData)\Autodesk\Revit\Addins\2024" copy "$(ProjectDir)*.addin" "$(AppData)\Autodesk\Revit\Addins\2024"
-if exist "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs" copy "$(ProjectDir)$(OutputPath)*.dll" "$(AppData)\Autodesk\Revit\Addins\2024\TripleZeroLabs"</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <Target Name="AfterClean">
-    <Delete Files="$(AppData)\Autodesk\REVIT\Addins\2019\OD-ParamManager.addin" />
-    <Delete Files="$(AppData)\Autodesk\REVIT\Addins\2019\OD-ParamManager.dll" />
-  </Target>
-  <Import Project="..\packages\System.Text.Json.6.0.1\build\System.Text.Json.targets" Condition="Exists('..\packages\System.Text.Json.6.0.1\build\System.Text.Json.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\System.Text.Json.6.0.1\build\System.Text.Json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.Text.Json.6.0.1\build\System.Text.Json.targets'))" />
-  </Target>
 </Project>

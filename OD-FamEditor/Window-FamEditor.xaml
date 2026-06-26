@@ -1,15 +1,20 @@
-﻿<Window x:Class="OD_FamEditor.Window_FamEditor"
+<Window x:Class="OD_FamEditor.Window_FamEditor"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:OD_FamEditor"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+             Title="OpenDefinery Family Editor"
+             FontFamily="Segoe UI"
+             d:DesignHeight="450" d:DesignWidth="800">
 
     <Window.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
             <Style TargetType="ScrollViewer" x:Key="ScrollViewer_ParamForm">
                 <Setter Property="Width" Value="100"/>
                 <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -26,13 +31,18 @@
                 <Setter Property="BorderThickness" Value="0,0,0,1" />
             </Style>
 
+            <Style TargetType="TextBlock" x:Key="ExpanderCount">
+                <Setter Property="Margin" Value="6,0,0,0" />
+                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextSecondary}" />
+            </Style>
+
             <Style TargetType="Expander">
                 <Setter Property="Margin" Value="10"/>
             </Style>
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid Name="LayoutRoot" Background="{DynamicResource MaterialDesignPaper}">
+    <Grid Name="LayoutRoot" Background="{DynamicResource OD.Brush.Background}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -48,9 +58,6 @@
             </ListBox>
 
             <DataGrid x:Name="DataGrid_Params" d:ItemsSource="{Binding}" DockPanel.Dock="Top" Height="Auto" Visibility="Collapsed" AutoGenerateColumns="False" SelectionUnit="FullRow" d:IsHidden="True">
-                <DataGrid.Resources>
-                    <SolidColorBrush x:Key="MaterialDesignTextBoxBorder" Color="Transparent"/>
-                </DataGrid.Resources>
                 <DataGrid.GroupStyle>
                     <GroupStyle>
                         <GroupStyle.ContainerStyle>
@@ -62,7 +69,7 @@
                                                 <Expander.Header>
                                                     <DockPanel>
                                                         <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                                        <TextBlock  Style="{StaticResource ExpanderCount}" 
+                                                        <TextBlock  Style="{StaticResource ExpanderCount}"
                                                                     Text="{Binding ItemCount, StringFormat=({0})}" />
                                                     </DockPanel>
                                                 </Expander.Header>
@@ -80,7 +87,7 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn  Header="Name" Binding="{Binding FamilyParameter.Definition.Name}" SortDirection="Ascending" IsReadOnly="True" />
                     <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
-                    <DataGridTextColumn Header="DataType" Binding="{Binding FamilyParameter.Definition.ParameterType}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="DataType" Binding="{Binding DataType}" IsReadOnly="True"/>
                     <DataGridTextColumn Header="Shared" Binding="{Binding FamilyParameter.IsShared}" IsReadOnly="True" />
                 </DataGrid.Columns>
             </DataGrid>

@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================
+         OpenDefinery theme palette
+         Plain WPF Colors/Brushes only - no third-party dependencies.
+         ============================================================ -->
+
+    <!-- Brand -->
+    <Color x:Key="OD.Color.Primary">#2F6FEB</Color>
+    <Color x:Key="OD.Color.PrimaryHover">#2257C6</Color>
+    <Color x:Key="OD.Color.PrimaryPressed">#1B46A0</Color>
+    <Color x:Key="OD.Color.Accent">#7C4DFF</Color>
+
+    <!-- Neutrals -->
+    <Color x:Key="OD.Color.Background">#FFFFFF</Color>
+    <Color x:Key="OD.Color.Surface">#F4F6F9</Color>
+    <Color x:Key="OD.Color.SurfaceAlt">#ECEFF3</Color>
+    <Color x:Key="OD.Color.Border">#D6DBE1</Color>
+    <Color x:Key="OD.Color.BorderFocus">#2F6FEB</Color>
+
+    <!-- Dark toolbar / chrome -->
+    <Color x:Key="OD.Color.Toolbar">#2B3442</Color>
+    <Color x:Key="OD.Color.ToolbarForeground">#FFFFFF</Color>
+    <!-- Modal overlay scrim -->
+    <Color x:Key="OD.Color.Overlay">#B2000000</Color>
+
+    <!-- Text -->
+    <Color x:Key="OD.Color.TextPrimary">#1B2733</Color>
+    <Color x:Key="OD.Color.TextSecondary">#5B6875</Color>
+    <Color x:Key="OD.Color.TextOnPrimary">#FFFFFF</Color>
+    <Color x:Key="OD.Color.TextDisabled">#A2ABB5</Color>
+
+    <!-- Status -->
+    <Color x:Key="OD.Color.Success">#2E9E5B</Color>
+    <Color x:Key="OD.Color.Warning">#E0A100</Color>
+    <Color x:Key="OD.Color.Danger">#D64545</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="OD.Brush.Primary" Color="{StaticResource OD.Color.Primary}" />
+    <SolidColorBrush x:Key="OD.Brush.PrimaryHover" Color="{StaticResource OD.Color.PrimaryHover}" />
+    <SolidColorBrush x:Key="OD.Brush.PrimaryPressed" Color="{StaticResource OD.Color.PrimaryPressed}" />
+    <SolidColorBrush x:Key="OD.Brush.Accent" Color="{StaticResource OD.Color.Accent}" />
+
+    <SolidColorBrush x:Key="OD.Brush.Background" Color="{StaticResource OD.Color.Background}" />
+    <SolidColorBrush x:Key="OD.Brush.Surface" Color="{StaticResource OD.Color.Surface}" />
+    <SolidColorBrush x:Key="OD.Brush.SurfaceAlt" Color="{StaticResource OD.Color.SurfaceAlt}" />
+    <SolidColorBrush x:Key="OD.Brush.Border" Color="{StaticResource OD.Color.Border}" />
+    <SolidColorBrush x:Key="OD.Brush.BorderFocus" Color="{StaticResource OD.Color.BorderFocus}" />
+    <SolidColorBrush x:Key="OD.Brush.Toolbar" Color="{StaticResource OD.Color.Toolbar}" />
+    <SolidColorBrush x:Key="OD.Brush.ToolbarForeground" Color="{StaticResource OD.Color.ToolbarForeground}" />
+    <SolidColorBrush x:Key="OD.Brush.Card" Color="{StaticResource OD.Color.Background}" />
+    <SolidColorBrush x:Key="OD.Brush.Overlay" Color="{StaticResource OD.Color.Overlay}" />
+
+    <SolidColorBrush x:Key="OD.Brush.TextPrimary" Color="{StaticResource OD.Color.TextPrimary}" />
+    <SolidColorBrush x:Key="OD.Brush.TextSecondary" Color="{StaticResource OD.Color.TextSecondary}" />
+    <SolidColorBrush x:Key="OD.Brush.TextOnPrimary" Color="{StaticResource OD.Color.TextOnPrimary}" />
+    <SolidColorBrush x:Key="OD.Brush.TextDisabled" Color="{StaticResource OD.Color.TextDisabled}" />
+
+    <SolidColorBrush x:Key="OD.Brush.Success" Color="{StaticResource OD.Color.Success}" />
+    <SolidColorBrush x:Key="OD.Brush.Warning" Color="{StaticResource OD.Color.Warning}" />
+    <SolidColorBrush x:Key="OD.Brush.Danger" Color="{StaticResource OD.Color.Danger}" />
+
+    <!-- Metrics (CornerRadius/Thickness have built-in type converters; no sys namespace needed) -->
+    <CornerRadius x:Key="OD.CornerRadius">4</CornerRadius>
+    <Thickness x:Key="OD.Thickness.ControlPadding">10,6</Thickness>
+
+</ResourceDictionary>

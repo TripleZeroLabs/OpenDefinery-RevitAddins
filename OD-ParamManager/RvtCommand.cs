@@ -23,8 +23,9 @@ namespace OD_ParamManager
             // Instantiate the connection to the Revit Model
             var rvtConnector = new RvtConnector(commandData);
 
-            // Instantiate a main window
-            var mw = new Window_ParamManager(rvtConnector);
+            // Launch the ported OpenDefinery main window, passing the live Revit
+            // connection so the "Add to Family" button can write to the open document.
+            var mw = new OpenDefinery_DesktopApp.MainWindow(rvtConnector);
             mw.ShowDialog();
 
             return Result.Succeeded;
@@ -44,7 +45,7 @@ namespace OD_ParamManager
             // Retrieve Element IDs
             foreach (var p in paramsToDelete)
             {
-                ElementId id = new ElementId(p.ElementId);
+                ElementId id = RvtCompat.NewElementId(p.ElementId);
 
                 elementIds.Add(id);
             }
@@ -116,7 +117,7 @@ namespace OD_ParamManager
             var output = new Dictionary<string, List<string>>();
 
             // Cast the int to and ElementId and retrieve the Parameter Element from the model
-            ElementId paramId = new ElementId(odParam.ElementId);
+            ElementId paramId = RvtCompat.NewElementId(odParam.ElementId);
             var paramElem = rvtConnector.Document.GetElement(paramId) as ParameterElement;
             SharedParameterElement sharedParameterElement = paramElem as SharedParameterElement;
             //var paramDef = paramElem.GetDefinition();

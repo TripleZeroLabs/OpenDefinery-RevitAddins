@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using RestSharp;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,6 +14,7 @@ namespace OpenDefinery
         public string AuthCode { get; set; }
         public List<Collection> MyCollections { get; set; }
         public List<Collection> PublishedCollections { get; set; }
+        public List<Collection> AllCollections { get; set; }
         public Collection SelectedCollection { get; set; }
         public List<DefineryParameter> DefineryParameters { get; set; }
         public List<DefineryParameter> RevitParameters { get; set; }
@@ -34,27 +33,21 @@ namespace OpenDefinery
         /// <param name="password">The password of the OpenDefinery user</param>
         public static Definery Init(Definery definery, string username, string password)
         {
-            var client = new RestClient(BaseUrl + "user/login?_format=json");
-            client.Timeout = -1;
-            var request = new RestRequest(Method.POST);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddParameter("application/json", "{\r\n    \"name\": \"" + username + "\",\r\n    \"pass\": \"" + password + "\"\r\n}", ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
+            var body = "{\r\n    \"name\": \"" + username + "\",\r\n    \"pass\": \"" + password + "\"\r\n}";
+            var response = OdHttp.Post(BaseUrl + "user/login?_format=json", body, definery);
 
             // Return the CSRF token if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 try
                 {
-                    JObject json = JObject.Parse(response.Content);
-
                     // Assign tokens to Definery members
-                    definery.CsrfToken = json.SelectToken("csrf_token").ToString();
+                    definery.CsrfToken = OdJson.GetString(response.Content, "csrf_token");
 
                     // Add logged in user data
                     definery.CurrentUser = new User();
-                    definery.CurrentUser.Id = json.SelectToken("current_user.uid").ToString();
-                    definery.CurrentUser.Name = json.SelectToken("current_user.name").ToString();
+                    definery.CurrentUser.Id = OdJson.GetString(response.Content, "current_user", "uid");
+                    definery.CurrentUser.Name = OdJson.GetString(response.Content, "current_user", "name");
 
                     // Store the auth code for GET requests
                     definery.AuthCode = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));

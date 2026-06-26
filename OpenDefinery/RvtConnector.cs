@@ -2,7 +2,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Events;
-using Newtonsoft.Json.Linq;
 using OpenDefinery;
 using System;
 using System.Collections;
@@ -190,14 +189,14 @@ namespace OpenDefinery
         /// <param name="defineryParam">The new OpenDefinery DefineryParameter</param>
         /// <returns>True if the replacement was successful.</returns>
         public bool ReplaceParameterInFamilly(
-            RvtConnector rvtConnector, 
-            int elementId, 
+            RvtConnector rvtConnector,
+            long elementId,
             DefineryParameter defineryParam)
         {
             var success = false;
 
             // Retrieve the existing Parameter Element from the Revit DB by its Element ID
-            var elemId = new ElementId(elementId);
+            var elemId = RvtCompat.NewElementId(elementId);
             var existingSharedParam = this.Document.GetElement(elemId) as SharedParameterElement;
             Definition existingDef = null;
 
@@ -213,7 +212,7 @@ namespace OpenDefinery
             }
 
             // Check if the parameter data types match
-            var existingDataType = existingDef.ParameterType.ToString().ToUpper();
+            var existingDataType = RvtCompat.GetDataTypeToken(existingDef);
 
             if (existingDataType == defineryParam.DataType)
             {
@@ -454,11 +453,7 @@ namespace OpenDefinery
                             {
                                 try
                                 {
-                                    FamilyParameter fp = famMan.AddParameter(
-                                        extDef,
-                                        BuiltInParameterGroup.PG_IDENTITY_DATA,
-                                        false
-                                    );
+                                    FamilyParameter fp = RvtCompat.AddIdentityParameter(famMan, extDef);
 
                                     successful.Add(extDef);
                                     output.Add(fp.Id);
@@ -618,7 +613,7 @@ namespace OpenDefinery
                     break;
 
                 case StorageType.Integer:
-                    if (fp.Definition.ParameterType == ParameterType.YesNo)
+                    if (RvtCompat.IsYesNo(fp.Definition))
                     {
                         var intValue = t.AsInteger(fp).ToString();
 
@@ -696,7 +691,7 @@ namespace OpenDefinery
                     break;
 
                 case StorageType.Integer:
-                    if (fp.Definition.ParameterType == ParameterType.YesNo)
+                    if (RvtCompat.IsYesNo(fp.Definition))
                     {
                         var intValue = t.AsInteger(fp).ToString();
 

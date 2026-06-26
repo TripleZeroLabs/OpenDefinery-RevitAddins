@@ -1,5 +1,3 @@
-﻿using Newtonsoft.Json;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -122,19 +120,9 @@ namespace OpenDefinery
 
             try
             {
-                var client = new RestClient(Definery.BaseUrl + "rest/groups?_format=json");
-                client.Timeout = -1;
-                var request = new RestRequest(Method.GET);
+                var response = OdHttp.Get(Definery.BaseUrl + "rest/groups?_format=json", definery);
 
-                if (!string.IsNullOrEmpty(definery.AuthCode))
-                {
-                    request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-                }
-
-                IRestResponse response = client.Execute(request);
-                Console.WriteLine(response.Content);
-
-                groups = JsonConvert.DeserializeObject<List<Group>>(response.Content);
+                groups = OdJson.Deserialize<List<Group>>(response.Content);
 
                 return groups;
             }

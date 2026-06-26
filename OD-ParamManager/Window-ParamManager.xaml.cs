@@ -507,14 +507,18 @@ namespace OD_ParamManager
                 SharedParameterElement param = e as SharedParameterElement;
                 Definition def = param.GetDefinition();
 
-                var dataType = DataType.GetByParamTypeName(def.ParameterType.ToString(), Definery.DataTypes);
+                // Modern Revit (2024+) exposes the data type as a ForgeTypeId, not the
+                // removed ParameterType enum. Resolve the OpenDefinery token, then the
+                // matching DataType; fall back to the raw token if it isn't catalogued.
+                var dataTypeToken = RvtCompat.GetDataTypeToken(def);
+                var dataType = DataType.GetFromName(Definery, dataTypeToken);
 
                 // Cast the SharedParameterElement to a "lite" OpenDefinery DefineryParameter
                 // TODO: Retrieve all Revit parameter data such as the DATACATEGORY
                 var castedParam = new DefineryParameter(
-                    param.GuidValue, 
-                    def.Name, 
-                    dataType.Name, 
+                    param.GuidValue,
+                    def.Name,
+                    dataType != null ? dataType.Name : dataTypeToken,
                     string.Empty, 
                     string.Empty, 
                     string.Empty, 
@@ -523,9 +527,9 @@ namespace OD_ParamManager
                     true
                     );
 
-                castedParam.ElementId = Convert.ToInt32(e.Id.IntegerValue);
+                castedParam.ElementId = RvtCompat.GetIdValue(e.Id);
 
-                revitParams.Add(castedParam);    
+                revitParams.Add(castedParam);
             }
 
             // Retrieve family parameters (not shared)
@@ -540,7 +544,7 @@ namespace OD_ParamManager
                 var castedParam = new DefineryParameter(
                     Guid.Empty,
                     fp.Definition.Name,
-                    fp.Definition.ParameterType.ToString(),
+                    RvtCompat.GetDataTypeToken(fp.Definition),
                     string.Empty,
                     string.Empty,
                     string.Empty,
@@ -549,7 +553,7 @@ namespace OD_ParamManager
                     false
                     );
 
-                castedParam.ElementId = fp.Id.IntegerValue;
+                castedParam.ElementId = RvtCompat.GetIdValue(fp.Id);
 
                 revitParams.Add(castedParam);
                 }
@@ -770,7 +774,7 @@ namespace OD_ParamManager
                 // Retrieve Element IDs
                 foreach (var p in selectedParams)
                 {
-                    ElementId id = new ElementId(p.ElementId);
+                    ElementId id = RvtCompat.NewElementId(p.ElementId);
 
                     elementIds.Add(id);
                 }
@@ -918,7 +922,7 @@ namespace OD_ParamManager
                     // Retrieve Element IDs
                     foreach (var p in selectedParams)
                     {
-                        ElementId id = new ElementId(p.ElementId);
+                        ElementId id = RvtCompat.NewElementId(p.ElementId);
 
                         elementIds.Add(id);
                     }
@@ -1377,7 +1381,7 @@ namespace OD_ParamManager
                                 // Delete the existing parameter
                                 Transaction trans = new Transaction(RvtConnector.Document, string.Format("Delete parameter \"{0}\"", selectedParam.Name));
                                 trans.Start();
-                                RvtConnector.Document.Delete(new ElementId(selectedParam.ElementId));
+                                RvtConnector.Document.Delete(RvtCompat.NewElementId(selectedParam.ElementId));
                                 trans.Commit();
                             }
                             else

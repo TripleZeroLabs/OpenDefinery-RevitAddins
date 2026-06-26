@@ -1,8 +1,10 @@
 using Autodesk.Revit.UI;
 using OpenDefinery;
+using System;
+using System.IO;
 using System.Reflection;
 using System.Windows.Media.Imaging;
-using System;
+using Path = System.IO.Path;
 
 namespace OD_FamEditor
 {
@@ -10,57 +12,49 @@ namespace OD_FamEditor
     {
         public Result OnStartup(UIControlledApplication a)
         {
-            // Instantiate the ribbon panel to add the button to 
+            // Resolve this add-in's dependencies from its own folder (see OD-ParamManager RvtApp).
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveAddinDependencies;
+
+            return Startup(a);
+        }
+
+        private Result Startup(UIControlledApplication a)
+        {
+            // Instantiate the ribbon panel to add the button to
             RibbonPanel panel = Ui.RibbonPanel(a, "OpenDefinery");
 
-            // Reflection to look for this assembly path 
+            // Reflection to look for this assembly path
             string thisAssemblyPath = Assembly.GetExecutingAssembly().Location;
 
-            // Add button to panel 
+            // Add button to panel
             PushButton button = panel.AddItem(
                 new PushButtonData(
-                    "Family Editor", 
-                    "  Family Editor  ", 
+                    "Family Editor",
+                    "  Family Editor  ",
                     thisAssemblyPath,
                     "OD_FamEditor.RvtCommand")
                 ) as PushButton;
-            
-            // Add tool tip 
+
+            // Add tool tip
             button.ToolTip = "An improved way to manage family types and data.";
 
-            // Set icon path to bitmap
-            //Uri iconUri = new Uri("pack://application:,,,/Resources/icon_32x32.png");
+            // Set icon
             Uri iconUri = new Uri("pack://application:,,,/OpenDefinery-FamEditor;component/Assets/Icons/logo_32x32.png");
-            BitmapImage largeImage = new BitmapImage(iconUri);
+            button.LargeImage = new BitmapImage(iconUri);
 
-            // Apply image to button 
-            button.LargeImage = largeImage;
-
-            a.ApplicationClosing += A_ApplicationClosing;
-
-            //Set Application to Idling
-            a.Idling += A_Idling;
             return Result.Succeeded;
         }
 
-        /// <summary>
-        /// Idling
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void A_Idling(object sender, Autodesk.Revit.UI.Events.IdlingEventArgs e)
+        private static Assembly ResolveAddinDependencies(object sender, ResolveEventArgs args)
         {
+            var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (string.IsNullOrEmpty(dir)) return null;
 
-        }
+            var name = new AssemblyName(args.Name).Name;
+            if (name.EndsWith(".resources")) return null;
 
-        /// <summary>
-        /// Closing
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void A_ApplicationClosing(object sender, Autodesk.Revit.UI.Events.ApplicationClosingEventArgs e)
-        {
-            throw new NotImplementedException();
+            var candidate = Path.Combine(dir, name + ".dll");
+            return File.Exists(candidate) ? Assembly.LoadFrom(candidate) : null;
         }
 
         public Result OnShutdown(UIControlledApplication a)

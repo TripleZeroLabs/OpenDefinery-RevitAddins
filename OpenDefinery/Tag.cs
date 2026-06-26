@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 
 namespace OpenDefinery
 {
@@ -22,25 +20,20 @@ namespace OpenDefinery
         /// <returns>The Tag ID of the newly created Tag as a string</returns>
         public static string Create(Definery definery, string tagName)
         {
-            var client = new RestClient(Definery.BaseUrl + "taxonomy/term?_format=hal_json");
-            client.Timeout = -1;
-            var request = new RestRequest(Method.POST);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("X-CSRF-Token", definery.CsrfToken);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            request.AddParameter("application/json", 
+            var body =
                 "{\"vid\": \"tags\"," +
                 "\"name\": [" +
                     "{\"value\": \"" + tagName + "\"}" +
-                    "]}", 
-                ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
+                    "]}";
 
-            JObject json = JObject.Parse(response.Content);
+            var response = OdHttp.Post(Definery.BaseUrl + "taxonomy/term?_format=hal_json", body, definery);
 
-            var tagId = json["tid"].FirstOrDefault()["value"].ToString();
+            using (var doc = JsonDocument.Parse(response.Content))
+            {
+                var value = doc.RootElement.GetProperty("tid")[0].GetProperty("value");
 
-            return tagId;
+                return value.ValueKind == JsonValueKind.String ? value.GetString() : value.GetRawText();
+            }
         }
 
         /// <summary>
@@ -51,16 +44,11 @@ namespace OpenDefinery
         /// <returns>The Tag ID as a string</returns>
         public static string GetIdFromName(Definery definery, string tagName)
         {
-            var client = new RestClient(Definery.BaseUrl + string.Format("rest/tags/{0}?_format=json", tagName));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
+            var response = OdHttp.Get(Definery.BaseUrl + string.Format("rest/tags/{0}?_format=json", tagName), definery);
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK && response.Content != "[]")
             {
-                var tags = JsonConvert.DeserializeObject<List<Tag>>(response.Content);
+                var tags = OdJson.Deserialize<List<Tag>>(response.Content);
 
                 return tags.FirstOrDefault().Id;
             }
@@ -83,7 +71,7 @@ namespace OpenDefinery
         public static string FormatName(string tagName)
         {
             var newTag = tagName;
-            
+
             // Remove spaces
             newTag = newTag.Replace(" ", "");
 

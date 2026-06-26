@@ -1,0 +1,87 @@
+<Project>
+
+  <!--
+    Central build configuration for the OpenDefinery Revit add-ins.
+
+    One build CONFIGURATION per supported Revit version (R22..R27). Each maps to:
+      - a target framework  (net48 for 2022-2024, net8.0-windows for 2025-2027)
+      - a RevitVersion       (drives the Nice3point Revit API package version)
+      - preprocessor symbols (REVIT2024, REVIT2025_OR_GREATER, ...) for API shims
+
+    Build from the CLI with, e.g.:
+        dotnet build -c R24      (Revit 2022-2024, net48)
+        dotnet build -c R25      (Revit 2025-2027, net8.0-windows)
+    In Visual Studio, pick the R22..R27 configuration from the toolbar dropdown.
+  -->
+
+  <PropertyGroup>
+    <Configurations>R22;R23;R24;R25;R26;R27</Configurations>
+    <Platforms>AnyCPU</Platforms>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <!-- Keep the hand-written Properties/AssemblyInfo.cs files (no auto-generation). -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <!-- Copy NuGet dependency DLLs into bin even for class libraries. On .NET 8/10 the SDK
+         otherwise leaves them in the NuGet cache (resolved via deps.json), but Revit loads
+         the add-in straight from its folder and ignores deps.json - so deps (e.g.
+         CompareNETObjects) must be physically present next to the add-in. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- Default config so a bare `dotnet build` / IDE design-time build still resolves. -->
+    <Configuration Condition="'$(Configuration)' == ''">R24</Configuration>
+  </PropertyGroup>
+
+  <!-- Map each configuration to a Revit version. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'R22'"><RevitVersion>2022</RevitVersion></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'R23'"><RevitVersion>2023</RevitVersion></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'R24'"><RevitVersion>2024</RevitVersion></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'R25'"><RevitVersion>2025</RevitVersion></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'R26'"><RevitVersion>2026</RevitVersion></PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'R27'"><RevitVersion>2027</RevitVersion></PropertyGroup>
+
+  <!-- Runtime split by Revit version:
+         2022-2024 = .NET Framework 4.8
+         2025-2026 = .NET 8
+         2027+     = .NET 10
+       (Autodesk bumped the CLR again for Revit 2027.) -->
+  <PropertyGroup Condition="'$(RevitVersion)' != '' and $([MSBuild]::VersionLessThan($(RevitVersion), 2025))">
+    <TargetFramework>net48</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RevitVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals($(RevitVersion), 2025)) and $([MSBuild]::VersionLessThan($(RevitVersion), 2027))">
+    <TargetFramework>net8.0-windows</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RevitVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals($(RevitVersion), 2027))">
+    <TargetFramework>net10.0-windows</TargetFramework>
+  </PropertyGroup>
+
+  <!-- Preprocessor symbols for per-version API shims. -->
+  <PropertyGroup Condition="'$(RevitVersion)' != ''">
+    <DefineConstants>$(DefineConstants);REVIT$(RevitVersion)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RevitVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals($(RevitVersion), 2025))">
+    <DefineConstants>$(DefineConstants);REVIT2025_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Release-style output for all version configs. -->
+  <PropertyGroup>
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <!-- .NET Framework reference assemblies so net48 builds even without a full
+       targeting pack installed (e.g. CI, or a machine with only the .NET SDK). -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Revit API reference assemblies, opt-in per project via <UseRevitApi>true</UseRevitApi>.
+       ExcludeAssets=runtime ensures RevitAPI.dll/RevitAPIUI.dll are NOT copied to output
+       (Revit provides them at runtime); equivalent to the old <Private>False</Private>. -->
+  <ItemGroup Condition="'$(UseRevitApi)' == 'true'">
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(RevitVersion).*" ExcludeAssets="runtime" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(RevitVersion).*" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+</Project>

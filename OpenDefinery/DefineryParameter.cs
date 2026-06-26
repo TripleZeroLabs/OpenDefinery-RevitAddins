@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using RestSharp;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using KellermanSoftware.CompareNetObjects;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
 
@@ -13,38 +14,40 @@ namespace OpenDefinery
 {
     public class DefineryParameter
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public int DefineryId { get; set; }
 
-        [JsonProperty("guid")]
+        [JsonPropertyName("guid")]
         public Guid Guid { get; set; }
-        public int ElementId { get; set; }
+        // 64-bit to match Revit 2024+ element ids (ElementId.Value is long).
+        // Widening from int is backwards compatible for older models.
+        public long ElementId { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("data_type")]
+        [JsonPropertyName("data_type")]
         public string DataType { get; set; }
 
-        [JsonProperty("data_category")]
+        [JsonPropertyName("data_category")]
         public string DataCategoryHashcode { get; set; }  // TODO: Instantiate the hashcode as a Data Category object
 
-        [JsonProperty("group")]
+        [JsonPropertyName("group")]
         public string Group { get; set; }
 
-        [JsonProperty("user_modifiable")]
+        [JsonPropertyName("user_modifiable")]
         public string UserModifiable { get; set; }
 
-        [JsonProperty("visible")]
+        [JsonPropertyName("visible")]
         public string Visible { get; set; }
 
-        [JsonProperty("author")]
+        [JsonPropertyName("author")]
         public string Author { get; set; }
 
-        [JsonProperty("collections")]
+        [JsonPropertyName("collections")]
         public string CollectionsString { get; set; }
 
         public int ForkedSourceId { get; set; }
@@ -139,19 +142,13 @@ namespace OpenDefinery
         /// <returns>A list of DefineryParameter objects</returns>
         public static ObservableCollection<DefineryParameter> FromGuid(Definery definery, Guid guid)
         {
-            var client = new RestClient(Definery.BaseUrl + string.Format("rest/params/guid/{0}?_format=json", guid.ToString()));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
+            var response = OdHttp.Get(Definery.BaseUrl + string.Format("rest/params/guid/{0}?_format=json", guid.ToString()), definery);
 
-            JObject json = JObject.Parse(response.Content);
-
-            var paramResponse = json.SelectToken("rows");
+            var paramResponse = OdJson.GetPropertyRaw(response.Content, "rows");
 
             if (paramResponse != null)
             {
-                var parameters = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
+                var parameters = OdJson.Deserialize<List<DefineryParameter>>(paramResponse);
 
                 return new ObservableCollection<DefineryParameter>(parameters);
             }
@@ -231,26 +228,13 @@ namespace OpenDefinery
         /// <returns>A list of SharedParameters</returns>
         public static ObservableCollection<DefineryParameter> GetPage(Definery definery, int itemsPerPage, int offset, bool resetTotals)
         {
-            var client = new RestClient(Definery.BaseUrl + 
-                string.Format("rest/params?_format=json&items_per_page={0}&offset={1}", itemsPerPage, offset));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
+            var response = OdHttp.Get(Definery.BaseUrl +
+                string.Format("rest/params?_format=json&items_per_page={0}&offset={1}", itemsPerPage, offset), definery);
 
             // Return the CSRF token if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-
-                // Set the Pager object on the Main Window
-                //MainWindow.Pager = Pager.SetFromParamReponse(response, resetTotals);
-                //MainWindow.Pager.ItemsPerPage = MainWindow.Pager.ItemsPerPage;
-
-                // Get the SharedParameters as JToken
-                JObject json = JObject.Parse(response.Content);
-                var paramResponse = json.SelectToken("rows");
-
-                var parameters = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
+                var parameters = OdJson.Deserialize<List<DefineryParameter>>(OdJson.GetPropertyRaw(response.Content, "rows"));
 
                 return new ObservableCollection<DefineryParameter>(parameters);
             }
@@ -273,25 +257,13 @@ namespace OpenDefinery
         /// <returns>A list of DefineryParameter objects</returns>
         public static ObservableCollection<DefineryParameter> ByUser(Definery definery, string userName, int itemsPerPage, int offset, bool resetTotals)
         {
-            var client = new RestClient(Definery.BaseUrl + string.Format(
-                "rest/params/user/{0}?_format=json&items_per_page={1}&offset={2}", userName, itemsPerPage, offset)
-                );
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
+            var response = OdHttp.Get(Definery.BaseUrl + string.Format(
+                "rest/params/user/{0}?_format=json&items_per_page={1}&offset={2}", userName, itemsPerPage, offset), definery);
 
             // Logic if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                // Set the Pager object on the Main Window
-                //MainWindow.Pager = Pager.SetFromParamReponse(response, resetTotals);
-
-                // Get the SharedParameters as JToken
-                JObject json = JObject.Parse(response.Content);
-                var paramResponse = json.SelectToken("rows");
-
-                var parameters = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
+                var parameters = OdJson.Deserialize<List<DefineryParameter>>(OdJson.GetPropertyRaw(response.Content, "rows"));
 
                 return new ObservableCollection<DefineryParameter>(parameters);
             }
@@ -325,6 +297,150 @@ namespace OpenDefinery
         }
 
         /// <summary>
+        /// Retrieve a page of parameters that belong to a specific Collection.
+        /// </summary>
+        public static ObservableCollection<DefineryParameter> ByCollection(
+            Definery definery, Collection collection, int itemsPerPage, int offset, bool resetTotals)
+        {
+            var listOfParams = new List<DefineryParameter>();
+
+            var response = OdHttp.Get(Definery.BaseUrl + string.Format(
+                "rest/params/collection/{0}?_format=json&items_per_page={1}&offset={2}", collection.Id, itemsPerPage, offset), definery);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                if (OdJson.CountProperty(response.Content, "rows") > 0)
+                {
+                    listOfParams = OdJson.Deserialize<List<DefineryParameter>>(OdJson.GetPropertyRaw(response.Content, "rows"));
+                }
+            }
+            else
+            {
+                Debug.WriteLine("There was an error getting the parameters.");
+            }
+
+            var parameters = new ObservableCollection<DefineryParameter>(listOfParams);
+
+            return SetCollections(definery, parameters);
+        }
+
+        /// <summary>
+        /// Checks that an exact match of a parameter already exists in OpenDefinery (mitigates duplicates).
+        /// </summary>
+        public static bool HasExactMatch(Definery definery, DefineryParameter newParameter)
+        {
+            var foundMatch = false;
+            var foundParams = FromGuid(definery, newParameter.Guid);
+
+            if (foundParams != null && foundParams.Count() > 1)
+            {
+                foreach (var p in foundParams)
+                {
+                    // Only consider an exact match if the current user is the author
+                    if (p.Author == definery.CurrentUser.Id)
+                    {
+                        CompareLogic compareLogic = new CompareLogic();
+                        compareLogic.Config.MembersToInclude.Add("Guid");
+                        compareLogic.Config.MembersToInclude.Add("Name");
+                        compareLogic.Config.MembersToInclude.Add("DataType");
+                        compareLogic.Config.MembersToInclude.Add("DataCategory");
+                        compareLogic.Config.MembersToInclude.Add("Visible");
+                        compareLogic.Config.MembersToInclude.Add("Description");
+                        compareLogic.Config.MembersToInclude.Add("UserModifiable");
+
+                        ComparisonResult result = compareLogic.Compare(newParameter, p);
+                        foundMatch = result.AreEqual;
+                        if (foundMatch) break;
+                    }
+                    else
+                    {
+                        foundMatch = false;
+                    }
+                }
+            }
+
+            return foundMatch;
+        }
+
+        /// <summary>
+        /// Async version of Create (used by batch upload for throughput). Returns the parameter
+        /// with its new node id set, without an extra GET round-trip.
+        /// </summary>
+        public static async Task<DefineryParameter> CreateAsync(Definery definery, DefineryParameter param, int? collectionId = null, int? forkedId = null)
+        {
+            // Assign the datatype value by the Term ID defined by OpenDefinery (we cannot pass the name)
+            var dataType = definery.DataTypes.Find(d => d.Name == param.DataType);
+            var dataCategory = new DataCategory();
+
+            if (dataType != null)
+            {
+                param.DataType = dataType.Id.ToString();
+            }
+
+            if (!string.IsNullOrEmpty(param.DataCategoryHashcode))
+            {
+                dataCategory = DataCategory.GetByHashcode(definery, param.DataCategoryHashcode);
+            }
+
+            var tagId = string.Empty;
+            if (!string.IsNullOrEmpty(param.Group))
+            {
+                var tagName = Tag.FormatName(param.Group);
+                tagId = Tag.GetIdFromName(definery, tagName);
+
+                if (tagId == "[]")
+                {
+                    tagId = Tag.Create(definery, tagName);
+                }
+            }
+            else
+            {
+                tagId = null;
+            }
+
+            if (param.UserModifiable == null) param.UserModifiable = "1";
+            if (param.Visible == null) param.Visible = "1";
+
+            var requestBody = "{" +
+                "\"type\": [{\"target_id\": \"shared_parameter\"}]," +
+                "\"title\": [{\"value\": \"" + param.Name + "\"}]," +
+                "\"field_guid\": [{\"value\": \"" + param.Guid.ToString() + "\"}]," +
+                "\"field_description\": [{\"value\": \"" + param.Description + "\"}]," +
+                "\"field_batch_id\": [{\"value\": \"" + param.BatchId + "\"}]," +
+                "\"field_group\": {\"und\": \"41\"}," +
+                "\"field_data_type\": {\"und\": \"" + param.DataType + "\"}," +
+                "\"field_data_category\": {\"und\": \"" + dataCategory.Id + "\"}," +
+                "\"field_visible\": {\"und\": \"" + param.Visible + "\"}," +
+                "\"field_user_modifiable\": {\"und\": \"" + param.UserModifiable + "\"}";
+
+            if (collectionId != null)
+            {
+                requestBody += ",\"field_collections\": {\"und\": \"" + collectionId + "\"}";
+            }
+            if (!string.IsNullOrEmpty(forkedId.ToString()))
+            {
+                requestBody += ",\"field_forked_source\": {\"und\": \"" + forkedId.ToString() + "\"}";
+            }
+            if (!string.IsNullOrEmpty(tagId))
+            {
+                requestBody += ",\"field_tags\": {\"und\": \"" + tagId + "\"}";
+            }
+            requestBody += "}";
+
+            var response = await OdHttp.PostAsync(Definery.BaseUrl + "node?_format=json", requestBody, definery);
+
+            if (response.StatusCode.ToString() == "Created")
+            {
+                var node = OdJson.Deserialize<Node>(response.Content);
+                param.DefineryId = node.Nid[0].Value;
+                return param;
+            }
+
+            Debug.WriteLine("Error creating Shared Parameter: " + response.Content);
+            return null;
+        }
+
+        /// <summary>
         /// Retrieve the Shared Parameters that don't belong to any Collections
         /// </summary>
         /// <param name="definery"></param>
@@ -335,33 +451,19 @@ namespace OpenDefinery
         {
             var listOfParams = new List<DefineryParameter>();
 
-            var client = new RestClient(Definery.BaseUrl + string.Format(
-                "rest/params/orphaned?_format=json&items_per_page={0}&offset={1}", itemsPerPage, offset)
-                );
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
-
-            // Set the pager
-            //MainWindow.Pager = Pager.SetFromParamReponse(response, resetTotals);
-            //MainWindow.Pager.ItemsPerPage = MainWindow.Pager.ItemsPerPage;
+            var response = OdHttp.Get(Definery.BaseUrl + string.Format(
+                "rest/params/orphaned?_format=json&items_per_page={0}&offset={1}", itemsPerPage, offset), definery);
 
             // Logic if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                // Get the SharedParameters as JToken
-                JObject json = JObject.Parse(response.Content);
-                var paramResponse = json.SelectToken("rows");
-
-                if (paramResponse.Count() == 0)
+                if (OdJson.CountProperty(response.Content, "rows") == 0)
                 {
                     Debug.WriteLine("There are no orphaned Shared Parameters.");
                 }
                 else
                 {
-                    // Cast the rows from the reponse to a List of Shared Parameters
-                    listOfParams = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
+                    listOfParams = OdJson.Deserialize<List<DefineryParameter>>(OdJson.GetPropertyRaw(response.Content, "rows"));
                 }
             }
             else
@@ -387,32 +489,19 @@ namespace OpenDefinery
         {
             var listOfParams = new List<DefineryParameter>();
 
-            var client = new RestClient(Definery.BaseUrl + 
-                string.Format("rest/params/search?_format=json&keys={0}&items_per_page={1}&offset={2}", searchQuery, itemsPerPage, offset));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
-
-            // Set the pager
-            //MainWindow.Pager = Pager.SetFromParamReponse(response, resetTotals);
-            //MainWindow.Pager.ItemsPerPage = MainWindow.Pager.ItemsPerPage;
+            var response = OdHttp.Get(Definery.BaseUrl +
+                string.Format("rest/params/search?_format=json&keys={0}&items_per_page={1}&offset={2}", searchQuery, itemsPerPage, offset), definery);
 
             // Logic if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                // Get the SharedParameters as JToken
-                JObject json = JObject.Parse(response.Content);
-                var paramResponse = json.SelectToken("rows");
-
-                if (paramResponse.Count() == 0)
+                if (OdJson.CountProperty(response.Content, "rows") == 0)
                 {
                     Debug.WriteLine("There were no Shared Parameters found that match that search query.");
                 }
                 else
                 {
-                    // Cast the rows from the reponse to a List of Shared Parameters
-                    listOfParams = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
+                    listOfParams = OdJson.Deserialize<List<DefineryParameter>>(OdJson.GetPropertyRaw(response.Content, "rows"));
                 }
             }
             else
@@ -446,32 +535,19 @@ namespace OpenDefinery
         {
             var listOfParams = new List<DefineryParameter>();
 
-            var client = new RestClient(Definery.BaseUrl +
-                string.Format("rest/params/search?_format=json&keys={0}&data_type={1}&items_per_page={2}&offset={3}", searchQuery, dataTypeName, itemsPerPage, offset));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
-
-            // Set the pager
-            //MainWindow.Pager = Pager.SetFromParamReponse(response, resetTotals);
-            //MainWindow.Pager.ItemsPerPage = MainWindow.Pager.ItemsPerPage;
+            var response = OdHttp.Get(Definery.BaseUrl +
+                string.Format("rest/params/search?_format=json&keys={0}&data_type={1}&items_per_page={2}&offset={3}", searchQuery, dataTypeName, itemsPerPage, offset), definery);
 
             // Logic if the response was OK
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                // Get the SharedParameters as JToken
-                JObject json = JObject.Parse(response.Content);
-                var paramResponse = json.SelectToken("rows");
-
-                if (paramResponse.Count() == 0)
+                if (OdJson.CountProperty(response.Content, "rows") == 0)
                 {
                     Debug.WriteLine("There were no Shared Parameters found that match that search query.");
                 }
                 else
                 {
-                    // Cast the rows from the reponse to a List of Shared Parameters
-                    listOfParams = JsonConvert.DeserializeObject<List<DefineryParameter>>(paramResponse.ToString());
+                    listOfParams = OdJson.Deserialize<List<DefineryParameter>>(OdJson.GetPropertyRaw(response.Content, "rows"));
                 }
             }
             else
@@ -505,9 +581,6 @@ namespace OpenDefinery
             string updatedName = null, 
             string updatedDescription = null)
         {
-            var client = new RestClient(Definery.BaseUrl + "node?_format=json");
-            client.Timeout = -1;
-
             // Assign the datatype value by the Term ID defined by OpenDefinery to pass to the API call (we cannot pass the name)
             var dataType = definery.DataTypes.Find(d => d.Name == param.DataType);
             var dataCategory = new DataCategory();
@@ -564,9 +637,10 @@ namespace OpenDefinery
                 param.Visible = "1";
             }
 
-            // Set the values if the parameter has a new name and description
-            param.Name = updatedName;
-            param.Description = updatedDescription;
+            // Apply a new name/description only when provided (callers that create from an
+            // already-populated param pass null here and must keep the existing values).
+            if (updatedName != null) param.Name = updatedName;
+            if (updatedDescription != null) param.Description = updatedDescription;
 
             //TODO: Clean up this mess some day.
             var requestBody = "{" +
@@ -631,21 +705,15 @@ namespace OpenDefinery
 
             requestBody += "}";
 
-            var request = new RestRequest(Method.POST);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            request.AddHeader("X-CSRF-Token", definery.CsrfToken);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddParameter("application/json", requestBody, ParameterType.RequestBody);
+            var response = OdHttp.Post(Definery.BaseUrl + "node?_format=json", requestBody, definery);
 
-            IRestResponse response = client.Execute(request);
-
-            Debug.WriteLine(response);
+            Debug.WriteLine(response.Content);
 
             // Get Shared Parameter if successful
             if (response.StatusCode.ToString() == "Created")
             {
                 // Instantiate a generic node from the response first
-                var node = JsonConvert.DeserializeObject<Node>(response.Content);
+                var node = OdJson.Deserialize<Node>(response.Content);
 
                 var newParam = FromId(definery, node.Nid[0].Value);
                 
@@ -667,15 +735,11 @@ namespace OpenDefinery
         /// <returns></returns>
         public static DefineryParameter FromId(Definery definery, int nodeId)
         {
-            var client = new RestClient(Definery.BaseUrl + string.Format("rest/params/id/{0}?_format=json", nodeId.ToString()));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            IRestResponse response = client.Execute(request);
+            var response = OdHttp.Get(Definery.BaseUrl + string.Format("rest/params/id/{0}?_format=json", nodeId.ToString()), definery);
 
             if (response.StatusCode.ToString() == "OK")
             {
-                var parameters = JsonConvert.DeserializeObject<List<DefineryParameter>>(response.Content);
+                var parameters = OdJson.Deserialize<List<DefineryParameter>>(response.Content);
 
                 return parameters[0];
             }
@@ -691,7 +755,7 @@ namespace OpenDefinery
         /// <param name="definery">The main Definery object provides the CSRF token</param>
         /// <param name="param">The DefineryParameter object to add</param>
         /// <param name="collection">The Collection object to add the Shared Parameter to</param>
-        public static IRestResponse AddToCollection(Definery definery, DefineryParameter param, int newCollectionId)
+        public static OdResponse AddToCollection(Definery definery, DefineryParameter param, int newCollectionId)
         {
             // Instantiate a list of Collection IDs as strings
             var collectionIds = new List<string>();
@@ -743,20 +807,14 @@ namespace OpenDefinery
             // Add trailing bracket
             bodyFieldCollections += "]";
 
-            var client = new RestClient(string.Format(Definery.BaseUrl + "node/{0}?_format=json", param.DefineryId));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.PATCH);
-            request.AddHeader("X-CSRF-Token", definery.CsrfToken);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            request.AddParameter("application/json", "{" +
+            var body = "{" +
                 "\"type\": [{" +
                         "\"target_id\": \"shared_parameter\"" +
                     "}]" +
                     bodyFieldCollections +
-                "}",
-                ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
+                "}";
+
+            var response = OdHttp.Patch(string.Format(Definery.BaseUrl + "node/{0}?_format=json", param.DefineryId), body, definery);
 
             Debug.WriteLine(response.Content);
 
@@ -812,20 +870,14 @@ namespace OpenDefinery
             // Add trailing bracket
             field_collections += "]";
 
-            var client = new RestClient(string.Format(Definery.BaseUrl + "node/{0}?_format=json", param.DefineryId));
-            client.Timeout = -1;
-            var request = new RestRequest(Method.PATCH);
-            request.AddHeader("X-CSRF-Token", definery.CsrfToken);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            request.AddParameter("application/json", "{" +
+            var body = "{" +
                 "\"type\": [{" +
                         "\"target_id\": \"shared_parameter\"" +
                     "}]" +
                     field_collections +
-                "}",
-                ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
+                "}";
+
+            var response = OdHttp.Patch(string.Format(Definery.BaseUrl + "node/{0}?_format=json", param.DefineryId), body, definery);
 
             Debug.WriteLine(response.Content);
 
@@ -850,17 +902,12 @@ namespace OpenDefinery
         /// <returns></returns>
         public static void Modify(Definery definery, DefineryParameter param, string name, string description)
         {
-            var client = new RestClient(string.Format(Definery.BaseUrl + "node/{0}?_format=json", param.DefineryId));
-            var request = new RestRequest(Method.PATCH);
-            request.AddHeader("X-CSRF-Token", definery.CsrfToken);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            request.AddParameter("application/json", "{\"type\": [{" +
+            var body = "{\"type\": [{" +
                 "\"target_id\": \"shared_parameter\"}]," +
                 "\"title\": {\"value\": \"" + name + "\"}," +
-                "\"field_description\": {\"value\": \"" + description + "\"}}", 
-                ParameterType.RequestBody);
-            IRestResponse response = client.Execute(request);
+                "\"field_description\": {\"value\": \"" + description + "\"}}";
+
+            var response = OdHttp.Patch(string.Format(Definery.BaseUrl + "node/{0}?_format=json", param.DefineryId), body, definery);
 
             Debug.WriteLine(response.Content);
         }

@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using RestSharp;
+﻿using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,13 +8,13 @@ namespace OpenDefinery
 {
     public class DataCategory
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("hashcode")]
+        [JsonPropertyName("hashcode")]
         public string Hashcode { get; set; }
 
         /// <summary>
@@ -25,23 +24,9 @@ namespace OpenDefinery
         /// <returns>A list of DataType objects.</returns>
         public static List<DataCategory> GetAll(Definery definery)
         {
-            var dataCategories = new List<DataCategory>();
+            var response = OdHttp.Get(Definery.BaseUrl + "rest/datacategories?_format=json", definery);
 
-            var client = new RestClient(Definery.BaseUrl + "rest/datacategories?_format=json");
-            client.Timeout = -1;
-            var request = new RestRequest(Method.GET);
-
-            if (!string.IsNullOrEmpty(definery.AuthCode))
-            {
-                request.AddHeader("Authorization", "Basic " + definery.AuthCode);
-            }
-
-            IRestResponse response = client.Execute(request);
-            Console.WriteLine(response.Content);
-
-            dataCategories = JsonConvert.DeserializeObject<List<DataCategory>>(response.Content);
-
-            return dataCategories;
+            return OdJson.Deserialize<List<DataCategory>>(response.Content);
         }
 
         /// <summary>

@@ -16,7 +16,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -156,7 +155,7 @@ namespace OD_FamEditor
 
                 groupContent.Children.Add(labelName);
 
-                if (p.FamilyParameter.Definition.ParameterType == ParameterType.YesNo)
+                if (RvtCompat.IsYesNo(p.FamilyParameter.Definition))
                 {
                     var checkBoxValue = new System.Windows.Controls.CheckBox();
 
@@ -219,8 +218,8 @@ namespace OD_FamEditor
                         famParam.Value = RvtConnector.GetValue(
                             SelectedFamType, p, FamEditor.Doc);
 
-                        var paramGroup = p.Definition.ParameterGroup;
-                        famParam.PropGroup = LabelUtils.GetLabelFor(paramGroup);
+                        famParam.PropGroup = RvtCompat.GetParamGroupLabel(p.Definition);
+                        famParam.DataType = RvtCompat.GetDataTypeToken(p.Definition);
 
                         famParams.Add(famParam);
                     }

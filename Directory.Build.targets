@@ -1,0 +1,44 @@
+<Project>
+
+  <!--
+    Deploys a built add-in + its dependencies into the matching Revit version's
+    Addins folder after each build, so a rebuild is immediately picked up by Revit
+    on next launch.
+
+    Runs ONLY when:
+      - the project opts in with <IsRevitAddin>true</IsRevitAddin>, AND
+      - the config maps to a real Revit version ($(RevitVersion) is set), AND
+      - deployment isn't disabled (-p:DeployToRevitAddins=false, e.g. on CI), AND
+      - that Revit version is actually installed (its Addins folder exists).
+
+    Layout matches the .addin manifest (Assembly = .\TripleZeroLabs\...dll):
+      %AppData%\Autodesk\Revit\Addins\<year>\*.addin
+      %AppData%\Autodesk\Revit\Addins\<year>\TripleZeroLabs\*.dll
+  -->
+
+  <PropertyGroup>
+    <DeployToRevitAddins Condition="'$(DeployToRevitAddins)' == ''">true</DeployToRevitAddins>
+    <!-- Overridable (e.g. for testing) via -p:RevitAddinsDir=... -->
+    <RevitAddinsDir Condition="'$(RevitAddinsDir)' == ''">$(AppData)\Autodesk\Revit\Addins\$(RevitVersion)</RevitAddinsDir>
+  </PropertyGroup>
+
+  <Target Name="DeployToRevit"
+          AfterTargets="Build"
+          Condition="'$(IsRevitAddin)' == 'true' and '$(RevitVersion)' != '' and '$(DeployToRevitAddins)' == 'true' and Exists('$(RevitAddinsDir)')">
+
+    <ItemGroup>
+      <OdAddinManifest Include="$(ProjectDir)*.addin" />
+      <!-- TargetDir holds the add-in + all project/package deps; RevitAPI is ExcludeAssets=runtime so it is not here. -->
+      <OdAddinBinaries Include="$(TargetDir)*.dll" />
+      <OdAddinBinaries Include="$(TargetDir)*.pdb" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(RevitAddinsDir)\TripleZeroLabs" />
+
+    <Copy SourceFiles="@(OdAddinManifest)" DestinationFolder="$(RevitAddinsDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(OdAddinBinaries)" DestinationFolder="$(RevitAddinsDir)\TripleZeroLabs" SkipUnchangedFiles="true" />
+
+    <Message Importance="high" Text="Deployed $(AssemblyName) ($(TargetFramework)) -> $(RevitAddinsDir)" />
+  </Target>
+
+</Project>
