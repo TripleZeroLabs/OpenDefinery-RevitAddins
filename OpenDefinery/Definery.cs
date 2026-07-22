@@ -9,7 +9,7 @@ namespace OpenDefinery
 {
     public class Definery
     {
-        public static string BaseUrl = "http://app.opendefinery.com/";
+        public static string BaseUrl = "https://app.opendefinery.com/";
         public string CsrfToken { get; set; }
         public string AuthCode { get; set; }
         public List<Collection> MyCollections { get; set; }
@@ -31,9 +31,23 @@ namespace OpenDefinery
         /// <param name="definery">The main Definery object</param>
         /// <param name="username">The OpenDefinery username to login</param>
         /// <param name="password">The password of the OpenDefinery user</param>
+        /// <summary>
+        /// The authenticated session for this Revit process, set by <see cref="Init"/> on
+        /// success. Lets a second window (e.g. Export Parameters) reuse the sign-in instead
+        /// of prompting again.
+        /// </summary>
+        public static Definery Current { get; private set; }
+
         public static Definery Init(Definery definery, string username, string password)
         {
-            var body = "{\r\n    \"name\": \"" + username + "\",\r\n    \"pass\": \"" + password + "\"\r\n}";
+            // Drupal's /user/login only accepts ANONYMOUS requests. The HttpClient (and its
+            // cookies) live for the whole Revit process, so a session left over from a
+            // previous sign-in makes this fail with "This route can only be accessed by
+            // anonymous users." Clear it first so login is always anonymous.
+            OdHttp.ResetSession();
+
+            var body = "{\"name\": " + OdJson.ToJsonString(username) +
+                       ", \"pass\": " + OdJson.ToJsonString(password) + "}";
             var response = OdHttp.Post(BaseUrl + "user/login?_format=json", body, definery);
 
             // Return the CSRF token if the response was OK
@@ -51,6 +65,9 @@ namespace OpenDefinery
 
                     // Store the auth code for GET requests
                     definery.AuthCode = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
+
+                    // Publish the session so other windows can reuse this sign-in.
+                    Current = definery;
 
                     return definery;
                 }

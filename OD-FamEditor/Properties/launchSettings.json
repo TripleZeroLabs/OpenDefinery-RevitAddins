@@ -1,0 +1,29 @@
+{
+  "//": "Pick a profile from the VS run dropdown to launch+attach that Revit. Match the Target Framework dropdown to the Revit version: net48 -> 2022/2023/2024, net8.0-windows -> 2025/2026, net10.0-windows -> 2027.",
+  "profiles": {
+    "Revit 2022": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2022\\Revit.exe"
+    },
+    "Revit 2023": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2023\\Revit.exe"
+    },
+    "Revit 2024": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2024\\Revit.exe"
+    },
+    "Revit 2025": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2025\\Revit.exe"
+    },
+    "Revit 2026": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2026\\Revit.exe"
+    },
+    "Revit 2027": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2027\\Revit.exe"
+    }
+  }
+}

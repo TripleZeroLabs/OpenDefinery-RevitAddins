@@ -25,7 +25,19 @@ namespace OpenDefinery
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
             };
             options.Converters.Add(new LenientStringConverter());
+            options.Converters.Add(new LenientBooleanConverter());
+            options.Converters.Add(new LenientGuidConverter());
             return options;
+        }
+
+        /// <summary>
+        /// Quote and escape a value as a JSON string literal, for the hand-built request
+        /// bodies. Prevents a " or \ in user input (passwords, names, descriptions) from
+        /// corrupting the JSON.
+        /// </summary>
+        public static string ToJsonString(string value)
+        {
+            return JsonSerializer.Serialize(value ?? string.Empty);
         }
 
         /// <summary>Deserialize an entire JSON document into <typeparamref name="T"/>.</summary>
@@ -139,6 +151,68 @@ namespace OpenDefinery
         }
 
         public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value);
+        }
+    }
+
+    /// <summary>
+    /// Reads a bool from a JSON boolean, string ("1"/"0", "true"/"false", "yes"/"no"), or
+    /// number (0 = false). The Drupal API returns flags such as a Collection's "public" as
+    /// STRINGS; Newtonsoft coerced those implicitly, System.Text.Json throws without this.
+    /// </summary>
+    internal sealed class LenientBooleanConverter : JsonConverter<bool>
+    {
+        public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.True:
+                    return true;
+                case JsonTokenType.False:
+                    return false;
+                case JsonTokenType.Number:
+                    return reader.TryGetInt64(out var n) ? n != 0 : reader.GetDouble() != 0d;
+                case JsonTokenType.String:
+                    var s = reader.GetString();
+                    if (string.IsNullOrWhiteSpace(s)) return false;
+                    s = s.Trim();
+                    if (bool.TryParse(s, out var parsed)) return parsed;
+                    if (long.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var sn)) return sn != 0;
+                    return s.Equals("yes", StringComparison.OrdinalIgnoreCase)
+                        || s.Equals("y", StringComparison.OrdinalIgnoreCase)
+                        || s.Equals("on", StringComparison.OrdinalIgnoreCase);
+                case JsonTokenType.Null:
+                default:
+                    return false;
+            }
+        }
+
+        public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
+        {
+            writer.WriteBooleanValue(value);
+        }
+    }
+
+    /// <summary>
+    /// Reads a Guid, falling back to <see cref="Guid.Empty"/> for null, empty, or malformed
+    /// values instead of throwing. System.Text.Json rejects a null/invalid guid on a
+    /// non-nullable Guid property; Newtonsoft yielded Guid.Empty. A single bad record in a
+    /// page of parameters shouldn't fail the whole request.
+    /// </summary>
+    internal sealed class LenientGuidConverter : JsonConverter<Guid>
+    {
+        public override Guid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                return Guid.TryParse(reader.GetString(), out var guid) ? guid : Guid.Empty;
+            }
+
+            return Guid.Empty;
+        }
+
+        public override void Write(Utf8JsonWriter writer, Guid value, JsonSerializerOptions options)
         {
             writer.WriteStringValue(value);
         }

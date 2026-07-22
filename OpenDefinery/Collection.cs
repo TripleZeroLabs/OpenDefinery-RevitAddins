@@ -106,13 +106,15 @@ namespace OpenDefinery
 
             try
             {
-                return OdJson.Deserialize<List<Collection>>(response.Content);
+                // Never return null: callers (and Collection.GetFromString) enumerate this
+                // directly, so a failed call must not cascade into a NullReferenceException.
+                return OdJson.Deserialize<List<Collection>>(response.Content) ?? new List<Collection>();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
 
-                return null;
+                return new List<Collection>();
             }
         }
 
@@ -123,42 +125,31 @@ namespace OpenDefinery
         {
             var response = OdHttp.Get(Definery.BaseUrl + "rest/collections/published?_format=json", definery);
 
-            // Return the data if the response was OK
+            // Return the data if the response was OK. Always return a list (never null) -
+            // callers enumerate the result directly.
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                // If the user has no Collections, it returns an empty array
+                // If the user has no Collections, the API returns an empty array
                 if (response.Content != "[]")
                 {
                     try
                     {
-                        var collections = OdJson.Deserialize<List<Collection>>(response.Content);
-                        var filteredCollections = new List<Collection>();
-
-                        foreach (var collection in collections)
-                        {
-                            filteredCollections.Add(collection);
-                        }
-
-                        return filteredCollections;
+                        return OdJson.Deserialize<List<Collection>>(response.Content) ?? new List<Collection>();
                     }
                     catch (Exception ex)
                     {
                         Debug.WriteLine(ex.ToString());
 
-                        return null;
+                        return new List<Collection>();
                     }
                 }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                Debug.WriteLine(response.StatusCode.ToString());
 
-                return null;
+                return new List<Collection>();
             }
+
+            Debug.WriteLine(response.StatusCode.ToString());
+
+            return new List<Collection>();
         }
 
         /// <summary>

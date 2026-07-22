@@ -26,6 +26,12 @@ namespace OD_ParamManager
             // Launch the ported OpenDefinery main window, passing the live Revit
             // connection so the "Add to Family" button can write to the open document.
             var mw = new OpenDefinery_DesktopApp.MainWindow(rvtConnector);
+
+            // Own it to Revit's main window so it is genuinely modal (Revit stays blocked)
+            // and never falls behind the Revit window.
+            new System.Windows.Interop.WindowInteropHelper(mw).Owner =
+                commandData.Application.MainWindowHandle;
+
             mw.ShowDialog();
 
             return Result.Succeeded;

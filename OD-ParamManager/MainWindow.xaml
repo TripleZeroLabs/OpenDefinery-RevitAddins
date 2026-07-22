@@ -31,7 +31,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
-                            <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="4">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True" />
                             </Border>
                             <ControlTemplate.Triggers>
@@ -100,7 +100,7 @@
                     <Button Style="{StaticResource OD.ToolbarButton}" x:Name="AddToFamilyButton" Click="AddToFamilyButton_Click" Margin="10,0,0,0" ToolTip="Add the selected parameters to the currently open Revit family or project" Content="Add to Family"/>
                 </StackPanel>
                 <TextBox x:Name="SearchTxtBox" HorizontalAlignment="Right" Margin="0,0,69,0" VerticalAlignment="Center" TabIndex="0" Width="231" Height="28" KeyDown="PressEnterToSearch" FontSize="12" ToolTip="Search by keyword, data type, or GUID..."/>
-                <Button x:Name="SearchButton" Content="Find" Style="{StaticResource OD.ToolbarButton}" HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Height="28" IsCancel="True" Width="56" Click="SearchButton_Click" ToolTip="Search by keyword, data type, or GUID..."/>
+                <Button x:Name="SearchButton" Content="Find" Style="{StaticResource OD.ToolbarButton}" HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Height="28" Width="56" Click="SearchButton_Click" ToolTip="Search by keyword, data type, or GUID..."/>
             </Grid>
             <DockPanel x:Name="MainPanel" LastChildFill="True" Margin="0" Grid.Row="2">
                 <ScrollViewer Background="{DynamicResource OD.Brush.Surface}" Height="Auto" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
@@ -251,11 +251,11 @@
                 <Button x:Name="LoginButton" Content="Login" Margin="50,0,50,75" VerticalAlignment="Bottom" Click="LoginButton_Click" IsDefault="True" TabIndex="2" Height="46" FontSize="18"/>
                 <Label Content="USERNAME" Margin="45,25,50,0" VerticalAlignment="Top" FontSize="12" Height="20"/>
                 <Label Content="PASSWORD" Margin="45,125,50,0" FontSize="12" Height="20" VerticalAlignment="Top"/>
-                <TextBlock HorizontalAlignment="Center" Margin="0,0,0,25" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="http://app.opendefinery.com/user/password"><InlineUIContainer>
+                <TextBlock HorizontalAlignment="Center" Margin="0,0,0,25" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="https://app.opendefinery.com/user/password"><InlineUIContainer>
                             <TextBlock Text="Forgot Password" Foreground="{DynamicResource OD.Brush.TextSecondary}" TextDecorations="Underline"/>
                         </InlineUIContainer></Hyperlink><Run Text=" "/><Run Text=" "/><InlineUIContainer>
                         <TextBlock Text="|" Margin="15,0" />
-                    </InlineUIContainer><Run Text=" "/><Run Text=" "/><Run Text=" "/><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="http://app.opendefinery.com/user/register"><InlineUIContainer>
+                    </InlineUIContainer><Run Text=" "/><Run Text=" "/><Run Text=" "/><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="https://app.opendefinery.com/user/register"><InlineUIContainer>
                                 <TextBlock Foreground="{DynamicResource OD.Brush.TextSecondary}" Text="Register for an Account" TextDecorations="Underline"/>
                             </InlineUIContainer></Hyperlink></TextBlock>
             </Grid>
@@ -273,14 +273,14 @@
                 <TextBox x:Name="TxtBoxSpPath" Margin="20,64,100,0" Height="24" VerticalAlignment="Top" HorizontalContentAlignment="Left" IsReadOnly="True"/>
                 <Label Content="ADD TO A COLLECTION" Margin="20,121,20,0" FontSize="12" Height="26" VerticalAlignment="Top" Padding="0,4,4,4"/>
                 <Label Content="CHOOSE A SHARED PARAMETER TXT FILE" Margin="20,38,20,0" FontSize="12" Height="26" VerticalAlignment="Top" Padding="0,4,4,4"/>
-                <Button x:Name="BatchUploadCancel" Style="{StaticResource OD.Button.Flat}" Content="Cancel" Margin="20,0,0,31" Height="41" Click="BatchUploadCancel_Click" IsCancel="True" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="116"/>
+                <Button x:Name="BatchUploadCancel" Style="{StaticResource OD.Button.Flat}" Content="Cancel" Margin="20,0,0,31" Height="41" Click="BatchUploadCancel_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="116"/>
                 <ComboBox x:Name="BatchUploadCollectionCombo" Margin="20,147,20,0" VerticalAlignment="Top"/>
             </Grid>
             <Grid x:Name="AddToCollectionGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="501" Height="237" VerticalAlignment="Top" d:IsHidden="True">
                 <Button x:Name="AddToCollectionFormButton" Content="Add to Collection" HorizontalAlignment="Center" Margin="0,121,0,0" VerticalAlignment="Top" Width="380" Click="AddToCollectionFormButton_Click"/>
                 <ComboBox x:Name="AddToCollectionCombo" Margin="0,64,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380"/>
                 <Label Content="CHOOSE A COLLECTION" Margin="0,37,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380"/>
-                <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelAddToCollectionButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,171,0,0" VerticalAlignment="Top" Width="380" IsCancel="True" Click="CancelAddToCollectionButton_Click_1" />
+                <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelAddToCollectionButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,171,0,0" VerticalAlignment="Top" Width="380" Click="CancelAddToCollectionButton_Click_1" />
             </Grid>
             <Grid x:Name="NewParameterGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="501" VerticalAlignment="Top" d:IsHidden="True">
                 <StackPanel Margin="0">
@@ -302,7 +302,7 @@
                         <CheckBox x:Name="NewParamUserModCheckbox" Content="USER MODIFIABLE" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0" IsChecked="True"/>
                     </Grid>
                     <Button x:Name="AddParamFormButton" Content="Create Parameter" HorizontalAlignment="Center" Margin="0,40,0,0" VerticalAlignment="Bottom" Width="379" Click="NewParamFormButton_Click" />
-                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelAddParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" IsCancel="True" Click="CancelNewParamButton_Click" />
+                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelAddParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" Click="CancelNewParamButton_Click" />
                 </StackPanel>
             </Grid>
             <Grid x:Name="NewCollectionGrid" Margin="0" Width="600" HorizontalAlignment="Center" VerticalAlignment="Top" Background="{DynamicResource OD.Brush.Card}">
@@ -313,7 +313,7 @@
                     <TextBox x:Name="NewCollectionFormDesc" HorizontalAlignment="Center" Margin="110,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="380" Height="118" HorizontalContentAlignment="Left"/>
                     <CheckBox x:Name="NewCollectionFormPublic" Content="Make this Collection public" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="110,30,0,0" ToolTip="Public Collections are visible to all OpenDefinery users"/>
                     <Button x:Name="NewCollectionFormSaveButton" Content="Save Collection" HorizontalAlignment="Center" Margin="0,30,0,0" VerticalAlignment="Top" Width="380" Click="NewCollectionFormSaveButton_Click"/>
-                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="NewCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" IsCancel="True" Click="NewCollectionFormCancelButton_Click"/>
+                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="NewCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" Click="NewCollectionFormCancelButton_Click"/>
                 </StackPanel>
             </Grid>
             <Grid x:Name="ModifyParameterGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="501" VerticalAlignment="Top" d:IsHidden="True">
@@ -323,7 +323,7 @@
                     <Label Content="DESCRIPTION" Margin="0,30,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380" Padding="0,4,4,4"/>
                     <TextBox x:Name="ModParamDescTextBox" HorizontalAlignment="Center" Height="100" Margin="60,0,60.8,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="380" MaxLength="260" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Left"/>
                     <Button x:Name="ModParamFormButton" Content="Save" HorizontalAlignment="Center" Margin="0,40,0,0" VerticalAlignment="Bottom" Width="379" Click="ModParamFormButton_Click" />
-                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelModParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" IsCancel="True" Click="CancelModParamButton_Click" />
+                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelModParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" Click="CancelModParamButton_Click" />
                 </StackPanel>
             </Grid>
         </Grid>

@@ -18,6 +18,12 @@ namespace OD_FamEditor
 
             // Instantiate the Family Editor window
             var mw = new Window_FamEditor(rvtConnector);
+
+            // Own it to Revit's main window so it is genuinely modal (Revit stays blocked)
+            // and never falls behind the Revit window.
+            new System.Windows.Interop.WindowInteropHelper(mw).Owner =
+                commandData.Application.MainWindowHandle;
+
             mw.ShowDialog();
 
             return Result.Succeeded;

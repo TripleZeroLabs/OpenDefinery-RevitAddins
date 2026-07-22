@@ -50,6 +50,8 @@
     <SolidColorBrush x:Key="OD.Brush.Toolbar" Color="{StaticResource OD.Color.Toolbar}" />
     <SolidColorBrush x:Key="OD.Brush.ToolbarForeground" Color="{StaticResource OD.Color.ToolbarForeground}" />
     <SolidColorBrush x:Key="OD.Brush.Card" Color="{StaticResource OD.Color.Background}" />
+    <!-- Subdued text that still reads on a Primary-coloured (selected) background. -->
+    <SolidColorBrush x:Key="OD.Brush.TextOnPrimarySubtle" Color="#C7DDFF" />
     <SolidColorBrush x:Key="OD.Brush.Overlay" Color="{StaticResource OD.Color.Overlay}" />
 
     <SolidColorBrush x:Key="OD.Brush.TextPrimary" Color="{StaticResource OD.Color.TextPrimary}" />

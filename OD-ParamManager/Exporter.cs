@@ -28,7 +28,7 @@ namespace OpenDefinery_DesktopApp
                 "# This is a Revit shared parameter file.\n" +
                 "# These parameters are part of an ongoing collaborative effort by OpenDefinery.\n" +
                 "# If you would like to add, remove, or modify any parameters in this file, " +
-                "please join us: http://opendefinery.com.\n";
+                "please join us: https://opendefinery.com.\n";
 
             // Create the table for metadata
             var metaTable =

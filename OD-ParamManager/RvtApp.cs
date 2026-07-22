@@ -46,6 +46,19 @@ namespace OD_ParamManager
             Uri iconUri = new Uri("pack://application:,,,/OpenDefinery-ParamManager;component/Assets/Icons/logo_32x32.png");
             button.LargeImage = new BitmapImage(iconUri);
 
+            // Export Parameters: pushes shared parameters from the open family/project up to
+            // an OpenDefinery Collection.
+            PushButton exportButton = panel.AddItem(
+                new PushButtonData(
+                    "Export Parameters",
+                    "  Export Parameters  ",
+                    thisAssemblyPath,
+                    "OD_ParamManager.RvtCommandExport")
+                ) as PushButton;
+
+            exportButton.ToolTip = "Export shared parameters from the current family to an OpenDefinery Collection.";
+            exportButton.LargeImage = new BitmapImage(iconUri);
+
             return Result.Succeeded;
         }
 

@@ -1,44 +1,76 @@
 <Project>
 
   <!--
-    Deploys a built add-in + its dependencies into the matching Revit version's
-    Addins folder after each build, so a rebuild is immediately picked up by Revit
-    on next launch.
+    Deploys a built add-in + its dependencies into EVERY Revit version its TFM
+    supports, after each build, so a rebuild is picked up by Revit on next launch.
 
-    Runs ONLY when:
-      - the project opts in with <IsRevitAddin>true</IsRevitAddin>, AND
-      - the config maps to a real Revit version ($(RevitVersion) is set), AND
-      - deployment isn't disabled (-p:DeployToRevitAddins=false, e.g. on CI), AND
-      - that Revit version is actually installed (its Addins folder exists).
+      net48           -> Revit 2022, 2023, 2024
+      net8.0-windows  -> Revit 2025, 2026
+      net10.0-windows -> Revit 2027
 
-    Layout matches the .addin manifest (Assembly = .\TripleZeroLabs\...dll):
+    Layout per year (matches the .addin manifest's Assembly = .\TripleZeroLabs\...dll):
       %AppData%\Autodesk\Revit\Addins\<year>\*.addin
-      %AppData%\Autodesk\Revit\Addins\<year>\TripleZeroLabs\*.dll
+      %AppData%\Autodesk\Revit\Addins\<year>\TripleZeroLabs\*.dll (+ deps)
+
+    Runs only for projects with <IsRevitAddin>true</IsRevitAddin>.
+    Disable with -p:DeployToRevit=false (e.g. on CI).
+    Override the root with -p:RevitAddinsRoot=... (e.g. for testing).
   -->
 
   <PropertyGroup>
-    <DeployToRevitAddins Condition="'$(DeployToRevitAddins)' == ''">true</DeployToRevitAddins>
-    <!-- Overridable (e.g. for testing) via -p:RevitAddinsDir=... -->
-    <RevitAddinsDir Condition="'$(RevitAddinsDir)' == ''">$(AppData)\Autodesk\Revit\Addins\$(RevitVersion)</RevitAddinsDir>
+    <DeployToRevit Condition="'$(DeployToRevit)' == ''">true</DeployToRevit>
+    <RevitAddinsRoot Condition="'$(RevitAddinsRoot)' == ''">$(AppData)\Autodesk\Revit\Addins</RevitAddinsRoot>
   </PropertyGroup>
+
+  <!-- The Revit years served by each TFM's single build. -->
+  <ItemGroup Condition="'$(IsRevitAddin)' == 'true' and '$(TargetFramework)' == 'net48'">
+    <RevitDeployYear Include="2022;2023;2024" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(IsRevitAddin)' == 'true' and '$(TargetFramework)' == 'net8.0-windows'">
+    <RevitDeployYear Include="2025;2026" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(IsRevitAddin)' == 'true' and '$(TargetFramework)' == 'net10.0-windows'">
+    <RevitDeployYear Include="2027" />
+  </ItemGroup>
+
+  <!--
+    Smart App Control / Defender block freshly-built unsigned DLLs by cloud reputation,
+    so a local debug deploy can fail to load at random. Sign our assemblies in the BUILD
+    OUTPUT before DeployToRevit copies them - the copies in every Revit year folder then
+    inherit the signature (cheaper than signing each year folder separately).
+
+    Best-effort: installer\sign-debug.ps1 warns and exits 0 when the Azure creds,
+    signtool, dlib, or signing-metadata.json are missing, so builds never break.
+    Not run during release packaging (deploy.ps1 passes -p:DeployToRevit=false and signs
+    the Release output itself). Revit must be CLOSED during the build - it locks the DLLs.
+  -->
+  <Target Name="SignAddinOutputBeforeDeploy"
+          AfterTargets="Build"
+          BeforeTargets="DeployToRevit"
+          Condition="'$(IsRevitAddin)' == 'true' and '$(DeployToRevit)' == 'true'">
+    <PropertyGroup>
+      <_OdSignScript>$(MSBuildThisFileDirectory)installer\sign-debug.ps1</_OdSignScript>
+    </PropertyGroup>
+    <!-- Trailing "." keeps the quoted path from ending in a backslash (which would escape the quote). -->
+    <Exec Condition="Exists('$(_OdSignScript)')"
+          ContinueOnError="true"
+          Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(_OdSignScript)&quot; -Folder &quot;$(TargetDir).&quot;" />
+  </Target>
 
   <Target Name="DeployToRevit"
           AfterTargets="Build"
-          Condition="'$(IsRevitAddin)' == 'true' and '$(RevitVersion)' != '' and '$(DeployToRevitAddins)' == 'true' and Exists('$(RevitAddinsDir)')">
+          Condition="'$(IsRevitAddin)' == 'true' and '$(DeployToRevit)' == 'true' and '@(RevitDeployYear)' != ''">
 
     <ItemGroup>
-      <OdAddinManifest Include="$(ProjectDir)*.addin" />
       <!-- TargetDir holds the add-in + all project/package deps; RevitAPI is ExcludeAssets=runtime so it is not here. -->
-      <OdAddinBinaries Include="$(TargetDir)*.dll" />
-      <OdAddinBinaries Include="$(TargetDir)*.pdb" />
+      <_DeployBin Include="$(TargetDir)*.dll;$(TargetDir)*.pdb" />
+      <_DeployAddin Include="$(ProjectDir)*.addin" />
     </ItemGroup>
 
-    <MakeDir Directories="$(RevitAddinsDir)\TripleZeroLabs" />
+    <Copy SourceFiles="@(_DeployBin)" DestinationFolder="$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\TripleZeroLabs" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_DeployAddin)" DestinationFolder="$(RevitAddinsRoot)\%(RevitDeployYear.Identity)" SkipUnchangedFiles="true" />
 
-    <Copy SourceFiles="@(OdAddinManifest)" DestinationFolder="$(RevitAddinsDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(OdAddinBinaries)" DestinationFolder="$(RevitAddinsDir)\TripleZeroLabs" SkipUnchangedFiles="true" />
-
-    <Message Importance="high" Text="Deployed $(AssemblyName) ($(TargetFramework)) -> $(RevitAddinsDir)" />
+    <Message Importance="high" Text="$(AssemblyName) ($(TargetFramework)) deployed to Revit @(RevitDeployYear, ', ')" />
   </Target>
 
 </Project>

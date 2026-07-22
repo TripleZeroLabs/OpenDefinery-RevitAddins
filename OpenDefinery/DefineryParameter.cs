@@ -19,8 +19,10 @@ namespace OpenDefinery
 
         [JsonPropertyName("guid")]
         public Guid Guid { get; set; }
+
         // 64-bit to match Revit 2024+ element ids (ElementId.Value is long).
         // Widening from int is backwards compatible for older models.
+        [JsonIgnore]
         public long ElementId { get; set; }
 
         [JsonPropertyName("name")]
@@ -50,10 +52,22 @@ namespace OpenDefinery
         [JsonPropertyName("collections")]
         public string CollectionsString { get; set; }
 
+        // Populated in code, never from the API payload. These MUST be [JsonIgnore]:
+        // System.Text.Json throws "property name collides" because Collections would map
+        // to "collections" case-insensitively, which is already taken by CollectionsString.
+        [JsonIgnore]
         public int ForkedSourceId { get; set; }
+
+        [JsonIgnore]
         public List<Collection> Collections { get; set; }
+
+        [JsonIgnore]
         public string BatchId { get; set; }
+
+        [JsonIgnore]
         public bool IsStandard { get; set; }
+
+        [JsonIgnore]
         public bool IsShared { get; set; }
 
         // Standard constructor
@@ -80,7 +94,11 @@ namespace OpenDefinery
         }
 
         // Lite constructor
-        [JsonConstructor]
+        // Deliberately NOT [JsonConstructor]. System.Text.Json requires every constructor
+        // parameter to bind to a property by name, and "id" does not match the DefineryId
+        // property (JsonPropertyName is not used for constructor binding). Deserialization
+        // uses the parameterless constructor below and sets properties via their setters,
+        // which yields the same result for the "lite" (guid + id) payloads.
         public DefineryParameter(Guid guid, int id)
         {
             Guid = guid;
@@ -788,14 +806,13 @@ namespace OpenDefinery
             var bodyFieldCollections = ", \"field_collections\": [";
             foreach (var id in collectionIds)
             {
-                // Remove leading spaces if they exist from the string split
-                if (id.First() == ' ')
-                {
-                    id.Remove(0);
-                }
+                // Trim and skip empty entries. id.First() threw InvalidOperationException on an
+                // empty string (which a trailing comma in CollectionsString produces), and
+                // id.Remove(0) never actually trimmed anything (strings are immutable).
+                var targetId = (id ?? string.Empty).Trim();
+                if (targetId.Length == 0) continue;
 
-                // Add the target to the string which will eventually pass to the API call
-                bodyFieldCollections += "{\"target_id\":" + id + ", \"target_type\": \"node\"},";
+                bodyFieldCollections += "{\"target_id\":" + targetId + ", \"target_type\": \"node\"},";
             }
 
             // Remove trailing comma
@@ -851,14 +868,11 @@ namespace OpenDefinery
             var field_collections = ", \"field_collections\": [";
             foreach (var id in collectionIds)
             {
-                // Remove leading spaces if they exist from the string split
-                if (id.First() == ' ')
-                {
-                    id.Remove(0);
-                }
+                // Same guard as AddToCollection: trim and skip empty entries.
+                var targetId = (id ?? string.Empty).Trim();
+                if (targetId.Length == 0) continue;
 
-                // Add the target to the string which will eventually pass to the API call
-                field_collections += "{\"target_id\":" + id + ", \"target_type\": \"node\"},";
+                field_collections += "{\"target_id\":" + targetId + ", \"target_type\": \"node\"},";
             }
 
             // Remove trailing comma

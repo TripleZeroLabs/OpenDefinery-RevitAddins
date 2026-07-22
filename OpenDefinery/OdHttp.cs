@@ -26,7 +26,33 @@ namespace OpenDefinery
     public static class OdHttp
     {
         // One HttpClient for the process lifetime (avoids socket exhaustion).
-        private static readonly HttpClient _client = new HttpClient();
+        private static HttpClient _client = CreateClient();
+
+        private static HttpClient CreateClient()
+        {
+            // Explicit cookie container so the session can be reset (see ResetSession).
+            return new HttpClient(new HttpClientHandler
+            {
+                UseCookies = true,
+                CookieContainer = new CookieContainer()
+            });
+        }
+
+        /// <summary>
+        /// Drop the current session (cookies) and start a fresh client.
+        ///
+        /// Drupal's /user/login route only accepts ANONYMOUS requests. Because the
+        /// HttpClient lives for the whole Revit process, a session cookie from a previous
+        /// sign-in survives closing the add-in window, and the next login attempt fails with
+        /// "This route can only be accessed by anonymous users." Call this immediately before
+        /// authenticating so the login request is always anonymous.
+        /// </summary>
+        public static void ResetSession()
+        {
+            // Not disposing the previous client: any in-flight request keeps using it and
+            // the connection pool is reclaimed by the GC. Login happens rarely.
+            _client = CreateClient();
+        }
 
         public static OdResponse Get(string url, Definery definery, bool useBearer = false)
             => Send(HttpMethod.Get, url, definery, null, useBearer);
