@@ -192,8 +192,34 @@
                                         <DataTemplate>
                                             <StackPanel VerticalAlignment="Center" Width="Auto">
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                                                <TextBlock Text="{Binding Guid}" Foreground="{DynamicResource OD.Brush.TextSecondary}" FontFamily="Consolas" FontSize="11" />
-                                                <TextBlock TextWrapping="Wrap" Text="{Binding Description}" Foreground="{DynamicResource OD.Brush.TextSecondary}" FontSize="11" />
+                                                <!-- Subdued normally, but light blue when the row is
+                                                     selected so it stays readable on the blue highlight. -->
+                                                <TextBlock Text="{Binding Guid}" FontFamily="Consolas" FontSize="11">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextSecondary}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Value="True"
+                                                                             Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextOnPrimarySubtle}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <TextBlock TextWrapping="Wrap" Text="{Binding Description}" FontSize="11">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextSecondary}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Value="True"
+                                                                             Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextOnPrimarySubtle}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

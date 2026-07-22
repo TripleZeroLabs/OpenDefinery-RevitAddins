@@ -372,6 +372,11 @@ namespace OpenDefinery
         }
 
         /// <summary>
+        /// Per-parameter outcome of the most recent <see cref="CreateParams"/> call.
+        /// </summary>
+        public List<ParamLoadResult> LastLoadResults { get; private set; }
+
+        /// <summary>
         /// Add OpenDefinery Parameters to the current Document
         /// </summary>
         /// <param name="paramsToAdd"></param>
@@ -406,6 +411,8 @@ namespace OpenDefinery
             // Instantiate lists for output later
             var successful = new List<ExternalDefinition>();
             var failed = new List<ExternalDefinition>();
+            var skipped = new List<ExternalDefinition>();
+            var failureReasons = new Dictionary<string, string>();
             var output = new List<ElementId>();
 
             if (this.App.SharedParametersFilename != null)
@@ -435,8 +442,25 @@ namespace OpenDefinery
                     // Instantiate a FamilyManager instance to modify the famile
                     FamilyManager famMan = this.Document.FamilyManager;
 
-                    // Instantiate a list of the existing parameters
-                    var existfamilyPar = famMan.GetParameters();
+                    // Index the parameters already in the family. Revit rejects a parameter
+                    // whose GUID *or* name is already in use, so both are checked up front -
+                    // AddParameter throws ArgumentException rather than returning a result.
+                    var existingGuids = new HashSet<Guid>();
+                    var existingNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (FamilyParameter existingParam in famMan.GetParameters())
+                    {
+                        if (existingParam.Definition != null)
+                        {
+                            existingNames.Add(existingParam.Definition.Name);
+                        }
+
+                        // GUID is only meaningful on shared parameters.
+                        if (existingParam.IsShared)
+                        {
+                            existingGuids.Add(existingParam.GUID);
+                        }
+                    }
 
                     // Loop through all Groups in the shared parameter text file
                     using (Transaction t = new Transaction(this.Document))
@@ -451,47 +475,36 @@ namespace OpenDefinery
                             // Get each parameter in the current group
                             foreach (ExternalDefinition extDef in v)
                             {
+                                // Already in this family - skip quietly rather than failing the batch.
+                                if (existingGuids.Contains(extDef.GUID) ||
+                                    existingNames.Contains(extDef.Name))
+                                {
+                                    skipped.Add(extDef);
+                                    continue;
+                                }
+
                                 try
                                 {
                                     FamilyParameter fp = RvtCompat.AddIdentityParameter(famMan, extDef);
 
                                     successful.Add(extDef);
                                     output.Add(fp.Id);
+
+                                    // Keep the index current so duplicates within this same
+                                    // batch are caught too.
+                                    existingGuids.Add(extDef.GUID);
+                                    existingNames.Add(extDef.Name);
                                 }
                                 catch (Exception ex)
                                 {
-                                    TaskDialog.Show("Error Adding " + extDef.Name, ex.ToString());
                                     failed.Add(extDef);
+                                    failureReasons[extDef.Name] = ex.Message;
                                 }
                             }
 
                         }
                         t.Commit();
 
-                        // Output results in Message Box
-                        var transactionStatusString = string.Empty;
-
-                        if (successful.Count > 0)
-                        {
-                            transactionStatusString += "Parameters added succesfully:\n";
-
-                            foreach (ExternalDefinition e in successful)
-                            {
-                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
-                            }
-                        }
-
-                        if (failed.Count > 0)
-                        {
-                            transactionStatusString += "\nParameters failed:\n";
-
-                            foreach (ExternalDefinition e in failed)
-                            {
-                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
-                            }
-                        }
-
-                        //TaskDialog.Show("Finished Adding Parameters", transactionStatusString);
                     }
 
                 }
@@ -511,6 +524,13 @@ namespace OpenDefinery
                             // Get each parameter in the current group
                             foreach (ExternalDefinition extDef in v)
                             {
+                                // Already bound in this project - skip quietly.
+                                if (SharedParameterElement.Lookup(this.Document, extDef.GUID) != null)
+                                {
+                                    skipped.Add(extDef);
+                                    continue;
+                                }
+
                                 try
                                 {
                                     var newParam = SharedParameterElement.Create(
@@ -523,45 +543,58 @@ namespace OpenDefinery
                                 }
                                 catch (Exception ex)
                                 {
-                                    TaskDialog.Show("Error Adding " + extDef.Name, ex.ToString());
-
                                     failed.Add(extDef);
+                                    failureReasons[extDef.Name] = ex.Message;
                                 }
                             }
 
                         }
                         t.Commit();
 
-                        // Output results in Message Box
-                        var transactionStatusString = string.Empty;
-
-                        if (successful.Count > 0)
-                        {
-                            transactionStatusString += "Parameters added succesfully:\n";
-
-                            foreach (ExternalDefinition e in successful)
-                            {
-                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
-                            }
-                        }
-
-                        if (failed.Count > 0)
-                        {
-                            transactionStatusString += "\nParameters failed:\n";
-
-                            foreach (ExternalDefinition e in failed)
-                            {
-                                transactionStatusString += e.Name + ": " + e.GUID.ToString() + "\n";
-                            }
-                        }
-
-                        //TaskDialog.Show("Finished Adding Parameters", transactionStatusString);
                     }
 
                 }
 
                 // Reset the shared parameters text file back to the original
                 this.App.SharedParametersFilename = previousParamTxtFile;
+            }
+
+            // Record a per-parameter outcome so the caller can report what actually happened
+            // instead of just a count of the ones that succeeded.
+            LastLoadResults = new List<ParamLoadResult>();
+
+            foreach (ExternalDefinition d in successful)
+            {
+                LastLoadResults.Add(new ParamLoadResult
+                {
+                    Name = d.Name,
+                    Guid = d.GUID.ToString(),
+                    Outcome = ParamLoadOutcome.Added
+                });
+            }
+
+            foreach (ExternalDefinition d in skipped)
+            {
+                LastLoadResults.Add(new ParamLoadResult
+                {
+                    Name = d.Name,
+                    Guid = d.GUID.ToString(),
+                    Outcome = ParamLoadOutcome.AlreadyExists,
+                    Message = "Already in this document."
+                });
+            }
+
+            foreach (ExternalDefinition d in failed)
+            {
+                string reason;
+
+                LastLoadResults.Add(new ParamLoadResult
+                {
+                    Name = d.Name,
+                    Guid = d.GUID.ToString(),
+                    Outcome = ParamLoadOutcome.Failed,
+                    Message = failureReasons.TryGetValue(d.Name, out reason) ? reason : "Unknown error."
+                });
             }
 
             return output;

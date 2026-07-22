@@ -53,15 +53,26 @@ namespace OD_ParamManager
 
         public static void Show(Window owner, string collectionName, IList<ExportResult> results)
         {
-            var dialog = new Window_ExportResults { Owner = owner };
+            Show(owner, "Export Complete",
+                 string.Format("Collection \"{0}\"", collectionName), results);
+        }
+
+        /// <summary>
+        /// Shows the same results table under a caller-supplied title and context line, so
+        /// both "Export to Collection" and "Add to Family" can report the same way.
+        /// </summary>
+        public static void Show(Window owner, string title, string context, IList<ExportResult> results)
+        {
+            var dialog = new Window_ExportResults { Owner = owner, Title = title };
+            dialog.HeadingText.Text = title;
 
             var added = results.Count(r => r.Outcome == ExportOutcome.Added);
             var existed = results.Count(r => r.Outcome == ExportOutcome.AlreadyExists);
             var failed = results.Count(r => r.Outcome == ExportOutcome.Failed);
 
             dialog.SummaryText.Text = string.Format(
-                "Collection \"{0}\"  —  {1} added, {2} already existed, {3} failed.",
-                collectionName, added, existed, failed);
+                "{0}  —  {1} added, {2} already existed, {3} failed.",
+                context, added, existed, failed);
 
             // Failures first so problems are immediately visible.
             dialog.ResultsGrid.ItemsSource = results

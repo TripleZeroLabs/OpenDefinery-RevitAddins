@@ -22,6 +22,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using OD_ParamManager;
 
 namespace OpenDefinery_DesktopApp
 {
@@ -78,6 +79,16 @@ namespace OpenDefinery_DesktopApp
 
             AllParamsLoaded = false;
 
+            // Title carries the shipped version so bug reports identify the build.
+            var version = System.Reflection.Assembly
+                .GetExecutingAssembly()
+                .GetName()
+                .Version;
+
+            Title = string.Format(
+                "OpenDefinery Parameter Manager v{0}.{1}.{2}",
+                version.Major, version.Minor, version.Build);
+
             PropertiesSideBar.Visibility = Visibility.Collapsed; // Sidebar should be collapsed by default
             EmptyCollectionGrid.Visibility = Visibility.Collapsed; // Empty state should be hidden by default
             StatusBanner.Visibility = Visibility.Collapsed; // Status banner should be hidden by default
@@ -129,10 +140,26 @@ namespace OpenDefinery_DesktopApp
 
             try
             {
-                var added = RvtConnector.CreateParams(selected);
-                ShowStatusBanner(
-                    string.Format("Added {0} parameter(s) to the current Revit document.", added.Count),
-                    "success");
+                RvtConnector.CreateParams(selected);
+
+                var results = (RvtConnector.LastLoadResults ?? new List<ParamLoadResult>())
+                    .Select(r => new ExportResult
+                    {
+                        Name = r.Name,
+                        Guid = r.Guid,
+                        Message = r.Message,
+                        Outcome = r.Outcome == ParamLoadOutcome.Added
+                            ? ExportOutcome.Added
+                            : r.Outcome == ParamLoadOutcome.AlreadyExists
+                                ? ExportOutcome.AlreadyExists
+                                : ExportOutcome.Failed
+                    })
+                    .ToList();
+
+                var target = RvtConnector.Document.IsFamilyDocument ? "family" : "project";
+
+                Window_ExportResults.Show(
+                    this, "Parameters Added", "Current Revit " + target, results);
             }
             catch (Exception ex)
             {
