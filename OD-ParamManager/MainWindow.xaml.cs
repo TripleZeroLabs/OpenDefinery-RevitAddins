@@ -51,7 +51,13 @@ namespace OpenDefinery_DesktopApp
 
             InitializeComponent();
 
-            this.Title = "OpenDefinery Desktop" + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            // Version is surfaced in both the title bar and the dashboard so bug reports
+            // identify the build.
+            var version = Assembly.GetExecutingAssembly().GetName().Version;
+
+            Title = string.Format(
+                "OpenDefinery Parameter Manager v{0}.{1}.{2}",
+                version.Major, version.Minor, version.Build);
 
             // Instantiate a new objects
             Definery = new Definery();
@@ -75,19 +81,9 @@ namespace OpenDefinery_DesktopApp
             PagerNextButton.IsEnabled = false;  // Pager
             PagerPreviousButton.IsEnabled = false;  // Pager
 
-            DashboardVersionText.Text = "(v" + Assembly.GetExecutingAssembly().GetName().Version.ToString() + ")";
+            DashboardVersionText.Text = "(v" + version.ToString() + ")";
 
             AllParamsLoaded = false;
-
-            // Title carries the shipped version so bug reports identify the build.
-            var version = System.Reflection.Assembly
-                .GetExecutingAssembly()
-                .GetName()
-                .Version;
-
-            Title = string.Format(
-                "OpenDefinery Parameter Manager v{0}.{1}.{2}",
-                version.Major, version.Minor, version.Build);
 
             PropertiesSideBar.Visibility = Visibility.Collapsed; // Sidebar should be collapsed by default
             EmptyCollectionGrid.Visibility = Visibility.Collapsed; // Empty state should be hidden by default
