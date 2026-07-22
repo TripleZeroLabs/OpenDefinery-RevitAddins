@@ -201,8 +201,7 @@ if ($Version) {
     $csprojs = @(
         'OpenDefinery\OpenDefinery.csproj',
         'OpenDefinery.Theme\OpenDefinery.Theme.csproj',
-        'OD-ParamManager\OD-ParamManager.csproj',
-        'OD-FamEditor\OD-FamEditor.csproj'
+        'OD-ParamManager\OD-ParamManager.csproj'
     )
     foreach ($rel in $csprojs) {
         $full = Join-Path $repoRoot $rel
@@ -236,8 +235,7 @@ $tfms     = @('net48', 'net8.0-windows', 'net10.0-windows')
 $ourDlls  = @(
     @{ Proj = 'OpenDefinery';        Dll = 'OpenDefinery.dll' },
     @{ Proj = 'OpenDefinery.Theme';  Dll = 'OpenDefinery.Theme.dll' },
-    @{ Proj = 'OD-ParamManager';     Dll = 'OpenDefinery-ParamManager.dll' },
-    @{ Proj = 'OD-FamEditor';        Dll = 'OpenDefinery-FamEditor.dll' }
+    @{ Proj = 'OD-ParamManager';     Dll = 'OpenDefinery-ParamManager.dll' }
 )
 
 $dllsToSign = @()

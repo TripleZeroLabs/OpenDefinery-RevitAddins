@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OD_FamEditor
+namespace OD_ParamManager
 {
     public class FamEditor
     {

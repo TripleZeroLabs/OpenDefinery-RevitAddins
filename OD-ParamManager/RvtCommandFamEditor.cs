@@ -3,10 +3,10 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using OpenDefinery;
 
-namespace OD_FamEditor
+namespace OD_ParamManager
 {
     [Transaction(TransactionMode.Manual)]
-    public class RvtCommand : IExternalCommand
+    public class RvtCommandFamEditor : IExternalCommand
     {
         public Result Execute(
           ExternalCommandData commandData,

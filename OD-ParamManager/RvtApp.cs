@@ -59,6 +59,18 @@ namespace OD_ParamManager
             exportButton.ToolTip = "Export shared parameters from the current family to an OpenDefinery Collection.";
             exportButton.LargeImage = new BitmapImage(iconUri);
 
+            // Family Editor: manage family types and their data.
+            PushButton famEditorButton = panel.AddItem(
+                new PushButtonData(
+                    "Family Editor",
+                    "  Family Editor  ",
+                    thisAssemblyPath,
+                    "OD_ParamManager.RvtCommandFamEditor")
+                ) as PushButton;
+
+            famEditorButton.ToolTip = "An improved way to manage family types and data.";
+            famEditorButton.LargeImage = new BitmapImage(iconUri);
+
             return Result.Succeeded;
         }
 

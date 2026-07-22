@@ -52,42 +52,41 @@ Type: filesandordirs; Name: "{userappdata}\Autodesk\Revit\Addins\2025\TripleZero
 Type: filesandordirs; Name: "{userappdata}\Autodesk\Revit\Addins\2026\TripleZeroLabs"
 Type: filesandordirs; Name: "{userappdata}\Autodesk\Revit\Addins\2027\TripleZeroLabs"
 
+; Family Editor was folded into the Parameter Manager add-in. Remove the retired
+; manifest left by earlier installs - it sits outside TripleZeroLabs, so the wipe
+; above doesn't catch it, and Revit errors on startup if a manifest points at a
+; DLL that no longer ships.
+Type: files; Name: "{userappdata}\Autodesk\Revit\Addins\2022\OpenDefinery-FamEditor.addin"
+Type: files; Name: "{userappdata}\Autodesk\Revit\Addins\2023\OpenDefinery-FamEditor.addin"
+Type: files; Name: "{userappdata}\Autodesk\Revit\Addins\2024\OpenDefinery-FamEditor.addin"
+Type: files; Name: "{userappdata}\Autodesk\Revit\Addins\2025\OpenDefinery-FamEditor.addin"
+Type: files; Name: "{userappdata}\Autodesk\Revit\Addins\2026\OpenDefinery-FamEditor.addin"
+Type: files; Name: "{userappdata}\Autodesk\Revit\Addins\2027\OpenDefinery-FamEditor.addin"
+
 [Files]
 ; -- Revit 2022 (net48) ----------------------------------------------------------
 Source: "{#SrcRoot}\OD-ParamManager\{#Net48}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022"; Flags: ignoreversion; Check: Revit2022
 Source: "{#SrcRoot}\OD-ParamManager\{#Net48}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2022
-Source: "{#SrcRoot}\OD-FamEditor\{#Net48}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022"; Flags: ignoreversion; Check: Revit2022
-Source: "{#SrcRoot}\OD-FamEditor\{#Net48}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2022\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2022
 
 ; -- Revit 2023 (net48) ----------------------------------------------------------
 Source: "{#SrcRoot}\OD-ParamManager\{#Net48}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2023"; Flags: ignoreversion; Check: Revit2023
 Source: "{#SrcRoot}\OD-ParamManager\{#Net48}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2023\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2023
-Source: "{#SrcRoot}\OD-FamEditor\{#Net48}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2023"; Flags: ignoreversion; Check: Revit2023
-Source: "{#SrcRoot}\OD-FamEditor\{#Net48}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2023\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2023
 
 ; -- Revit 2024 (net48) ----------------------------------------------------------
 Source: "{#SrcRoot}\OD-ParamManager\{#Net48}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2024"; Flags: ignoreversion; Check: Revit2024
 Source: "{#SrcRoot}\OD-ParamManager\{#Net48}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2024\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2024
-Source: "{#SrcRoot}\OD-FamEditor\{#Net48}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2024"; Flags: ignoreversion; Check: Revit2024
-Source: "{#SrcRoot}\OD-FamEditor\{#Net48}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2024\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2024
 
 ; -- Revit 2025 (net8.0-windows) -------------------------------------------------
 Source: "{#SrcRoot}\OD-ParamManager\{#Net80}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2025"; Flags: ignoreversion; Check: Revit2025
 Source: "{#SrcRoot}\OD-ParamManager\{#Net80}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2025\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2025
-Source: "{#SrcRoot}\OD-FamEditor\{#Net80}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2025"; Flags: ignoreversion; Check: Revit2025
-Source: "{#SrcRoot}\OD-FamEditor\{#Net80}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2025\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2025
 
 ; -- Revit 2026 (net8.0-windows) -------------------------------------------------
 Source: "{#SrcRoot}\OD-ParamManager\{#Net80}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2026"; Flags: ignoreversion; Check: Revit2026
 Source: "{#SrcRoot}\OD-ParamManager\{#Net80}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2026\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2026
-Source: "{#SrcRoot}\OD-FamEditor\{#Net80}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2026"; Flags: ignoreversion; Check: Revit2026
-Source: "{#SrcRoot}\OD-FamEditor\{#Net80}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2026\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2026
 
 ; -- Revit 2027 (net10.0-windows) ------------------------------------------------
 Source: "{#SrcRoot}\OD-ParamManager\{#Net10}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2027"; Flags: ignoreversion; Check: Revit2027
 Source: "{#SrcRoot}\OD-ParamManager\{#Net10}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2027\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2027
-Source: "{#SrcRoot}\OD-FamEditor\{#Net10}\*.addin"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2027"; Flags: ignoreversion; Check: Revit2027
-Source: "{#SrcRoot}\OD-FamEditor\{#Net10}\*"; DestDir: "{userappdata}\Autodesk\Revit\Addins\2027\TripleZeroLabs"; Excludes: "*.addin"; Flags: ignoreversion recursesubdirs; Check: Revit2027
 
 [UninstallDelete]
 ; Remove the shared DLL folders and the .addin manifests for every year.

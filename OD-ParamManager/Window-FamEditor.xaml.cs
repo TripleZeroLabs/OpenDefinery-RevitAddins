@@ -22,7 +22,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace OD_FamEditor
+namespace OD_ParamManager
 {
     /// <summary>
     /// Interaction logic for Window_FamEditor.xaml
