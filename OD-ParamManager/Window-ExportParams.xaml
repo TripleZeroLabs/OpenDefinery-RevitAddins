@@ -25,78 +25,15 @@
         <!-- ============ Main UI ============ -->
         <Grid x:Name="MainUiGrid">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Toolbar: target Collection + actions -->
-            <Border Grid.Row="0" Background="{DynamicResource OD.Brush.Surface}" Padding="16,12">
-                <Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Export to Collection:" VerticalAlignment="Center" TextWrapping="NoWrap"/>
-                        <ComboBox x:Name="CollectionCombo"
-                                  Width="320" Margin="10,0,0,0"
-                                  DisplayMemberPath="Name"
-                                  ToolTip="Choose the OpenDefinery Collection to export the selected parameters into."/>
-                        <Button x:Name="NewCollectionButton"
-                                Style="{StaticResource OD.Button.Secondary}"
-                                Content="New Collection"
-                                Margin="10,0,0,0"
-                                Click="NewCollectionButton_Click"
-                                ToolTip="Create a new Collection and select it"/>
-                    </StackPanel>
-
-                    <Button x:Name="ExportButton"
-                            Content="Export Selected"
-                            HorizontalAlignment="Right" VerticalAlignment="Center"
-                            Padding="20,0"
-                            Click="ExportButton_Click"
-                            ToolTip="Export the selected shared parameters to the chosen Collection"/>
-                </Grid>
-            </Border>
-
-            <!-- Shared parameters in the current document -->
-            <DataGrid x:Name="DataGrid_Params"
-                      Grid.Row="1"
-                      Margin="16,12"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      SelectionUnit="FullRow"
-                      SelectionMode="Extended"
-                      HeadersVisibility="Column">
-                <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Parameter" Width="*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="0,4">
-                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"/>
-                                    <!-- Subdued normally, but light blue when the row is selected
-                                         so it stays readable against the blue highlight. -->
-                                    <TextBlock Text="{Binding Guid}"
-                                               FontFamily="Consolas" FontSize="11">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextSecondary}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Value="True"
-                                                                 Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
-                                                        <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextOnPrimarySubtle}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Data Type" Binding="{Binding DataType}" Width="220"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <!-- Shared "Current Family" panel: param list + export + new collection -->
+            <local:Control_CurrentFamily x:Name="CurrentFamily" Grid.Row="0"/>
 
             <!-- Footer: explicit Close. Escape deliberately does NOT close this window. -->
-            <Border Grid.Row="2" Background="{DynamicResource OD.Brush.Surface}" Padding="16,12">
+            <Border Grid.Row="1" Background="{DynamicResource OD.Brush.Surface}" Padding="16,12">
                 <Button x:Name="CloseButton"
                         Style="{StaticResource OD.Button.Secondary}"
                         Content="Close"
@@ -111,48 +48,18 @@
             <Border x:Name="LoginCard"
                     Background="{DynamicResource OD.Brush.Card}"
                     Width="400" Padding="30"
-                    VerticalAlignment="Center" HorizontalAlignment="Center"
-                    Visibility="Collapsed">
+                    VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="Sign in to OpenDefinery" Style="{StaticResource OD.Text.Heading}" Margin="0,0,0,4"/>
                     <TextBlock Text="Required to export parameters."
                                Foreground="{DynamicResource OD.Brush.TextSecondary}" Margin="0,0,0,16"/>
                     <TextBlock Text="USERNAME" FontSize="11" Margin="0,0,0,4"/>
-                    <TextBox x:Name="UsernameTextBox" Height="34" FontSize="14"/>
+                    <TextBox x:Name="UsernameTextBox" Height="38" FontSize="14" VerticalContentAlignment="Center"/>
                     <TextBlock Text="PASSWORD" FontSize="11" Margin="0,14,0,4"/>
-                    <PasswordBox x:Name="PasswordBox" Height="34" FontSize="14"/>
+                    <PasswordBox x:Name="PasswordBox" Height="38" FontSize="14" VerticalContentAlignment="Center"/>
                     <Button x:Name="LoginButton" Content="Login" Height="40" Margin="0,20,0,0"
                             IsDefault="True" Click="LoginButton_Click"/>
                     <TextBlock x:Name="LoginStatusText" TextWrapping="Wrap" Margin="0,12,0,0"
-                               Foreground="{DynamicResource OD.Brush.Danger}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- ============ New Collection card ============ -->
-            <Border x:Name="NewCollectionCard"
-                    Background="{DynamicResource OD.Brush.Card}"
-                    Width="480" Padding="30"
-                    VerticalAlignment="Center" HorizontalAlignment="Center"
-                    Visibility="Collapsed">
-                <StackPanel>
-                    <TextBlock Text="New Collection" Style="{StaticResource OD.Text.Heading}" Margin="0,0,0,16"/>
-                    <TextBlock Text="NAME" FontSize="11" Margin="0,0,0,4"/>
-                    <TextBox x:Name="NewCollectionName" Height="34"/>
-                    <TextBlock Text="DESCRIPTION" FontSize="11" Margin="0,14,0,4"/>
-                    <TextBox x:Name="NewCollectionDescription" Height="80"
-                             TextWrapping="Wrap" AcceptsReturn="True"
-                             VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"/>
-                    <CheckBox x:Name="NewCollectionPublic" Content="Make this Collection public" Margin="0,14,0,0"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                        <Button x:Name="CancelNewCollectionButton"
-                                Style="{StaticResource OD.Button.Flat}"
-                                Content="Cancel"
-                                Click="CancelNewCollectionButton_Click"/>
-                        <Button x:Name="CreateCollectionButton"
-                                Content="Create" Margin="10,0,0,0" Padding="20,0"
-                                Click="CreateCollectionButton_Click"/>
-                    </StackPanel>
-                    <TextBlock x:Name="NewCollectionStatus" TextWrapping="Wrap" Margin="0,12,0,0"
                                Foreground="{DynamicResource OD.Brush.Danger}"/>
                 </StackPanel>
             </Border>

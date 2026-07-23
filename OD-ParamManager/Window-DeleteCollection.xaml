@@ -1,0 +1,74 @@
+<Window x:Class="OD_ParamManager.Window_DeleteCollection"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OD_ParamManager"
+        mc:Ignorable="d"
+        Title="Delete Collection"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        Background="{DynamicResource OD.Brush.Background}"
+        Width="520"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="28,24,28,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Heading with warning icon -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="&#x26A0;" FontSize="26" Foreground="{DynamicResource OD.Brush.Danger}"
+                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <TextBlock Text="Delete this Collection?" FontSize="20" FontWeight="SemiBold"
+                       Foreground="{DynamicResource OD.Brush.Danger}" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Warning body -->
+        <TextBlock Grid.Row="1" Margin="0,18,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource OD.Brush.TextPrimary}">
+            <Run Text="This permanently deletes the Collection"/>
+            <Run x:Name="CollectionNameRun" FontWeight="Bold"/>
+            <Run Text="."/>
+            <LineBreak/><LineBreak/>
+            <Run Text="This action cannot be undone. Any Shared Parameters in this Collection will be orphaned unless they also belong to another Collection."/>
+        </TextBlock>
+
+        <!-- Confirm-by-typing instruction -->
+        <TextBlock Grid.Row="2" Margin="0,20,0,6" TextWrapping="Wrap"
+                   Foreground="{DynamicResource OD.Brush.TextSecondary}">
+            <Run Text="To confirm, type the Collection name"/>
+            <Run x:Name="ConfirmHintRun" FontWeight="SemiBold" Foreground="{DynamicResource OD.Brush.TextPrimary}"/>
+            <Run Text="below:"/>
+        </TextBlock>
+
+        <TextBox Grid.Row="3" x:Name="ConfirmTextBox" Height="34" FontSize="14"
+                 TextChanged="ConfirmTextBox_TextChanged"/>
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+            <Button x:Name="CancelButton" Style="{StaticResource OD.Button.Flat}"
+                    Content="Cancel" Padding="18,0" Click="CancelButton_Click"/>
+            <Button x:Name="DeleteButton" Style="{StaticResource OD.Button.DangerSolid}"
+                    Content="Delete Collection" Margin="10,0,0,0" Padding="20,0"
+                    IsEnabled="False" Click="DeleteButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

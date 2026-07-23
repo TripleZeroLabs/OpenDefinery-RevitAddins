@@ -1,0 +1,317 @@
+<UserControl x:Class="OD_ParamManager.Control_CurrentFamily"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:OD_ParamManager"
+             mc:Ignorable="d"
+             FontFamily="Segoe UI" FontSize="13"
+             d:DesignWidth="1000" d:DesignHeight="600">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- One tab-delimited field in the preview: borderless, monospace, selectable,
+                 read-only. Double-click selects the whole field (tab is the delimiter, so
+                 hyphens in a GUID / spaces in a name don't split the selection). Generous
+                 right padding gives the "lots of space" between columns. -->
+            <Style x:Key="OD.PreviewField" TargetType="{x:Type TextBox}">
+                <Setter Property="IsReadOnly" Value="True"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextPrimary}"/>
+                <Setter Property="FontFamily" Value="Consolas"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Padding" Value="0,3,32,3"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="IsInactiveSelectionHighlightEnabled" Value="True"/>
+                <Setter Property="CaretBrush" Value="{DynamicResource OD.Brush.Primary}"/>
+                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="PreviewField_PreviewMouseLeftButtonDown"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TextBox}">
+                            <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="False"
+                                              HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource OD.Brush.Background}">
+
+        <!-- ============ Main content ============ -->
+        <Grid x:Name="MainContent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Count / explanatory verbiage -->
+            <Border Grid.Row="0" Background="{DynamicResource OD.Brush.Surface}"
+                    BorderBrush="{DynamicResource OD.Brush.Border}" BorderThickness="0,0,0,1" Padding="16,12">
+                <TextBlock x:Name="CountText"
+                           Text="Reading parameters…"
+                           Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+            </Border>
+
+            <!-- Split: 1/3 selectable grid + 2/3 monospace preview -->
+            <Grid Grid.Row="1" Margin="16,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: filters + parameter grid -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filter row -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="FilterTextBox" Grid.Column="0" Height="32"
+                                 TextChanged="Filter_Changed"
+                                 ToolTip="Filter by parameter name or GUID"/>
+                        <ComboBox x:Name="DataTypeFilterCombo" Grid.Column="2" Width="150" Height="32"
+                                  SelectionChanged="DataTypeFilter_Changed"
+                                  ToolTip="Filter by data type"/>
+                    </Grid>
+
+                    <DataGrid x:Name="DataGrid_Params"
+                              Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionUnit="FullRow"
+                              SelectionMode="Extended"
+                              CanUserSortColumns="True"
+                              HeadersVisibility="Column"
+                              SelectionChanged="DataGrid_Params_SelectionChanged">
+                        <DataGrid.Columns>
+                            <!-- Already-in-selected-collection indicator -->
+                            <DataGridTemplateColumn Header="In Coll." SortMemberPath="InSelectedCollection" Width="Auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="&#x2714;" FontSize="15" HorizontalAlignment="Center"
+                                                   Foreground="{DynamicResource OD.Brush.Success}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding InSelectedCollection}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn Header="Parameter" Width="*" SortMemberPath="Name">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,2">
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"/>
+                                            <!-- Larger GUID; light blue when the row is selected. -->
+                                            <TextBlock Text="{Binding Guid}" FontFamily="Consolas" FontSize="13" TextWrapping="NoWrap">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextSecondary}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Value="True"
+                                                                         Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
+                                                                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextOnPrimarySubtle}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Data Type" Binding="{Binding DataType}" Width="Auto" SortMemberPath="DataType"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+
+                <!-- Right: monospace preview of the shared-parameter text lines -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Margin="0,0,0,8"
+                               Foreground="{DynamicResource OD.Brush.TextSecondary}"
+                               Text="Preview — the exact PARAM line(s) that will be written. Click a line number to copy the whole row; double-click a field to select it."/>
+                    <Border Grid.Row="1"
+                            BorderBrush="{DynamicResource OD.Brush.Border}" BorderThickness="1"
+                            Background="{DynamicResource OD.Brush.Surface}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="PreviewList" Grid.IsSharedSizeScope="True">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRowSelected}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource OD.Brush.SurfaceAlt}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="Gutter"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c0"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c1"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c2"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c3"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c4"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c5"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c6"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c7"/>
+                                                <ColumnDefinition Width="Auto" SharedSizeGroup="c8"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Line-number gutter: click to copy + highlight the whole row -->
+                                            <Border Grid.Column="0" MinWidth="40" Cursor="Hand"
+                                                    Background="{DynamicResource OD.Brush.SurfaceAlt}"
+                                                    BorderBrush="{DynamicResource OD.Brush.Border}" BorderThickness="0,0,1,0"
+                                                    MouseLeftButtonDown="PreviewGutter_MouseLeftButtonDown"
+                                                    ToolTip="Click to copy this line">
+                                                <TextBlock Text="{Binding Number}" Margin="8,3,10,3"
+                                                           FontFamily="Consolas" FontSize="12" TextAlignment="Right"
+                                                           Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                                            </Border>
+
+                                            <TextBox Grid.Column="1" Style="{StaticResource OD.PreviewField}" Margin="10,0,0,0" Text="{Binding Fields[0], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="2" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[1], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="3" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[2], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="4" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[3], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="5" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[4], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="6" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[5], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="7" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[6], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="8" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[7], Mode=OneWay}"/>
+                                            <TextBox Grid.Column="9" Style="{StaticResource OD.PreviewField}" Text="{Binding Fields[8], Mode=OneWay}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <!-- Action bar: Revit-ribbon-style groups (buttons with a caption underneath) -->
+            <Border Grid.Row="2" Background="{DynamicResource OD.Brush.Surface}"
+                    BorderBrush="{DynamicResource OD.Brush.Border}" BorderThickness="0,1,0,0" Padding="16,10">
+                <StackPanel Orientation="Horizontal">
+
+                    <!-- Group: Upload to OpenDefinery -->
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox x:Name="CollectionCombo"
+                                      Width="260" DisplayMemberPath="Name"
+                                      SelectionChanged="CollectionCombo_Changed"
+                                      ToolTip="Choose the OpenDefinery Collection to upload the selected parameters into."/>
+                            <Button x:Name="NewCollectionButton"
+                                    Style="{StaticResource OD.Button.Secondary}"
+                                    Content="&#xE710;" FontFamily="Segoe MDL2 Assets"
+                                    Width="34" Margin="8,0,0,0"
+                                    Click="NewCollectionButton_Click"
+                                    ToolTip="Create a new Collection on OpenDefinery to add the selected parameters to."/>
+                            <Button x:Name="UploadButton"
+                                    Content="Upload" Margin="8,0,0,0" Padding="24,0"
+                                    Click="UploadButton_Click"
+                                    ToolTip="Upload the selected shared parameters to the chosen Collection"/>
+                        </StackPanel>
+                        <TextBlock Text="Upload to OpenDefinery" HorizontalAlignment="Center" Margin="0,6,0,0"
+                                   Foreground="{DynamicResource OD.Brush.TextSecondary}" FontSize="11"/>
+                    </StackPanel>
+
+                    <!-- Divider -->
+                    <Border Width="1" Background="{DynamicResource OD.Brush.Border}" Margin="20,2,20,2"/>
+
+                    <!-- Group: Save as Local Text File -->
+                    <StackPanel>
+                        <Button x:Name="ExportButton"
+                                Style="{StaticResource OD.Button.Secondary}"
+                                Padding="20,0" HorizontalAlignment="Center"
+                                Click="ExportButton_Click"
+                                ToolTip="Save the selected shared parameters as a Revit shared parameter text file">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="Export" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Text="Save as Local Text File" HorizontalAlignment="Center" Margin="0,6,0,0"
+                                   Foreground="{DynamicResource OD.Brush.TextSecondary}" FontSize="11"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============ Not-connected state ============ -->
+        <Grid x:Name="NotConnectedPanel" Visibility="Collapsed">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="420">
+                <TextBlock x:Name="NotConnectedHeading" Text="No Revit family open"
+                           FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center"
+                           Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                <TextBlock x:Name="NotConnectedBody"
+                           Text="Open a Revit family (or project) to see its shared parameters here and export them to a Collection."
+                           TextWrapping="Wrap" TextAlignment="Center" Margin="0,10,0,0"
+                           Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ============ New Collection overlay ============ -->
+        <Grid x:Name="OverlayGrid" Background="{DynamicResource OD.Brush.Overlay}" Visibility="Collapsed">
+            <Border x:Name="NewCollectionCard"
+                    Background="{DynamicResource OD.Brush.Card}"
+                    Width="480" Padding="30"
+                    VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="New Collection" Style="{StaticResource OD.Text.Heading}" Margin="0,0,0,16"/>
+                    <TextBlock Text="NAME" FontSize="11" Margin="0,0,0,4"/>
+                    <TextBox x:Name="NewCollectionName" Height="34"/>
+                    <TextBlock Text="DESCRIPTION" FontSize="11" Margin="0,14,0,4"/>
+                    <TextBox x:Name="NewCollectionDescription" Height="80"
+                             TextWrapping="Wrap" AcceptsReturn="True"
+                             VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"/>
+                    <CheckBox x:Name="NewCollectionPublic" Content="Make this Collection public" Margin="0,14,0,0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button x:Name="CancelNewCollectionButton"
+                                Style="{StaticResource OD.Button.Flat}"
+                                Content="Cancel"
+                                Click="CancelNewCollectionButton_Click"/>
+                        <Button x:Name="CreateCollectionButton"
+                                Content="Create" Margin="10,0,0,0" Padding="20,0"
+                                Click="CreateCollectionButton_Click"/>
+                    </StackPanel>
+                    <TextBlock x:Name="NewCollectionStatus" TextWrapping="Wrap" Margin="0,12,0,0"
+                               Foreground="{DynamicResource OD.Brush.Danger}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

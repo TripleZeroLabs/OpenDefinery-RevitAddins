@@ -116,53 +116,6 @@ namespace OpenDefinery_DesktopApp
         /// Add the parameters currently selected in the grid to the open Revit family/project.
         /// Uses RvtConnector.CreateParams, which handles family vs project and the transaction.
         /// </summary>
-        private void AddToFamilyButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (RvtConnector == null)
-            {
-                ShowStatusBanner(
-                    "Not connected to Revit. Launch this window from the Revit add-in to add parameters to a family.",
-                    "error");
-                return;
-            }
-
-            var selected = DataGridParameters.SelectedItems.Cast<DefineryParameter>().ToList();
-
-            if (selected.Count == 0)
-            {
-                ShowStatusBanner("Select one or more parameters to add to the current family.", "warning");
-                return;
-            }
-
-            try
-            {
-                RvtConnector.CreateParams(selected);
-
-                var results = (RvtConnector.LastLoadResults ?? new List<ParamLoadResult>())
-                    .Select(r => new ExportResult
-                    {
-                        Name = r.Name,
-                        Guid = r.Guid,
-                        Message = r.Message,
-                        Outcome = r.Outcome == ParamLoadOutcome.Added
-                            ? ExportOutcome.Added
-                            : r.Outcome == ParamLoadOutcome.AlreadyExists
-                                ? ExportOutcome.AlreadyExists
-                                : ExportOutcome.Failed
-                    })
-                    .ToList();
-
-                var target = RvtConnector.Document.IsFamilyDocument ? "family" : "project";
-
-                Window_ExportResults.Show(
-                    this, "Parameters Added", "Current Revit " + target, results);
-            }
-            catch (Exception ex)
-            {
-                ShowStatusBanner("Error adding parameters: " + ex.Message, "error");
-            }
-        }
-
         /// <summary>
         /// Main method to load all the data from Drupal
         /// </summary>
@@ -1191,6 +1144,7 @@ namespace OpenDefinery_DesktopApp
 
                 // Refresh the sidebar list UI
                 CollectionsList.ItemsSource = Definery.MyCollections;
+                CurrentFamilyTab?.RefreshCollections();
             }
 
             // Hide the overlay
@@ -1717,30 +1671,150 @@ namespace OpenDefinery_DesktopApp
         /// <param name="e"></param>
         private void DeleteCollectionButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBoxResult messageBoxResult = 
-                MessageBox.Show(
-                    "Are you sure you want to delete the collection? This action cannot be undone.\n\n" +
-                    "Note: Any Shared Parameters currently in this Collection will be orphaned unless they belong to another Collection.", 
-                    "Delete Collection", 
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-            // Delete the Collection if the use confirms
-            if (messageBoxResult == MessageBoxResult.Yes)
+            if (SelectedCollection == null)
             {
-                Collection.Delete(Definery, SelectedCollection.Id);
+                Window_Message.Show(this, "No Collection Selected", "Select a Collection to delete first.");
+                return;
+            }
 
-                // Refresh the UI
+            // High-friction confirm: the user must type the Collection name to proceed.
+            var confirmed = Window_DeleteCollection.Confirm(this, SelectedCollection);
+            if (!confirmed) return;
+
+            Collection.Delete(Definery, SelectedCollection.Id);
+
+            // Refresh the UI
+            Definery.MyCollections = Collection.ByCurrentUser(Definery);
+            CollectionsList.ItemsSource = Definery.MyCollections;
+            CurrentFamilyTab?.RefreshCollections();
+            SelectedCollection = null;
+            ParamSource = ParameterSource.None;
+            RefreshUi();
+        }
+
+        /// <summary>
+        /// Open the Edit Collection form, prefilled with the current Collection's fields.
+        /// Only the owner can edit, so guard on authorship.
+        /// </summary>
+        private void EditCollectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedCollection == null)
+            {
+                Window_Message.Show(this, "No Collection Selected", "Select one of your Collections to edit first.");
+                return;
+            }
+
+            if (Definery.CurrentUser != null && SelectedCollection.Author != Definery.CurrentUser.Id.ToString())
+            {
+                Window_Message.Show(this, "Cannot Edit",
+                    "You can only edit Collections that you own.");
+                return;
+            }
+
+            EditCollectionStatus.Text = string.Empty;
+            EditCollectionFormTextBox.Text = SelectedCollection.Name;
+
+            // The list endpoints don't return the description, so fetch it on demand.
+            Mouse.OverrideCursor = Cursors.Wait;
+            try
+            {
+                EditCollectionFormDesc.Text = Collection.LoadDescription(Definery, SelectedCollection);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            EditCollectionFormPublic.IsChecked = SelectedCollection.IsPublic;
+
+            EditCollectionGrid.Visibility = Visibility.Visible;
+            OverlayGrid.Visibility = Visibility.Visible;
+        }
+
+        private void EditCollectionFormCancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            EditCollectionGrid.Visibility = Visibility.Hidden;
+            OverlayGrid.Visibility = Visibility.Hidden;
+        }
+
+        private void EditCollectionFormSaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            var name = EditCollectionFormTextBox.Text;
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                EditCollectionStatus.Text = "Enter a name for the Collection.";
+                return;
+            }
+
+            bool ok;
+            Mouse.OverrideCursor = Cursors.Wait;
+            try
+            {
+                ok = Collection.Update(
+                    Definery,
+                    SelectedCollection.Id,
+                    name.Trim(),
+                    EditCollectionFormDesc.Text ?? string.Empty,
+                    EditCollectionFormPublic.IsChecked ?? false);
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            if (!ok)
+            {
+                EditCollectionStatus.Text = "Could not save changes. Check your permissions and try again.";
+                return;
+            }
+
+            // Reflect the change locally then refresh from the server.
+            SelectedCollection.Name = name.Trim();
+            SelectedCollection.IsPublic = EditCollectionFormPublic.IsChecked ?? false;
+
+            Definery.MyCollections = Collection.ByCurrentUser(Definery);
+            CollectionsList.ItemsSource = Definery.MyCollections;
+            CurrentFamilyTab?.RefreshCollections();
+
+            EditCollectionGrid.Visibility = Visibility.Hidden;
+            OverlayGrid.Visibility = Visibility.Hidden;
+
+            Window_Message.Show(this, "Collection Updated",
+                string.Format("Saved changes to \"{0}\".", SelectedCollection.Name));
+        }
+
+        /// <summary>
+        /// When the user switches to the Current Family tab, make sure it has the live Revit
+        /// connection and session. Deferred to here (rather than at construction) so the tab
+        /// only reads the document once the user actually looks at it.
+        /// </summary>
+        private bool _currentFamilyTabInitialized;
+        private void MainTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // TabControl bubbles SelectionChanged from inner controls (combos, lists); ignore
+            // those - only react when the TabControl's own selection changed.
+            if (e.OriginalSource != MainTabs) return;
+
+            if (CurrentFamilyTab == null) return;
+
+            var onCurrentFamily = MainTabs.SelectedItem is TabItem ti && (string)ti.Header == "Current Family";
+            if (!onCurrentFamily || _currentFamilyTabInitialized) return;
+
+            CurrentFamilyTab.SetConnector(RvtConnector);
+
+            if (!string.IsNullOrEmpty(Definery?.CsrfToken))
+            {
+                CurrentFamilyTab.SetSession(Definery);
+            }
+
+            // Keep the sidebar in sync when a Collection is created from the tab.
+            CurrentFamilyTab.CollectionCreated += (s, created) =>
+            {
                 Definery.MyCollections = Collection.ByCurrentUser(Definery);
                 CollectionsList.ItemsSource = Definery.MyCollections;
-                SelectedCollection = null;
-                ParamSource = ParameterSource.None;
-                RefreshUi();
-            }
-            else
-            {
-                MessageBox.Show("Deletion canceled.");
-            }
+            };
+
+            _currentFamilyTabInitialized = true;
         }
 
         /// <summary>

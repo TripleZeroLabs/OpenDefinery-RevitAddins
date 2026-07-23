@@ -34,7 +34,7 @@ namespace OD_ParamManager
             PushButton button = panel.AddItem(
                 new PushButtonData(
                     "Parameter Manager",
-                    "  Param Manager  ",
+                    " Param\n Manager ",
                     thisAssemblyPath,
                     "OD_ParamManager.RvtCommand")
                 ) as PushButton;
@@ -51,7 +51,7 @@ namespace OD_ParamManager
             PushButton exportButton = panel.AddItem(
                 new PushButtonData(
                     "Export Parameters",
-                    "  Export Parameters  ",
+                    " Export\n Parameters ",
                     thisAssemblyPath,
                     "OD_ParamManager.RvtCommandExport")
                 ) as PushButton;
@@ -63,7 +63,7 @@ namespace OD_ParamManager
             PushButton famEditorButton = panel.AddItem(
                 new PushButtonData(
                     "Family Editor",
-                    "  Family Editor  ",
+                    " Family\n Editor ",
                     thisAssemblyPath,
                     "OD_ParamManager.RvtCommandFamEditor")
                 ) as PushButton;

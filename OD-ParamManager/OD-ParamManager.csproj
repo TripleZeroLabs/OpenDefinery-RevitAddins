@@ -13,7 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenDefinery\OpenDefinery.csproj" />
-    <ProjectReference Include="..\OpenDefinery.Theme\OpenDefinery.Theme.csproj" />
+    <!-- OpenDefinery.Theme now lives in its own repo/solution (sibling of this one). -->
+    <ProjectReference Include="..\..\OpenDefinery-Theme\OpenDefinery.Theme\OpenDefinery.Theme.csproj" />
   </ItemGroup>
 
   <!-- Newtonsoft/RestSharp removed (Revit/Dynamo DLL-conflict sources). HTTP + JSON now

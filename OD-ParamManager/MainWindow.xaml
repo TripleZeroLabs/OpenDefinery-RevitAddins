@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OpenDefinery_DesktopApp"
+        xmlns:od="clr-namespace:OD_ParamManager"
         mc:Ignorable="d"
         Title="OpenDefinery"
         FontFamily="Segoe UI"
@@ -97,30 +98,43 @@
                     <Button Style="{StaticResource OD.ToolbarButton}" x:Name="NewParameterButton" Margin="10,0,0,0" Click="NewParameterButton_Click" ToolTip="Create a new Shared Parameter" Content="New Parameter"/>
                     <Button Style="{StaticResource OD.ToolbarButton}" x:Name="NewCollectionButton" Margin="10,0,0,0" Click="NewCollectionButton_Click" ToolTip="Collections are used to group Shared Parameters." Content="New Collection"/>
                     <Button Style="{StaticResource OD.ToolbarButton}" x:Name="BatchUploadOverlayButton" Click="BatchUploadOverlayButton_Click" Margin="10,0,0,0" ToolTip="Import a Shared Parameter text file" Content="Batch Upload"/>
-                    <Button Style="{StaticResource OD.ToolbarButton}" x:Name="AddToFamilyButton" Click="AddToFamilyButton_Click" Margin="10,0,0,0" ToolTip="Add the selected parameters to the currently open Revit family or project" Content="Add to Family"/>
                 </StackPanel>
                 <TextBox x:Name="SearchTxtBox" HorizontalAlignment="Right" Margin="0,0,69,0" VerticalAlignment="Center" TabIndex="0" Width="231" Height="28" KeyDown="PressEnterToSearch" FontSize="12" ToolTip="Search by keyword, data type, or GUID..."/>
                 <Button x:Name="SearchButton" Content="Find" Style="{StaticResource OD.ToolbarButton}" HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Height="28" Width="56" Click="SearchButton_Click" ToolTip="Search by keyword, data type, or GUID..."/>
             </Grid>
-            <DockPanel x:Name="MainPanel" LastChildFill="True" Margin="0" Grid.Row="2">
-                <ScrollViewer Background="{DynamicResource OD.Brush.Surface}" Height="Auto" VerticalScrollBarVisibility="Auto" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="20"/>
-                        </Grid.RowDefinitions>
-                        <StackPanel Grid.Row ="0" x:Name="SidebarStack" Width="219" Margin="0,0,0,0.2" CanVerticallyScroll="True">
-                            <Label Content="MY COLLECTIONS" Padding="17,4,4,4" Margin="0,10,0,0" FontSize="11" FontWeight="Bold"/>
-                            <ListBox x:Name="CollectionsList" Margin="10,0,9.8,0" BorderThickness="0" Background="Transparent" SelectionChanged="CollectionsList_SelectionChanged" />
-                            <Label Content="PUBLISHED COLLECTIONS" Padding="17,4,4,4" Margin="0,20,0,0" FontSize="11" FontWeight="Bold"/>
-                            <ListBox x:Name="CollectionsList_Published" Margin="10,0,9.8,0" BorderThickness="0" Background="Transparent" SelectionChanged="CollectionsList_Published_SelectionChanged" />
-                            <Label Content="OTHER" Padding="17,4,4,4" Margin="0,20,0,0" FontSize="11" FontWeight="Bold" Height="21"/>
-                            <ListBox x:Name="OrphanedList" Margin="10,0,9.8,0" BorderThickness="0" Background="Transparent">
+            <TabControl x:Name="MainTabs" Grid.Row="2" SelectionChanged="MainTabs_SelectionChanged">
+              <TabItem Header="Collections">
+                <DockPanel x:Name="MainPanel" LastChildFill="True" Margin="0">
+                <!-- Vertical nav sidebar. Horizontal scrolling is disabled so long Collection
+                     names wrap instead of forcing the whole panel to scroll sideways. -->
+                <Border DockPanel.Dock="Left" Width="248"
+                        Background="{DynamicResource OD.Brush.Surface}"
+                        BorderBrush="{DynamicResource OD.Brush.Border}" BorderThickness="0,0,1,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                  PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                        <StackPanel x:Name="SidebarStack" Margin="8,12,8,16">
+                            <TextBlock Text="MY COLLECTIONS" Margin="14,4,8,6" FontSize="11" FontWeight="Bold"
+                                       Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                            <ListBox x:Name="CollectionsList"
+                                     Style="{StaticResource OD.Nav.ListBox}"
+                                     ItemContainerStyle="{StaticResource OD.Nav.ListBoxItem}"
+                                     SelectionChanged="CollectionsList_SelectionChanged" />
+                            <TextBlock Text="PUBLISHED COLLECTIONS" Margin="14,20,8,6" FontSize="11" FontWeight="Bold"
+                                       Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                            <ListBox x:Name="CollectionsList_Published"
+                                     Style="{StaticResource OD.Nav.ListBox}"
+                                     ItemContainerStyle="{StaticResource OD.Nav.ListBoxItem}"
+                                     SelectionChanged="CollectionsList_Published_SelectionChanged" />
+                            <TextBlock Text="OTHER" Margin="14,20,8,6" FontSize="11" FontWeight="Bold"
+                                       Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                            <ListBox x:Name="OrphanedList"
+                                     Style="{StaticResource OD.Nav.ListBox}"
+                                     ItemContainerStyle="{StaticResource OD.Nav.ListBoxItem}">
                                 <ListBoxItem x:Name="OrphanedListItem" Selected="OrphanedListBox_Selected" Content="Orphaned Params"/>
                             </ListBox>
                         </StackPanel>
-                    </Grid>
-                </ScrollViewer>
+                    </ScrollViewer>
+                </Border>
                 <Grid x:Name="DashboardGrid" HorizontalAlignment="Center" VerticalAlignment="Center" DockPanel.Dock="Top" Visibility="Collapsed">
                     <TextBlock TextWrapping="Wrap" Text="Welcome to OpenDefinery" Margin="0,100,0,0" VerticalAlignment="Top" FontSize="36" Foreground="#DD767676" HorizontalAlignment="Center"/>
                     <TextBlock x:Name="DashboardVersionText" Margin="0,155,0,0" TextWrapping="Wrap" Text="(beta)" VerticalAlignment="Top" FontSize="15" HorizontalAlignment="Center" Foreground="#DD767676"/>
@@ -132,8 +146,24 @@
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0">
                         <StackPanel x:Name="CollectionToolStack" Orientation="Horizontal" Height="Auto" d:IsHidden="True">
-                            <Button Style="{StaticResource OD.Button.Secondary}" x:Name="ExportCollectionButton" HorizontalAlignment="Center" Click="ExportCollectionTxtButton_Click" Margin="10,8,0,8" ToolTip="Export the current set of Shared Parameters to a text file" Content="Export"/>
-                            <Button Style="{StaticResource OD.Button.Flat}" x:Name="DeleteCollectionButton" HorizontalAlignment="Left" Margin="10,8,0,8" ToolTip="Delete the current Collection" Click="DeleteCollectionButton_Click" Content="Delete Collection"/>
+                            <Button Style="{StaticResource OD.Button.Secondary}" x:Name="ExportCollectionButton" Click="ExportCollectionTxtButton_Click" Margin="10,8,0,8" ToolTip="Download the current set of Shared Parameters as a Revit shared parameter text file">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Download TXT File" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource OD.Button.Secondary}" x:Name="EditCollectionButton" Margin="10,8,0,8" ToolTip="Edit this Collection's name, description, and visibility" Click="EditCollectionButton_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Edit" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Style="{StaticResource OD.Button.Danger}" x:Name="DeleteCollectionButton" Margin="10,8,0,8" ToolTip="Delete the current Collection" Click="DeleteCollectionButton_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Delete Collection" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                         <StackPanel Background="{DynamicResource OD.Brush.Surface}" x:Name="SearchToolStack" Orientation="Horizontal" Height="Auto">
                             <Label Content="DATATYPE" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
@@ -251,7 +281,12 @@
                         </Grid>
                     </Grid>
                 </Grid>
-            </DockPanel>
+                </DockPanel>
+              </TabItem>
+              <TabItem Header="Current Family">
+                <od:Control_CurrentFamily x:Name="CurrentFamilyTab"/>
+              </TabItem>
+            </TabControl>
             <Grid x:Name="FooterGrid" Grid.Row="3" Background="{DynamicResource OD.Brush.Surface}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="100"/>
@@ -340,6 +375,19 @@
                     <CheckBox x:Name="NewCollectionFormPublic" Content="Make this Collection public" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="110,30,0,0" ToolTip="Public Collections are visible to all OpenDefinery users"/>
                     <Button x:Name="NewCollectionFormSaveButton" Content="Save Collection" HorizontalAlignment="Center" Margin="0,30,0,0" VerticalAlignment="Top" Width="380" Click="NewCollectionFormSaveButton_Click"/>
                     <Button Style="{StaticResource OD.Button.Flat}" x:Name="NewCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" Click="NewCollectionFormCancelButton_Click"/>
+                </StackPanel>
+            </Grid>
+            <Grid x:Name="EditCollectionGrid" Margin="0" Width="600" HorizontalAlignment="Center" VerticalAlignment="Top" Background="{DynamicResource OD.Brush.Card}" Visibility="Hidden">
+                <StackPanel>
+                    <Label Content="EDIT COLLECTION" HorizontalAlignment="Center" Margin="0,40,0,0" VerticalAlignment="Top" Padding="0,4,4,4" Width="380" FontWeight="Bold"/>
+                    <Label Content="NAME" HorizontalAlignment="Center" Margin="0,20,0,0" VerticalAlignment="Top" Padding="0,4,4,4" Width="380"/>
+                    <TextBox x:Name="EditCollectionFormTextBox" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Top" Width="380"/>
+                    <Label Content="DESCRIPTION" HorizontalAlignment="Center" Margin="0,30,0,0" VerticalAlignment="Top" Padding="0,4,4,4" Width="380"/>
+                    <TextBox x:Name="EditCollectionFormDesc" HorizontalAlignment="Center" Margin="110,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Top" Width="380" Height="118" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"/>
+                    <CheckBox x:Name="EditCollectionFormPublic" Content="Make this Collection public" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="110,30,0,0" ToolTip="Public Collections are visible to all OpenDefinery users"/>
+                    <TextBlock x:Name="EditCollectionStatus" HorizontalAlignment="Center" Width="380" Margin="0,16,0,0" TextWrapping="Wrap" Foreground="{DynamicResource OD.Brush.Danger}"/>
+                    <Button x:Name="EditCollectionFormSaveButton" Content="Save Changes" HorizontalAlignment="Center" Margin="0,24,0,0" VerticalAlignment="Top" Width="380" Click="EditCollectionFormSaveButton_Click"/>
+                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="EditCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" Click="EditCollectionFormCancelButton_Click"/>
                 </StackPanel>
             </Grid>
             <Grid x:Name="ModifyParameterGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="501" VerticalAlignment="Top" d:IsHidden="True">

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace OpenDefinery
@@ -20,6 +21,13 @@ namespace OpenDefinery
 
         [JsonPropertyName("public")]
         public bool IsPublic { get; set; }
+
+        /// <summary>
+        /// The Collection's description (Drupal node body). The list endpoints don't return it,
+        /// so it's populated on demand via <see cref="LoadDescription"/> (e.g. before editing).
+        /// </summary>
+        [JsonIgnore]
+        public string Description { get; set; }
 
         /// <summary>
         /// Retrieve Shared Parameters from a Collection using pagination
@@ -216,6 +224,73 @@ namespace OpenDefinery
 
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Fetch the Collection's description (node body) from the API. The list endpoints omit
+        /// it, so this reads the full node. Returns the description and also stores it on the
+        /// passed Collection for convenience.
+        /// </summary>
+        public static string LoadDescription(Definery definery, Collection collection)
+        {
+            if (definery == null || collection == null) return string.Empty;
+
+            var response = OdHttp.Get(
+                Definery.BaseUrl + string.Format("node/{0}?_format=json", collection.Id), definery);
+
+            var description = string.Empty;
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                try
+                {
+                    using (var doc = JsonDocument.Parse(response.Content))
+                    {
+                        // Drupal returns body as an array: [{ "value": "...", "format": ... }]
+                        if (doc.RootElement.TryGetProperty("body", out var body) &&
+                            body.ValueKind == JsonValueKind.Array &&
+                            body.GetArrayLength() > 0 &&
+                            body[0].TryGetProperty("value", out var value) &&
+                            value.ValueKind == JsonValueKind.String)
+                        {
+                            description = value.GetString() ?? string.Empty;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                }
+            }
+
+            collection.Description = description;
+
+            return description;
+        }
+
+        /// <summary>
+        /// Update a Collection's name, description, and visibility.
+        /// Returns true when the API accepts the change.
+        /// </summary>
+        public static bool Update(Definery definery, int collectionId, string name, string description, bool isPublic)
+        {
+            var publicString = isPublic ? "1" : "0";
+
+            var body =
+                "{" +
+                    "\"type\":[{\"target_id\":\"collection\"}]," +
+                    "\"title\":[{\"value\":" + OdJson.ToJsonString(name ?? string.Empty) + "}]," +
+                    "\"body\":[{\"value\":" + OdJson.ToJsonString(description ?? string.Empty) + "}]," +
+                    "\"field_public\":[{\"value\":\"" + publicString + "\"}]" +
+                "}";
+
+            var response = OdHttp.Patch(
+                Definery.BaseUrl + string.Format("node/{0}?_format=json", collectionId), body, definery);
+
+            Debug.WriteLine(response.Content);
+
+            var code = (int)response.StatusCode;
+            return code >= 200 && code < 300;
         }
 
         /// <summary>
