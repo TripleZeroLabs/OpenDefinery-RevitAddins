@@ -57,6 +57,36 @@
           Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(_OdSignScript)&quot; -Folder &quot;$(TargetDir).&quot;" />
   </Target>
 
+  <!--
+    Clear our previously-deployed files before copying the fresh build, so a RETIRED
+    add-in's leftovers don't linger and get loaded by Revit. (A stale manifest pointing
+    at a DLL that no longer ships errors on startup; a stale DLL that still registers a
+    ribbon button collides with the current build - "The name already exists".)
+
+    The plain Copy in DeployToRevit only overwrites what it copies; it never removes files
+    that stopped being produced. The Release installer handles this via [InstallDelete],
+    but F5-from-VS deploys had no equivalent until now.
+
+    Scope is deliberately narrow:
+      - TripleZeroLabs\ is entirely ours, so all *.dll/*.pdb are cleared.
+      - In the year root we delete ONLY OpenDefinery-*.addin, never other vendors'
+        manifests (e.g. Nexus.*) that share the folder.
+    Assumes a single OpenDefinery add-in project (true by design since the merge). A
+    second <IsRevitAddin> project deploying here would have its clean wipe the other's
+    output, since both target TripleZeroLabs.
+  -->
+  <Target Name="CleanRetiredAddinsBeforeDeploy"
+          BeforeTargets="DeployToRevit"
+          Condition="'$(IsRevitAddin)' == 'true' and '$(DeployToRevit)' == 'true' and '@(RevitDeployYear)' != ''">
+
+    <ItemGroup>
+      <_StaleDeployBin Include="$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\TripleZeroLabs\*.dll;$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\TripleZeroLabs\*.pdb" />
+      <_StaleDeployAddin Include="$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\OpenDefinery-*.addin" />
+    </ItemGroup>
+
+    <Delete Files="@(_StaleDeployBin);@(_StaleDeployAddin)" ContinueOnError="true" />
+  </Target>
+
   <Target Name="DeployToRevit"
           AfterTargets="Build"
           Condition="'$(IsRevitAddin)' == 'true' and '$(DeployToRevit)' == 'true' and '@(RevitDeployYear)' != ''">
