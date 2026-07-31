@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>OD_FamEditor</RootNamespace>
+    <AssemblyName>OpenDefinery-FamEditor</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <!-- This add-in uses the Revit API -->
+    <UseRevitApi>true</UseRevitApi>
+    <!-- Opt in to the post-build Revit Addins deployment (see Directory.Build.targets) -->
+    <IsRevitAddin>true</IsRevitAddin>
+    <!-- Product version (kept in step with the installer and the ParamManager add-in). -->
+    <Version>0.3.0</Version>
+    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <FileVersion>0.3.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenDefinery\OpenDefinery.csproj" />
+    <!-- The theme (TripleZeroLabs.Os2) lives in its own repo/solution, sibling to this one. -->
+    <ProjectReference Include="..\..\TripleZeroLabs.Os2\TripleZeroLabs.Os2\TripleZeroLabs.Os2.csproj" />
+  </ItemGroup>
+
+  <!-- DPAPI (ProtectedData) reference kept consistent with the ParamManager add-in in case the
+       shared session store is reused here later; net8/net10-windows get it inbox from WPF. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Security" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\Icons\*.png" />
+    <None Include="OpenDefinery-FamEditor.addin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

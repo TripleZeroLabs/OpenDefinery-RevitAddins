@@ -67,24 +67,24 @@
     that stopped being produced. The Release installer handles this via [InstallDelete],
     but F5-from-VS deploys had no equivalent until now.
 
-    Scope is deliberately narrow:
-      - TripleZeroLabs\ is entirely ours, so all *.dll/*.pdb are cleared.
-      - In the year root we delete ONLY OpenDefinery-*.addin, never other vendors'
-        manifests (e.g. Nexus.*) that share the folder.
-    Assumes a single OpenDefinery add-in project (true by design since the merge). A
-    second <IsRevitAddin> project deploying here would have its clean wipe the other's
-    output, since both target TripleZeroLabs.
+    Scope is deliberately narrow so that MULTIPLE OpenDefinery add-in projects can share
+    the TripleZeroLabs\ folder without wiping each other:
+      - We delete only THIS project's own manifest ($(AssemblyName).addin), so a rename or
+        retirement of THIS add-in is cleaned up, but a sibling add-in's manifest is left alone.
+      - We do NOT blanket-delete TripleZeroLabs\*.dll: that folder now holds a second add-in's
+        DLL plus shared deps (OpenDefinery.dll, TripleZeroLabs.Os2.dll). The DeployToRevit Copy
+        overwrites what each build produces; a genuinely retired DLL is a rare manual cleanup
+        (and the Release installer's [InstallDelete] handles it properly).
   -->
   <Target Name="CleanRetiredAddinsBeforeDeploy"
           BeforeTargets="DeployToRevit"
           Condition="'$(IsRevitAddin)' == 'true' and '$(DeployToRevit)' == 'true' and '@(RevitDeployYear)' != ''">
 
     <ItemGroup>
-      <_StaleDeployBin Include="$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\TripleZeroLabs\*.dll;$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\TripleZeroLabs\*.pdb" />
-      <_StaleDeployAddin Include="$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\OpenDefinery-*.addin" />
+      <_StaleDeployAddin Include="$(RevitAddinsRoot)\%(RevitDeployYear.Identity)\$(AssemblyName).addin" />
     </ItemGroup>
 
-    <Delete Files="@(_StaleDeployBin);@(_StaleDeployAddin)" ContinueOnError="true" />
+    <Delete Files="@(_StaleDeployAddin)" ContinueOnError="true" />
   </Target>
 
   <Target Name="DeployToRevit"

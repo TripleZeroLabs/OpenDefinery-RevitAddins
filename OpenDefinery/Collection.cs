@@ -324,6 +324,15 @@ namespace OpenDefinery
         {
             var collections = new List<Collection>();
 
+            // Resolving the Collection names needs the published-collections lookup. If a session
+            // hasn't hydrated it (e.g. a lightweight sign-in), skip resolution rather than throw a
+            // NullReferenceException that would bubble up and wipe out the whole parameter list.
+            if (definery == null || definery.PublishedCollections == null)
+            {
+                parameter.Collections = collections;
+                return parameter;
+            }
+
             // Get multiple Collections
             if (!string.IsNullOrEmpty(collectionsString) && collectionsString.Contains(","))
             {

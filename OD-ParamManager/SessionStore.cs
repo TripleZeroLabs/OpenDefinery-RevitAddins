@@ -113,11 +113,12 @@ namespace OD_ParamManager
             }
             catch
             {
-                // Network error or rejected credentials fall through to the wipe below.
+                // Fall through - just show the login screen this time.
             }
 
-            // Stale/invalid - don't keep retrying on every launch.
-            SessionStore.Clear();
+            // Restore failed. Do NOT wipe the saved credentials here: a transient network
+            // hiccup at Revit startup would otherwise permanently "forget" the login. Bad
+            // credentials simply fall back to the login screen; the user can Sign Out to clear.
             return null;
         }
     }

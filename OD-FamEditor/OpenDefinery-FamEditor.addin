@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>OpenDefinery Family Editor</Name>
+    <Assembly>.\TripleZeroLabs\OpenDefinery-FamEditor.dll</Assembly>
+    <FullClassName>OD_FamEditor.RvtApp</FullClassName>
+    <ClientId>3f9c1d64-2a7b-4e08-9c51-8b6d0f2a7e13</ClientId>
+    <VendorId>Triple Zero Labs, LLC</VendorId>
+    <VendorDescription>TripleZero.xyz</VendorDescription>
+  </AddIn>
+</RevitAddIns>
