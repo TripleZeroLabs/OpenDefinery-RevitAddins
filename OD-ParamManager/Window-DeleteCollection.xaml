@@ -8,7 +8,7 @@
         Title="Delete Collection"
         FontFamily="Segoe UI"
         FontSize="13"
-        Background="{DynamicResource OD.Brush.Background}"
+        Background="{DynamicResource OS2.Brush.Background}"
         Width="520"
         SizeToContent="Height"
         ResizeMode="NoResize"
@@ -18,7 +18,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -35,15 +35,15 @@
 
         <!-- Heading with warning icon -->
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <TextBlock Text="&#x26A0;" FontSize="26" Foreground="{DynamicResource OD.Brush.Danger}"
+            <TextBlock Text="&#x26A0;" FontSize="26" Foreground="{DynamicResource OS2.Brush.Danger}"
                        VerticalAlignment="Center" Margin="0,0,12,0"/>
             <TextBlock Text="Delete this Collection?" FontSize="20" FontWeight="SemiBold"
-                       Foreground="{DynamicResource OD.Brush.Danger}" VerticalAlignment="Center"/>
+                       Foreground="{DynamicResource OS2.Brush.Danger}" VerticalAlignment="Center"/>
         </StackPanel>
 
         <!-- Warning body -->
         <TextBlock Grid.Row="1" Margin="0,18,0,0" TextWrapping="Wrap"
-                   Foreground="{DynamicResource OD.Brush.TextPrimary}">
+                   Foreground="{DynamicResource OS2.Brush.TextPrimary}">
             <Run Text="This permanently deletes the Collection"/>
             <Run x:Name="CollectionNameRun" FontWeight="Bold"/>
             <Run Text="."/>
@@ -53,9 +53,9 @@
 
         <!-- Confirm-by-typing instruction -->
         <TextBlock Grid.Row="2" Margin="0,20,0,6" TextWrapping="Wrap"
-                   Foreground="{DynamicResource OD.Brush.TextSecondary}">
+                   Foreground="{DynamicResource OS2.Brush.TextSecondary}">
             <Run Text="To confirm, type the Collection name"/>
-            <Run x:Name="ConfirmHintRun" FontWeight="SemiBold" Foreground="{DynamicResource OD.Brush.TextPrimary}"/>
+            <Run x:Name="ConfirmHintRun" FontWeight="SemiBold" Foreground="{DynamicResource OS2.Brush.TextPrimary}"/>
             <Run Text="below:"/>
         </TextBlock>
 
@@ -64,9 +64,9 @@
 
         <!-- Actions -->
         <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
-            <Button x:Name="CancelButton" Style="{StaticResource OD.Button.Flat}"
+            <Button x:Name="CancelButton" Style="{StaticResource OS2.Button.Flat}"
                     Content="Cancel" Padding="18,0" Click="CancelButton_Click"/>
-            <Button x:Name="DeleteButton" Style="{StaticResource OD.Button.DangerSolid}"
+            <Button x:Name="DeleteButton" Style="{StaticResource OS2.Button.DangerSolid}"
                     Content="Delete Collection" Margin="10,0,0,0" Padding="20,0"
                     IsEnabled="False" Click="DeleteButton_Click"/>
         </StackPanel>

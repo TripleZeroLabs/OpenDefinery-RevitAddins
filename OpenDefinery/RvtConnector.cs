@@ -377,6 +377,220 @@ namespace OpenDefinery
         public List<ParamLoadResult> LastLoadResults { get; private set; }
 
         /// <summary>
+        /// Add OpenDefinery parameters to the active FAMILY document, each under its own
+        /// parameter group and instance/type binding. Records a per-parameter outcome in
+        /// <see cref="LastLoadResults"/>. Family documents only - a project document reports
+        /// every request as failed (binding + group are family-parameter concepts).
+        /// </summary>
+        public List<ElementId> CreateParamsWithBinding(List<FamilyParamRequest> requests)
+        {
+            var output = new List<ElementId>();
+            LastLoadResults = new List<ParamLoadResult>();
+
+            if (requests == null || requests.Count == 0) return output;
+
+            if (Document == null || !Document.IsFamilyDocument)
+            {
+                foreach (var r in requests)
+                {
+                    LastLoadResults.Add(new ParamLoadResult
+                    {
+                        Name = r.Param.Name,
+                        Guid = r.Param.Guid.ToString(),
+                        Outcome = ParamLoadOutcome.Failed,
+                        Message = "Binding and parameter group require an open family document."
+                    });
+                }
+
+                return output;
+            }
+
+            // Write a temp shared-parameter file for the whole batch, then add each definition
+            // individually so it can take its own group + binding.
+            var paramTable = DefineryParameter.CreateParamTable(requests.Select(r => r.Param).ToList());
+            var tempFile = System.IO.Path.GetTempPath() +
+                "OpenDefineryTempParameters_" + Guid.NewGuid().ToString() + ".txt";
+            File.WriteAllText(tempFile, paramTable);
+
+            // Map by GUID so each ExternalDefinition finds its requested group/binding.
+            var byGuid = requests
+                .GroupBy(r => r.Param.Guid)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            // Setting SharedParametersFilename to null afterward is valid, so no null-guard here
+            // (unlike the older LoadAllParams, which silently no-ops when none was configured).
+            var previousParamTxtFile = this.App.SharedParametersFilename;
+            this.App.SharedParametersFilename = tempFile;
+
+            try
+            {
+                DefinitionFile spFile = null;
+                try
+                {
+                    spFile = this.App.OpenSharedParameterFile();
+                }
+                catch (Exception ex)
+                {
+                    TaskDialog.Show("Error opening shared parameter file",
+                        "There was an error opening the shared parameter text file.\n\n" + ex);
+                }
+
+                if (spFile != null)
+                {
+                    FamilyManager famMan = this.Document.FamilyManager;
+
+                    // Revit rejects a parameter whose GUID or name is already in use, so index both.
+                    var existingGuids = new HashSet<Guid>();
+                    var existingNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (FamilyParameter ep in famMan.GetParameters())
+                    {
+                        if (ep.Definition != null) existingNames.Add(ep.Definition.Name);
+                        if (ep.IsShared) existingGuids.Add(ep.GUID);
+                    }
+
+                    using (Transaction t = new Transaction(this.Document))
+                    {
+                        t.Start("Add Shared Parameters");
+
+                        foreach (DefinitionGroup dg in spFile.Groups)
+                        {
+                            foreach (ExternalDefinition extDef in dg.Definitions.Cast<ExternalDefinition>())
+                            {
+                                FamilyParamRequest req;
+                                if (!byGuid.TryGetValue(extDef.GUID, out req)) continue;
+
+                                if (existingGuids.Contains(extDef.GUID) || existingNames.Contains(extDef.Name))
+                                {
+                                    LastLoadResults.Add(new ParamLoadResult
+                                    {
+                                        Name = extDef.Name,
+                                        Guid = extDef.GUID.ToString(),
+                                        Outcome = ParamLoadOutcome.AlreadyExists,
+                                        Message = "Already in this family."
+                                    });
+                                    continue;
+                                }
+
+                                try
+                                {
+                                    var group = req.Group ?? RvtCompat.IdentityGroup;
+                                    FamilyParameter fp = RvtCompat.AddParameter(famMan, extDef, group, req.IsInstance);
+
+                                    output.Add(fp.Id);
+                                    existingGuids.Add(extDef.GUID);
+                                    existingNames.Add(extDef.Name);
+
+                                    LastLoadResults.Add(new ParamLoadResult
+                                    {
+                                        Name = extDef.Name,
+                                        Guid = extDef.GUID.ToString(),
+                                        Outcome = ParamLoadOutcome.Added
+                                    });
+                                }
+                                catch (Exception ex)
+                                {
+                                    LastLoadResults.Add(new ParamLoadResult
+                                    {
+                                        Name = extDef.Name,
+                                        Guid = extDef.GUID.ToString(),
+                                        Outcome = ParamLoadOutcome.Failed,
+                                        Message = ex.Message
+                                    });
+                                }
+                            }
+                        }
+
+                        t.Commit();
+                    }
+                }
+
+                this.App.SharedParametersFilename = previousParamTxtFile;
+            }
+            finally
+            {
+                try { File.Delete(tempFile); } catch { /* temp file cleanup is best-effort */ }
+            }
+
+            return output;
+        }
+
+        /// <summary>
+        /// Delete shared parameters from the active document by GUID. In a family this removes
+        /// the family parameter; in a project it deletes the SharedParameterElement (removing it
+        /// from the project and every loaded family/instance). Wrapped in a single named
+        /// transaction so the whole operation is a single Revit undo step.
+        /// </summary>
+        /// <param name="guids">GUIDs of the shared parameters to delete.</param>
+        /// <param name="failures">Per-parameter failure messages, if any.</param>
+        /// <returns>The number of parameters actually deleted.</returns>
+        public int DeleteParams(List<Guid> guids, out List<string> failures)
+        {
+            failures = new List<string>();
+            var deleted = 0;
+
+            if (Document == null || guids == null || guids.Count == 0) return 0;
+
+            var guidSet = new HashSet<Guid>(guids);
+
+            using (Transaction t = new Transaction(Document, "Delete Shared Parameters"))
+            {
+                t.Start();
+
+                if (Document.IsFamilyDocument)
+                {
+                    var fm = Document.FamilyManager;
+
+                    // Collect first, then remove: mutating while enumerating GetParameters() is unsafe.
+                    var toRemove = fm.GetParameters()
+                        .Where(fp => fp.IsShared && guidSet.Contains(fp.GUID))
+                        .ToList();
+
+                    foreach (var fp in toRemove)
+                    {
+                        var name = fp.Definition != null ? fp.Definition.Name : fp.GUID.ToString();
+                        try
+                        {
+                            fm.RemoveParameter(fp);
+                            deleted++;
+                        }
+                        catch (Exception ex)
+                        {
+                            failures.Add(name + ": " + ex.Message);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var guid in guidSet)
+                    {
+                        var spe = SharedParameterElement.Lookup(Document, guid);
+                        if (spe == null)
+                        {
+                            failures.Add(guid.ToString() + ": not found in this project.");
+                            continue;
+                        }
+
+                        var name = spe.GetDefinition() != null ? spe.GetDefinition().Name : guid.ToString();
+                        try
+                        {
+                            Document.Delete(spe.Id);
+                            deleted++;
+                        }
+                        catch (Exception ex)
+                        {
+                            failures.Add(name + ": " + ex.Message);
+                        }
+                    }
+                }
+
+                t.Commit();
+            }
+
+            return deleted;
+        }
+
+        /// <summary>
         /// Add OpenDefinery Parameters to the current Document
         /// </summary>
         /// <param name="paramsToAdd"></param>

@@ -7,7 +7,7 @@
         Title="Export Results"
         FontFamily="Segoe UI"
         FontSize="13"
-        Background="{DynamicResource OD.Brush.Background}"
+        Background="{DynamicResource OS2.Brush.Background}"
         Width="860" Height="560"
         MinWidth="640" MinHeight="400"
         WindowStartupLocation="CenterOwner">
@@ -15,7 +15,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -30,12 +30,12 @@
 
         <TextBlock Grid.Row="0" x:Name="HeadingText"
                    Text="Export Complete"
-                   Style="{StaticResource OD.Text.Heading}"/>
+                   Style="{StaticResource OS2.Text.Heading}"/>
 
         <TextBlock Grid.Row="1" x:Name="SummaryText"
                    Margin="0,6,0,16"
                    TextWrapping="Wrap"
-                   Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                   Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
 
         <DataGrid Grid.Row="2" x:Name="ResultsGrid"
                   AutoGenerateColumns="False"
@@ -55,15 +55,15 @@
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Outcome}" Value="Added">
                                                 <Setter Property="Text" Value="&#x2714;"/>
-                                                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.Success}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.Success}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding Outcome}" Value="AlreadyExists">
                                                 <Setter Property="Text" Value="&#x2714;"/>
-                                                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.Primary}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.Primary}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding Outcome}" Value="Failed">
                                                 <Setter Property="Text" Value="&#x2716;"/>
-                                                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.Danger}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.Danger}"/>
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>

@@ -1,0 +1,81 @@
+<Window x:Class="OD_ParamManager.Window_UploadCollection"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OD_ParamManager"
+        mc:Ignorable="d"
+        Title="Upload to OpenDefinery"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        Background="{DynamicResource OS2.Brush.Background}"
+        Width="520"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Main: choose a Collection -->
+        <Grid x:Name="MainPanel" Margin="28,24,28,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Style="{StaticResource OS2.Text.Heading}" Text="Upload to a Collection"/>
+            <TextBlock Grid.Row="1" x:Name="SummaryText" Margin="0,6,0,0" TextWrapping="Wrap"
+                       Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,20,0,0">
+                <ComboBox x:Name="CollectionCombo" Width="360" DisplayMemberPath="Name" VerticalAlignment="Center"/>
+                <Button x:Name="NewCollectionButton" Style="{StaticResource OS2.Button.Secondary}"
+                        Content="&#xE710;" FontFamily="Segoe MDL2 Assets" Width="34" Margin="8,0,0,0"
+                        Click="NewCollectionButton_Click"
+                        ToolTip="Create a new Collection"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,28,0,0">
+                <Button x:Name="CancelButton" Style="{StaticResource OS2.Button.Flat}"
+                        Content="Cancel" Padding="18,0" Click="CancelButton_Click"/>
+                <Button x:Name="UploadButton" Content="Upload" Margin="10,0,0,0" Padding="24,0"
+                        Click="UploadButton_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- New Collection overlay -->
+        <Grid x:Name="OverlayGrid" Background="{DynamicResource OS2.Brush.Overlay}" Visibility="Collapsed">
+            <Border Background="{DynamicResource OS2.Brush.Card}" Width="440" Padding="28"
+                    VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="New Collection" Style="{StaticResource OS2.Text.Heading}" Margin="0,0,0,16"/>
+                    <TextBlock Text="NAME" FontSize="11" Margin="0,0,0,4"/>
+                    <TextBox x:Name="NewCollectionName" Height="34"/>
+                    <TextBlock Text="DESCRIPTION" FontSize="11" Margin="0,14,0,4"/>
+                    <TextBox x:Name="NewCollectionDescription" Height="70"
+                             TextWrapping="Wrap" AcceptsReturn="True"
+                             VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"/>
+                    <CheckBox x:Name="NewCollectionPublic" Content="Make this Collection public" Margin="0,14,0,0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button x:Name="CancelNewCollectionButton" Style="{StaticResource OS2.Button.Flat}"
+                                Content="Cancel" Click="CancelNewCollectionButton_Click"/>
+                        <Button x:Name="CreateCollectionButton" Content="Create" Margin="10,0,0,0" Padding="20,0"
+                                Click="CreateCollectionButton_Click"/>
+                    </StackPanel>
+                    <TextBlock x:Name="NewCollectionStatus" TextWrapping="Wrap" Margin="0,12,0,0"
+                               Foreground="{DynamicResource OS2.Brush.Danger}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

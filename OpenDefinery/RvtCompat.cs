@@ -1,8 +1,17 @@
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 
 namespace OpenDefinery
 {
+    /// <summary>A selectable built-in parameter group: its ForgeTypeId plus a display label.</summary>
+    public class ParamGroupOption
+    {
+        public ForgeTypeId Id { get; set; }
+        public string Label { get; set; }
+        public override string ToString() => Label;
+    }
+
     /// <summary>
     /// Version-bridging helpers that isolate Revit API differences across Revit
     /// 2022-2027. Revit 2024 removed <c>Definition.ParameterType</c> and the
@@ -64,6 +73,41 @@ namespace OpenDefinery
         public static FamilyParameter AddIdentityParameter(FamilyManager familyManager, ExternalDefinition externalDefinition)
         {
             return familyManager.AddParameter(externalDefinition, GroupTypeId.IdentityData, false);
+        }
+
+        /// <summary>
+        /// Add a shared parameter to a family under a chosen group and instance/type binding.
+        /// </summary>
+        public static FamilyParameter AddParameter(
+            FamilyManager familyManager, ExternalDefinition externalDefinition, ForgeTypeId group, bool isInstance)
+        {
+            return familyManager.AddParameter(externalDefinition, group, isInstance);
+        }
+
+        /// <summary>The Identity Data group - the default target when adding to a family.</summary>
+        public static ForgeTypeId IdentityGroup => GroupTypeId.IdentityData;
+
+        /// <summary>
+        /// All built-in parameter groups that can host a family parameter, as (id, label)
+        /// sorted by label. Uses the ForgeTypeId group API available across 2022-2027;
+        /// groups with no resolvable label are skipped.
+        /// </summary>
+        public static List<ParamGroupOption> GetAvailableGroups()
+        {
+            var groups = new List<ParamGroupOption>();
+
+            foreach (var id in ParameterUtils.GetAllBuiltInGroups())
+            {
+                string label;
+                try { label = LabelUtils.GetLabelForGroup(id); }
+                catch { continue; }
+
+                if (string.IsNullOrWhiteSpace(label)) continue;
+
+                groups.Add(new ParamGroupOption { Id = id, Label = label });
+            }
+
+            return groups.OrderBy(g => g.Label).ToList();
         }
 
         /// <summary>

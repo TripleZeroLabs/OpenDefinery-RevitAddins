@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -93,8 +94,16 @@ namespace OpenDefinery_DesktopApp
 
             ParamSource = ParameterSource.None;  // Make the ParameterSource none until there is some action
 
-            // Show the login modal
-            if (string.IsNullOrEmpty(Definery.AuthCode) | string.IsNullOrEmpty(Definery.CsrfToken))
+            // Try to restore a remembered ("Remember me") session before prompting.
+            var restored = SessionManager.TryRestore();
+            if (restored != null)
+            {
+                Definery = restored;
+                RememberMeCheck.IsChecked = true;
+                LoadData();
+            }
+            // Otherwise show the login modal.
+            else if (string.IsNullOrEmpty(Definery.AuthCode) | string.IsNullOrEmpty(Definery.CsrfToken))
             {
                 OverlayGrid.Visibility = Visibility.Visible;
                 LoginGrid.Visibility = Visibility.Visible;
@@ -469,6 +478,16 @@ namespace OpenDefinery_DesktopApp
                 // Store the auth code for GET requests
                 Definery.AuthCode = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(username + ":" + password));
 
+                // Remember (or forget) the sign-in on this computer per the checkbox.
+                if (RememberMeCheck.IsChecked == true)
+                {
+                    SessionStore.Save(username, password);
+                }
+                else
+                {
+                    SessionStore.Clear();
+                }
+
                 // Load all of the things!!!
                 LoadData();
 
@@ -476,6 +495,29 @@ namespace OpenDefinery_DesktopApp
                 OverlayGrid.Visibility = Visibility.Hidden;
                 LoginGrid.Visibility = Visibility.Hidden;
             }
+        }
+
+        /// <summary>
+        /// Sign out: forget any remembered credentials, clear the session, and return to the
+        /// login screen.
+        /// </summary>
+        private void SignOutButton_Click(object sender, RoutedEventArgs e)
+        {
+            SessionStore.Clear();
+            Definery.SignOut();
+            Definery = new Definery();
+
+            // Reset to the logged-out state.
+            MainBrowserGrid.Visibility = Visibility.Hidden;
+            DashboardGrid.Visibility = Visibility.Collapsed;
+            CollectionToolStack.Visibility = Visibility.Collapsed;
+
+            PasswordPasswordBox.Password = string.Empty;
+            RememberMeCheck.IsChecked = false;
+
+            OverlayGrid.Visibility = Visibility.Visible;
+            LoginGrid.Visibility = Visibility.Visible;
+            UsernameTextBox.Focus();
         }
 
         /// <summary>
@@ -542,6 +584,7 @@ namespace OpenDefinery_DesktopApp
                     Definery, SelectedCollection, Pager.ItemsPerPage, Pager.Offset, false
                     );
                 DataGridParameters.ItemsSource = Definery.Parameters;
+                ApplyNaturalSortToParamGrid();
             }
             if (ParamSource == ParameterSource.Search)
             {
@@ -706,6 +749,44 @@ namespace OpenDefinery_DesktopApp
         }
 
         /// <summary>
+        /// Natural sort on column-header clicks so numbered parameters order as a human expects
+        /// (Parameter #2 before Parameter #10).
+        /// </summary>
+        private void DataGridParameters_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            var column = e.Column;
+            var path = column.SortMemberPath;
+            if (string.IsNullOrEmpty(path)) return;
+
+            e.Handled = true;
+
+            var direction = column.SortDirection != ListSortDirection.Ascending
+                ? ListSortDirection.Ascending
+                : ListSortDirection.Descending;
+
+            column.SortDirection = direction;
+            foreach (var c in DataGridParameters.Columns)
+            {
+                if (c != column) c.SortDirection = null;
+            }
+
+            var view = CollectionViewSource.GetDefaultView(DataGridParameters.ItemsSource) as ListCollectionView;
+            if (view != null) view.CustomSort = new NaturalDefineryComparer(path, direction);
+        }
+
+        /// <summary>
+        /// Apply a default natural sort by name to whatever page of parameters is currently
+        /// shown. Called after the grid's ItemsSource is (re)assigned.
+        /// </summary>
+        private void ApplyNaturalSortToParamGrid()
+        {
+            var view = CollectionViewSource.GetDefaultView(DataGridParameters.ItemsSource) as ListCollectionView;
+            if (view != null) view.CustomSort = new NaturalDefineryComparer("Name", ListSortDirection.Ascending);
+
+            if (ParamColumn != null) ParamColumn.SortDirection = ListSortDirection.Ascending;
+        }
+
+        /// <summary>
         /// Helper method to refresh all UI elements after a new payload. This should execute anytime there is a change to the UI.
         /// </summary>
         /// <param name="loadingAll">Specify is the the refresh is called by the Load All method</param>
@@ -734,6 +815,7 @@ namespace OpenDefinery_DesktopApp
                         DataGridParameters.ItemsSource = null;
                         DataGridParameters.Items.Clear();
                         DataGridParameters.ItemsSource = Definery.Parameters;
+                ApplyNaturalSortToParamGrid();
                         DataGridParameters.Items.Refresh();
                     }
                 }
@@ -960,7 +1042,15 @@ namespace OpenDefinery_DesktopApp
             // Pass the Collections list to the combobox and configure
             NewParamFormCollectionsCombo.ItemsSource = Definery.MyCollections;
             NewParamFormCollectionsCombo.DisplayMemberPath = "Name";  // Displays the Collection name rather than object in the combobox
-            NewParamDataTypeCombo.SelectedIndex = 0;
+
+            // Default the Collection to whatever is selected in the sidebar
+            if (SelectedCollection != null)
+                NewParamFormCollectionsCombo.SelectedItem = SelectedCollection;
+            else
+                NewParamFormCollectionsCombo.SelectedIndex = 0;
+
+            // Default the data type to TEXT
+            SelectDefaultDataType();
             NewParamDataCatCombo.SelectedItem = null;
 
             // Generate a GUID by default
@@ -1030,12 +1120,7 @@ namespace OpenDefinery_DesktopApp
                 // Assign the name from the form
                 param.Name = NewParamNameTextBox.Text;
 
-                // Check that the description has a value
-                if (NewParamDescTextBox.Text.Length < 1)
-                {
-                    MessageBox.Show("The parameter description is required.");
-                }
-                else
+                // Description is optional - no validation needed.
                 {
                     // Try to convert the string from the from into a GUID
                     try
@@ -1072,6 +1157,17 @@ namespace OpenDefinery_DesktopApp
 
                             // Reset the form values and UI
                             InitializeParamForm();
+
+                            // Refresh the datagrid if the new parameter went into the collection
+                            // currently in view.
+                            if (SelectedCollection != null && selectedCollection.Id == SelectedCollection.Id)
+                            {
+                                Definery.Parameters = DefineryParameter.ByCollection(
+                                    Definery, SelectedCollection, Pager.ItemsPerPage, 0, true);
+                                Pager.CurrentPage = 0;
+                                UpdatePager(Pager, 0);
+                                RefreshUi();
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -1398,6 +1494,24 @@ namespace OpenDefinery_DesktopApp
         /// <summary>
         /// Helper method to clear the New Parameter form.
         /// </summary>
+        /// <summary>
+        /// Default the New Parameter data-type dropdown to TEXT (case-insensitive match, with a
+        /// substring fallback), so a new parameter starts on the most common type.
+        /// </summary>
+        private void SelectDefaultDataType()
+        {
+            var types = Definery.DataTypes;
+            if (types == null || types.Count == 0) return;
+
+            var textType = types.FirstOrDefault(d => string.Equals(d.Name, "text", StringComparison.OrdinalIgnoreCase))
+                        ?? types.FirstOrDefault(d => (d.Name ?? string.Empty).IndexOf("text", StringComparison.OrdinalIgnoreCase) >= 0);
+
+            if (textType != null)
+                NewParamDataTypeCombo.SelectedItem = textType;
+            else
+                NewParamDataTypeCombo.SelectedIndex = 0;
+        }
+
         private void InitializeParamForm()
         {
             // Enable editing of certain fields just in case this method was triggered from forking
@@ -1797,7 +1911,7 @@ namespace OpenDefinery_DesktopApp
 
             if (CurrentFamilyTab == null) return;
 
-            var onCurrentFamily = MainTabs.SelectedItem is TabItem ti && (string)ti.Header == "Current Family";
+            var onCurrentFamily = MainTabs.SelectedItem is TabItem ti && (string)ti.Header == "Current Model";
             if (!onCurrentFamily || _currentFamilyTabInitialized) return;
 
             CurrentFamilyTab.SetConnector(RvtConnector);
@@ -1908,6 +2022,13 @@ namespace OpenDefinery_DesktopApp
                     if (item.Header.ToString() == "Fork")
                     {
                         item.Visibility = Visibility.Visible;
+                    }
+
+                    // "Add To Family" is available for any parameter, but only when a Revit
+                    // family connection exists (hidden when the manager runs standalone).
+                    if (item.Header.ToString() == "Add To Family")
+                    {
+                        item.Visibility = RvtConnector != null ? Visibility.Visible : Visibility.Collapsed;
                     }
 
                     // Toggle UI when note viewing a Collection
@@ -2042,6 +2163,67 @@ namespace OpenDefinery_DesktopApp
         private void ParamMenuAdd_Click(object sender, RoutedEventArgs e)
         {
             AddToCollectionButton_Click(sender, e);
+        }
+
+        /// <summary>Toolbar button: add the selected parameters to the current Revit family.</summary>
+        private void AddToFamilyButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenAddToFamily();
+        }
+
+        /// <summary>Context-menu item: add the selected parameters to the current Revit family.</summary>
+        private void ParamMenuAddToFamily_Click(object sender, RoutedEventArgs e)
+        {
+            OpenAddToFamily();
+        }
+
+        /// <summary>Tool-row "Edit Param": opens the same edit form as the right-click Edit item.</summary>
+        private void EditParamButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGridParameters.SelectedItem == null)
+            {
+                Window_Message.Show(this, "Nothing Selected", "Select a parameter to edit.");
+                return;
+            }
+
+            ParamMenuEdit_Click(sender, e);
+        }
+
+        /// <summary>Tool-row "Remove": removes the selected parameters from the current Collection.</summary>
+        private void RemoveParamButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataGridParameters.SelectedItems.Count == 0)
+            {
+                Window_Message.Show(this, "Nothing Selected", "Select one or more parameters to remove from this Collection.");
+                return;
+            }
+
+            RemoveFromCollectionButton_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Open the Add-to-Family window for the current selection, letting the user pick a
+        /// binding and parameter group per parameter before adding them to the active family.
+        /// </summary>
+        private void OpenAddToFamily()
+        {
+            if (RvtConnector == null)
+            {
+                Window_Message.Show(this, "No Revit Family",
+                    "Open a Revit family in Revit to add parameters to it.");
+                return;
+            }
+
+            var selected = DataGridParameters.SelectedItems.Cast<DefineryParameter>().ToList();
+            if (selected.Count == 0)
+            {
+                Window_Message.Show(this, "Nothing Selected",
+                    "Select one or more parameters to add to the family.");
+                return;
+            }
+
+            var window = new Window_AddToFamily(RvtConnector, selected) { Owner = this };
+            window.ShowDialog();
         }
 
         /// <summary>
@@ -2254,7 +2436,7 @@ namespace OpenDefinery_DesktopApp
             NewParamNameTextBox.Text = string.Empty;
             NewParamGuidTextBox.Text = Guid.NewGuid().ToString();
             NewParamDescTextBox.Text = string.Empty;
-            NewParamDataTypeCombo.SelectedIndex = 0;
+            SelectDefaultDataType();
             NewParamDataCatCombo.SelectedItem = null;
             NewParamVisibleCheck.IsChecked = true;
             NewParamUserModCheckbox.IsChecked = true;

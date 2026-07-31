@@ -7,7 +7,7 @@
         Title="OpenDefinery"
         FontFamily="Segoe UI"
         FontSize="13"
-        Background="{DynamicResource OD.Brush.Background}"
+        Background="{DynamicResource OS2.Brush.Background}"
         Width="520"
         SizeToContent="Height"
         ResizeMode="NoResize"
@@ -17,7 +17,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -30,7 +30,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock x:Name="HeadingText" Grid.Row="0"
-                   Style="{StaticResource OD.Text.Heading}"
+                   Style="{StaticResource OS2.Text.Heading}"
                    Margin="0,0,0,12"/>
 
         <ScrollViewer Grid.Row="1" MaxHeight="320" VerticalScrollBarVisibility="Auto">

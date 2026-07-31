@@ -9,7 +9,7 @@
         Title="OpenDefinery"
         FontFamily="Segoe UI"
         FontSize="13"
-        Background="{DynamicResource OD.Brush.Background}"
+        Background="{DynamicResource OS2.Brush.Background}"
         MinWidth="850"
         MinHeight="600"
         d:DesignWidth="1600"
@@ -17,12 +17,12 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Toolbar button: transparent on the dark toolbar, light text -->
-            <Style x:Key="OD.ToolbarButton" TargetType="{x:Type Button}">
-                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.ToolbarForeground}" />
+            <Style x:Key="OS2.ToolbarButton" TargetType="{x:Type Button}">
+                <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.ToolbarForeground}" />
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="FontFamily" Value="Segoe UI" />
                 <Setter Property="FontSize" Value="13" />
@@ -50,17 +50,18 @@
 
             <Style TargetType="ListBoxItem">
                 <Setter Property="Padding" Value="8,5" />
-                <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextPrimary}" />
+                <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.TextPrimary}" />
                 <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="FontWeight" Value="Bold" />
-                        <Setter Property="Background" Value="{DynamicResource OD.Brush.Primary}" />
+                        <Setter Property="Background" Value="{DynamicResource OS2.Brush.Primary}" />
                         <Setter Property="Foreground" Value="White" />
                     </Trigger>
                 </Style.Triggers>
             </Style>
 
             <ContextMenu x:Key="ParamContextMenu">
+                <MenuItem x:Name="ParamMenuAddToFamily" Header="Add To Family" Click="ParamMenuAddToFamily_Click" />
                 <MenuItem x:Name="ParamMenuAdd" Header="Add To Collection" Click="ParamMenuAdd_Click" />
                 <MenuItem x:Name="ParamMenuFork" Header="Fork" Click="ParamMenuFork_Click" />
                 <MenuItem x:Name="ParamMenuEdit" Header="Edit" Click="ParamMenuEdit_Click" />
@@ -81,7 +82,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Success/Status Banner (Reusable) -->
-            <Grid x:Name="StatusBanner" Grid.Row="1" Background="{DynamicResource OD.Brush.Success}" Height="50" Visibility="Collapsed">
+            <Grid x:Name="StatusBanner" Grid.Row="1" Background="{DynamicResource OS2.Brush.Success}" Height="50" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -89,18 +90,19 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusBannerIcon" Grid.Column="0" Text="&#x2714;" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="20,0,10,0"/>
                 <TextBlock x:Name="StatusBannerText" Grid.Column="1" Text="Success!" Foreground="White" FontSize="14" VerticalAlignment="Center" FontWeight="Medium"/>
-                <Button x:Name="StatusBannerCloseButton" Grid.Column="2" Style="{StaticResource OD.ToolbarButton}" Click="StatusBannerCloseButton_Click" Width="30" Height="30" Margin="10,0,10,0" Content="&#x2715;"/>
+                <Button x:Name="StatusBannerCloseButton" Grid.Column="2" Style="{StaticResource OS2.ToolbarButton}" Click="StatusBannerCloseButton_Click" Width="30" Height="30" Margin="10,0,10,0" Content="&#x2715;"/>
             </Grid>
 
-            <Grid x:Name="ToolbarGrid" Height="57" VerticalAlignment="Top" Margin="0,0,-0.4,0" Background="{DynamicResource OD.Brush.Toolbar}" Grid.Row="0" Grid.RowSpan="2">
+            <Grid x:Name="ToolbarGrid" Height="57" VerticalAlignment="Top" Margin="0,0,-0.4,0" Background="{DynamicResource OS2.Brush.Toolbar}" Grid.Row="0" Grid.RowSpan="2">
                 <StackPanel Margin="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource OD.ToolbarButton}" x:Name="DashboardButton" Margin="20,0,0,0" ToolTip="See all of the things" Click="DashboardButton_Click" Content="Home"/>
-                    <Button Style="{StaticResource OD.ToolbarButton}" x:Name="NewParameterButton" Margin="10,0,0,0" Click="NewParameterButton_Click" ToolTip="Create a new Shared Parameter" Content="New Parameter"/>
-                    <Button Style="{StaticResource OD.ToolbarButton}" x:Name="NewCollectionButton" Margin="10,0,0,0" Click="NewCollectionButton_Click" ToolTip="Collections are used to group Shared Parameters." Content="New Collection"/>
-                    <Button Style="{StaticResource OD.ToolbarButton}" x:Name="BatchUploadOverlayButton" Click="BatchUploadOverlayButton_Click" Margin="10,0,0,0" ToolTip="Import a Shared Parameter text file" Content="Batch Upload"/>
+                    <Button Style="{StaticResource OS2.ToolbarButton}" x:Name="DashboardButton" Margin="20,0,0,0" ToolTip="See all of the things" Click="DashboardButton_Click" Content="Home"/>
+                    <Button Style="{StaticResource OS2.ToolbarButton}" x:Name="NewParameterButton" Margin="10,0,0,0" Click="NewParameterButton_Click" ToolTip="Create a new Shared Parameter" Content="New Parameter"/>
+                    <Button Style="{StaticResource OS2.ToolbarButton}" x:Name="NewCollectionButton" Margin="10,0,0,0" Click="NewCollectionButton_Click" ToolTip="Collections are used to group Shared Parameters." Content="New Collection"/>
+                    <Button Style="{StaticResource OS2.ToolbarButton}" x:Name="BatchUploadOverlayButton" Click="BatchUploadOverlayButton_Click" Margin="10,0,0,0" ToolTip="Import a Shared Parameter text file" Content="Batch Upload"/>
+                    <Button Style="{StaticResource OS2.ToolbarButton}" x:Name="SignOutButton" Click="SignOutButton_Click" Margin="10,0,0,0" ToolTip="Sign out and forget the saved login on this computer" Content="Sign Out"/>
                 </StackPanel>
                 <TextBox x:Name="SearchTxtBox" HorizontalAlignment="Right" Margin="0,0,69,0" VerticalAlignment="Center" TabIndex="0" Width="231" Height="28" KeyDown="PressEnterToSearch" FontSize="12" ToolTip="Search by keyword, data type, or GUID..."/>
-                <Button x:Name="SearchButton" Content="Find" Style="{StaticResource OD.ToolbarButton}" HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Height="28" Width="56" Click="SearchButton_Click" ToolTip="Search by keyword, data type, or GUID..."/>
+                <Button x:Name="SearchButton" Content="Find" Style="{StaticResource OS2.ToolbarButton}" HorizontalAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" Height="28" Width="56" Click="SearchButton_Click" ToolTip="Search by keyword, data type, or GUID..."/>
             </Grid>
             <TabControl x:Name="MainTabs" Grid.Row="2" SelectionChanged="MainTabs_SelectionChanged">
               <TabItem Header="Collections">
@@ -108,28 +110,28 @@
                 <!-- Vertical nav sidebar. Horizontal scrolling is disabled so long Collection
                      names wrap instead of forcing the whole panel to scroll sideways. -->
                 <Border DockPanel.Dock="Left" Width="248"
-                        Background="{DynamicResource OD.Brush.Surface}"
-                        BorderBrush="{DynamicResource OD.Brush.Border}" BorderThickness="0,0,1,0">
+                        Background="{DynamicResource OS2.Brush.Surface}"
+                        BorderBrush="{DynamicResource OS2.Brush.Border}" BorderThickness="0,0,1,0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                                   PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                         <StackPanel x:Name="SidebarStack" Margin="8,12,8,16">
                             <TextBlock Text="MY COLLECTIONS" Margin="14,4,8,6" FontSize="11" FontWeight="Bold"
-                                       Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                                       Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
                             <ListBox x:Name="CollectionsList"
-                                     Style="{StaticResource OD.Nav.ListBox}"
-                                     ItemContainerStyle="{StaticResource OD.Nav.ListBoxItem}"
+                                     Style="{StaticResource OS2.Nav.ListBox}"
+                                     ItemContainerStyle="{StaticResource OS2.Nav.ListBoxItem}"
                                      SelectionChanged="CollectionsList_SelectionChanged" />
                             <TextBlock Text="PUBLISHED COLLECTIONS" Margin="14,20,8,6" FontSize="11" FontWeight="Bold"
-                                       Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                                       Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
                             <ListBox x:Name="CollectionsList_Published"
-                                     Style="{StaticResource OD.Nav.ListBox}"
-                                     ItemContainerStyle="{StaticResource OD.Nav.ListBoxItem}"
+                                     Style="{StaticResource OS2.Nav.ListBox}"
+                                     ItemContainerStyle="{StaticResource OS2.Nav.ListBoxItem}"
                                      SelectionChanged="CollectionsList_Published_SelectionChanged" />
                             <TextBlock Text="OTHER" Margin="14,20,8,6" FontSize="11" FontWeight="Bold"
-                                       Foreground="{DynamicResource OD.Brush.TextSecondary}"/>
+                                       Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
                             <ListBox x:Name="OrphanedList"
-                                     Style="{StaticResource OD.Nav.ListBox}"
-                                     ItemContainerStyle="{StaticResource OD.Nav.ListBoxItem}">
+                                     Style="{StaticResource OS2.Nav.ListBox}"
+                                     ItemContainerStyle="{StaticResource OS2.Nav.ListBoxItem}">
                                 <ListBoxItem x:Name="OrphanedListItem" Selected="OrphanedListBox_Selected" Content="Orphaned Params"/>
                             </ListBox>
                         </StackPanel>
@@ -145,30 +147,45 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0">
-                        <StackPanel x:Name="CollectionToolStack" Orientation="Horizontal" Height="Auto" d:IsHidden="True">
-                            <Button Style="{StaticResource OD.Button.Secondary}" x:Name="ExportCollectionButton" Click="ExportCollectionTxtButton_Click" Margin="10,8,0,8" ToolTip="Download the current set of Shared Parameters as a Revit shared parameter text file">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Download TXT File" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Style="{StaticResource OD.Button.Secondary}" x:Name="EditCollectionButton" Margin="10,8,0,8" ToolTip="Edit this Collection's name, description, and visibility" Click="EditCollectionButton_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Edit" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                            <Button Style="{StaticResource OD.Button.Danger}" x:Name="DeleteCollectionButton" Margin="10,8,0,8" ToolTip="Delete the current Collection" Click="DeleteCollectionButton_Click">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Delete Collection" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                        <StackPanel Background="{DynamicResource OD.Brush.Surface}" x:Name="SearchToolStack" Orientation="Horizontal" Height="Auto">
+                        <Grid x:Name="CollectionToolStack" d:IsHidden="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: parameter actions (operate on the selected parameters) -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <Button x:Name="AddToFamilyButton" Click="AddToFamilyButton_Click" Margin="10,8,0,8" ToolTip="Add the selected parameters to the current Revit family" Content="Add to Family"/>
+                                <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="EditParamButton" Click="EditParamButton_Click" Margin="8,8,0,8" ToolTip="Edit the selected parameter" Content="Edit Param"/>
+                                <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="RemoveParamButton" Click="RemoveParamButton_Click" Margin="8,8,0,8" ToolTip="Remove the selected parameters from this Collection" Content="Remove"/>
+                            </StackPanel>
+
+                            <!-- Right: collection actions -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="ExportCollectionButton" Click="ExportCollectionTxtButton_Click" Margin="8,8,0,8" ToolTip="Download the current set of Shared Parameters as a Revit shared parameter text file">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE896;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Download TXT" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="EditCollectionButton" Margin="8,8,0,8" ToolTip="Edit this Collection's name, description, and visibility" Click="EditCollectionButton_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE70F;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Edit Collection" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource OS2.Button.Danger}" x:Name="DeleteCollectionButton" Margin="8,8,10,8" ToolTip="Delete the current Collection" Click="DeleteCollectionButton_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="Delete Collection" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Background="{DynamicResource OS2.Brush.Surface}" x:Name="SearchToolStack" Orientation="Horizontal" Height="Auto">
                             <Label Content="DATATYPE" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
                             <ComboBox x:Name="SearchFilterDataTypeCombo" VerticalAlignment="Center" Width="300" Height="32" Margin="10,0,0,0" SelectionChanged="SearchFilterDataTypeCombo_SelectionChanged" ToolTip="Filter search results by data type."/>
-                            <Button Style="{StaticResource OD.Button.Secondary}" x:Name="ClearSearchButton" Content="Reset Search" Height="Auto" Width="Auto" ToolTip="Clear the search query and start over" VerticalAlignment="Center" Margin="15,8,0,8" Click="ClearSearchButton_Click"/>
+                            <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="ClearSearchButton" Content="Reset Search" Height="Auto" Width="Auto" ToolTip="Clear the search query and start over" VerticalAlignment="Center" Margin="15,8,0,8" Click="ClearSearchButton_Click"/>
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="1">
@@ -184,7 +201,7 @@
                                 <TextBlock Text="Get started by adding parameters" FontSize="14" Foreground="#BBBBBB" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,30,0,0">
                                     <Button x:Name="EmptyStateNewParamButton" Click="EmptyStateNewParamButton_Click" Margin="0,0,10,0" Height="40" Padding="20,0" Content="New Parameter"/>
-                                    <Button Style="{StaticResource OD.Button.Secondary}" x:Name="EmptyStateBatchUploadButton" Click="EmptyStateBatchUploadButton_Click" Margin="10,0,0,0" Height="40" Padding="20,0" Content="Batch Upload"/>
+                                    <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="EmptyStateBatchUploadButton" Click="EmptyStateBatchUploadButton_Click" Margin="10,0,0,0" Height="40" Padding="20,0" Content="Batch Upload"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
@@ -197,6 +214,7 @@
                             SelectionChanged="DataGridParameters_SelectionChanged"
                             AutoGenerateColumns="False"
                             Grid.Column="0"
+                            Sorting="DataGridParameters_Sorting"
                             MouseRightButtonUp="DataGridParameters_MouseRightButtonUp">
                             <DataGrid.RowStyle>
                                 <Style TargetType="DataGridRow">
@@ -209,7 +227,7 @@
                                         <DataTemplate>
                                             <Button
                                                 x:Name="ParamContextMenu"
-                                                Style="{StaticResource OD.Button.Flat}"
+                                                Style="{StaticResource OS2.Button.Flat}"
                                                 Foreground="#999999"
                                                 Margin="0"
                                                 Content="&#x22EE;"
@@ -217,7 +235,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Param" x:Name="ParamColumn" Width="*">
+                                <DataGridTemplateColumn Header="Param" x:Name="ParamColumn" Width="*" SortMemberPath="Name">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel VerticalAlignment="Center" Width="Auto">
@@ -227,11 +245,11 @@
                                                 <TextBlock Text="{Binding Guid}" FontFamily="Consolas" FontSize="11">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
-                                                            <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextSecondary}"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.TextSecondary}"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Value="True"
                                                                              Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
-                                                                    <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextOnPrimarySubtle}"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.TextOnPrimarySubtle}"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -240,11 +258,11 @@
                                                 <TextBlock TextWrapping="Wrap" Text="{Binding Description}" FontSize="11">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
-                                                            <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextSecondary}"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.TextSecondary}"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Value="True"
                                                                              Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
-                                                                    <Setter Property="Foreground" Value="{DynamicResource OD.Brush.TextOnPrimarySubtle}"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.TextOnPrimarySubtle}"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -254,6 +272,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Data Type" Binding="{Binding DataType}" Width="160"/>
                                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="300" Visibility="Hidden"/>
                                 <DataGridTemplateColumn Header="Collections" x:Name="CollectionsColumn">
                                     <DataGridTemplateColumn.CellTemplate>
@@ -264,7 +283,7 @@
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
-                        <Grid x:Name="PropertiesSideBar"  Width="300" Grid.Column="1" Background="{DynamicResource OD.Brush.Surface}">
+                        <Grid x:Name="PropertiesSideBar"  Width="300" Grid.Column="1" Background="{DynamicResource OS2.Brush.Surface}">
                             <StackPanel Margin="20,20,20,20">
                                 <Label Content="GUID" Margin="0" Padding="0,4,4,4"/>
                                 <TextBox x:Name="PropTextGuid" Height="28" VerticalAlignment="Top" Margin="0" IsEnabled="False"/>
@@ -274,7 +293,7 @@
                                 <ComboBox x:Name="PropComboDataCategory" VerticalAlignment="Stretch" IsEnabled="False"/>
                                 <CheckBox x:Name="PropCheckVisible" Content="Visible" Margin="0,20,0,0" IsEnabled="False"/>
                                 <CheckBox x:Name="PropCheckUserMod" Content="User Modifiable" Margin="0,10,0,0" IsEnabled="False"/>
-                                <Button Style="{StaticResource OD.Button.Secondary}" FontSize="13" x:Name="PropCopyPasteRowButton" Click="PropCopyPasteRowButton_Click" ToolTip="Copy this Shared Parameter as a tab delimited line of text" Margin="0,30,0,0" Content="Copy PARAM"/>
+                                <Button Style="{StaticResource OS2.Button.Secondary}" FontSize="13" x:Name="PropCopyPasteRowButton" Click="PropCopyPasteRowButton_Click" ToolTip="Copy this Shared Parameter as a tab delimited line of text" Margin="0,30,0,0" Content="Copy PARAM"/>
                                 <TextBlock x:Name="PropTxtRowCopied" TextWrapping="Wrap" Text="PARAM data copied to clipboard" Margin="10,10,10,0" Padding="10,5" Background="#FFE3FFD7" Foreground="#DD095A00"/>
                                 <TextBox x:Name="PropTxtRow" Height="23" Margin="0" FontFamily="Consolas" FontSize="10" HorizontalAlignment="Left" Visibility="Hidden"/>
                             </StackPanel>
@@ -283,11 +302,11 @@
                 </Grid>
                 </DockPanel>
               </TabItem>
-              <TabItem Header="Current Family">
+              <TabItem Header="Current Model">
                 <od:Control_CurrentFamily x:Name="CurrentFamilyTab"/>
               </TabItem>
             </TabControl>
-            <Grid x:Name="FooterGrid" Grid.Row="3" Background="{DynamicResource OD.Brush.Surface}">
+            <Grid x:Name="FooterGrid" Grid.Row="3" Background="{DynamicResource OS2.Brush.Surface}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="*" />
@@ -295,9 +314,9 @@
                 <TextBlock Grid.Column="0" TextWrapping="Wrap" Text="Support" VerticalAlignment="Center" Margin="20,0,0,0" HorizontalAlignment="Left" FontSize="13" TextDecorations="Underline" MouseLeftButtonUp="TextBlock_MouseLeftButtonUp" Cursor="Help"/>
                 <Grid Width="Auto" Grid.Column="1">
                     <StackPanel FlowDirection="RightToLeft" x:Name="PagerPanel" Height="45" VerticalAlignment="Center" Orientation="Horizontal" Margin="0,0,20,0">
-                        <Button Style="{StaticResource OD.Button.Flat}" x:Name="PagerNextButton" Click="PagerNextButton_Click" Margin="10,0,0,0" Height="30" Padding="10, 0" Content="Next &#x203A;"/>
-                        <Button Style="{StaticResource OD.Button.Flat}" x:Name="PagerPreviousButton" Margin="10,0,0,0" Click="PagerPreviousButton_Click" Height="30" Padding="10, 0" Content="&#x2039; Previous"/>
-                        <Button Style="{StaticResource OD.Button.Flat}" x:Name="PagerLoadAllButton" Margin="20,0,0,0" Height="30" Padding="10, 0" Click="PagerLoadAllButton_Click" Content="View All"/>
+                        <Button Style="{StaticResource OS2.Button.Flat}" x:Name="PagerNextButton" Click="PagerNextButton_Click" Margin="10,0,0,0" Height="30" Padding="10, 0" Content="Next &#x203A;"/>
+                        <Button Style="{StaticResource OS2.Button.Flat}" x:Name="PagerPreviousButton" Margin="10,0,0,0" Click="PagerPreviousButton_Click" Height="30" Padding="10, 0" Content="&#x2039; Previous"/>
+                        <Button Style="{StaticResource OS2.Button.Flat}" x:Name="PagerLoadAllButton" Margin="20,0,0,0" Height="30" Padding="10, 0" Click="PagerLoadAllButton_Click" Content="View All"/>
                         <TextBlock Text="Page 1 of 120" x:Name="PagerTextBox" Foreground="#888888" TextAlignment="Right" VerticalAlignment="Center" TextWrapping="Wrap" Width="Auto" Margin="10,0,0,0" />
                         <TextBlock x:Name="StatusTextBlock" TextWrapping="Wrap" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="300,0,0,0"/>
                     </StackPanel>
@@ -305,22 +324,26 @@
                 </Grid>
             </Grid>
         </Grid>
-        <Grid x:Name="OverlayGrid" Background="{DynamicResource OD.Brush.Overlay}" d:IsHidden="True">
-            <Grid x:Name="LoginGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" Height="350" VerticalAlignment="Top" Width="400" HorizontalAlignment="Center" d:IsHidden="True">
-                <PasswordBox x:Name="PasswordPasswordBox" Margin="50,150,50,0" Height="37" VerticalAlignment="Top" TabIndex="1" FontSize="16"/>
-                <TextBox x:Name="UsernameTextBox" Margin="50,50,50,0" Height="37" VerticalAlignment="Top" TabIndex="0" VerticalContentAlignment="Center" FontSize="16"/>
-                <Button x:Name="LoginButton" Content="Login" Margin="50,0,50,75" VerticalAlignment="Bottom" Click="LoginButton_Click" IsDefault="True" TabIndex="2" Height="46" FontSize="18"/>
-                <Label Content="USERNAME" Margin="45,25,50,0" VerticalAlignment="Top" FontSize="12" Height="20"/>
-                <Label Content="PASSWORD" Margin="45,125,50,0" FontSize="12" Height="20" VerticalAlignment="Top"/>
-                <TextBlock HorizontalAlignment="Center" Margin="0,0,0,25" TextWrapping="Wrap" VerticalAlignment="Bottom"><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="https://app.opendefinery.com/user/password"><InlineUIContainer>
-                            <TextBlock Text="Forgot Password" Foreground="{DynamicResource OD.Brush.TextSecondary}" TextDecorations="Underline"/>
-                        </InlineUIContainer></Hyperlink><Run Text=" "/><Run Text=" "/><InlineUIContainer>
-                        <TextBlock Text="|" Margin="15,0" />
-                    </InlineUIContainer><Run Text=" "/><Run Text=" "/><Run Text=" "/><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="https://app.opendefinery.com/user/register"><InlineUIContainer>
-                                <TextBlock Foreground="{DynamicResource OD.Brush.TextSecondary}" Text="Register for an Account" TextDecorations="Underline"/>
-                            </InlineUIContainer></Hyperlink></TextBlock>
+        <Grid x:Name="OverlayGrid" Background="{DynamicResource OS2.Brush.Overlay}" d:IsHidden="True">
+            <!-- Stacked layout (not absolute positioning) so nothing overlaps as fields are added. -->
+            <Grid x:Name="LoginGrid" Background="{DynamicResource OS2.Brush.Card}" VerticalAlignment="Top" Width="400" HorizontalAlignment="Center" d:IsHidden="True">
+                <StackPanel Margin="50,30,50,26">
+                    <Label Content="USERNAME" FontSize="12" Padding="0,0,0,4"/>
+                    <TextBox x:Name="UsernameTextBox" Height="40" TabIndex="0" VerticalContentAlignment="Center" FontSize="16"/>
+                    <Label Content="PASSWORD" FontSize="12" Padding="0,0,0,4" Margin="0,18,0,0"/>
+                    <PasswordBox x:Name="PasswordPasswordBox" Height="40" TabIndex="1" VerticalContentAlignment="Center" FontSize="16"/>
+                    <CheckBox x:Name="RememberMeCheck" Content="Remember me on this computer" Margin="0,18,0,0" FontSize="13"/>
+                    <Button x:Name="LoginButton" Content="Login" Height="46" Margin="0,22,0,0" Click="LoginButton_Click" IsDefault="True" TabIndex="2" FontSize="18"/>
+                    <TextBlock HorizontalAlignment="Center" Margin="0,20,0,0" TextWrapping="Wrap"><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="https://app.opendefinery.com/user/password"><InlineUIContainer>
+                                <TextBlock Text="Forgot Password" Foreground="{DynamicResource OS2.Brush.TextSecondary}" TextDecorations="Underline"/>
+                            </InlineUIContainer></Hyperlink><InlineUIContainer>
+                            <TextBlock Text="|" Margin="15,0" />
+                        </InlineUIContainer><Hyperlink RequestNavigate="HandleLinkClick" NavigateUri="https://app.opendefinery.com/user/register"><InlineUIContainer>
+                                    <TextBlock Foreground="{DynamicResource OS2.Brush.TextSecondary}" Text="Register for an Account" TextDecorations="Underline"/>
+                                </InlineUIContainer></Hyperlink></TextBlock>
+                </StackPanel>
             </Grid>
-            <Grid x:Name="ProgressGrid" Margin="0" VerticalAlignment="Top" Width="400" Background="{DynamicResource OD.Brush.Card}" Height="110" d:IsHidden="True">
+            <Grid x:Name="ProgressGrid" Margin="0" VerticalAlignment="Top" Width="400" Background="{DynamicResource OS2.Brush.Card}" Height="110" d:IsHidden="True">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
@@ -328,22 +351,22 @@
                 <TextBlock x:Name="ProgressStatus" TextWrapping="Wrap" VerticalAlignment="Bottom" TextAlignment="Center" Height="24" UseLayoutRounding="True" FontSize="9"/>
                 <ProgressBar x:Name="MainProgressBar" Height="20" Margin="0,50,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="370"/>
             </Grid>
-            <Grid x:Name="BatchUploadGrid" Height="270" Margin="0" VerticalAlignment="Top" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="540" d:IsHidden="True">
-                <Button Style="{StaticResource OD.Button.Secondary}" x:Name="BrowseForTxtButton" Content="Browse" VerticalAlignment="Top" Height="24" Padding="16,0" Click="BrowseForTxtButton_Click" FontSize="12" Margin="0,64,20,0" HorizontalAlignment="Right" Width="75"/>
+            <Grid x:Name="BatchUploadGrid" Height="270" Margin="0" VerticalAlignment="Top" Background="{DynamicResource OS2.Brush.Card}" HorizontalAlignment="Center" Width="540" d:IsHidden="True">
+                <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="BrowseForTxtButton" Content="Browse" VerticalAlignment="Top" Height="24" Padding="16,0" Click="BrowseForTxtButton_Click" FontSize="12" Margin="0,64,20,0" HorizontalAlignment="Right" Width="75"/>
                 <Button x:Name="BttnUpload" Margin="0,0,20,31" Click="BttnUpload_Click" Height="41" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="207" Content="Batch Load All Parameters"/>
                 <TextBox x:Name="TxtBoxSpPath" Margin="20,64,100,0" Height="24" VerticalAlignment="Top" HorizontalContentAlignment="Left" IsReadOnly="True"/>
                 <Label Content="ADD TO A COLLECTION" Margin="20,121,20,0" FontSize="12" Height="26" VerticalAlignment="Top" Padding="0,4,4,4"/>
                 <Label Content="CHOOSE A SHARED PARAMETER TXT FILE" Margin="20,38,20,0" FontSize="12" Height="26" VerticalAlignment="Top" Padding="0,4,4,4"/>
-                <Button x:Name="BatchUploadCancel" Style="{StaticResource OD.Button.Flat}" Content="Cancel" Margin="20,0,0,31" Height="41" Click="BatchUploadCancel_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="116"/>
+                <Button x:Name="BatchUploadCancel" Style="{StaticResource OS2.Button.Flat}" Content="Cancel" Margin="20,0,0,31" Height="41" Click="BatchUploadCancel_Click" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="116"/>
                 <ComboBox x:Name="BatchUploadCollectionCombo" Margin="20,147,20,0" VerticalAlignment="Top"/>
             </Grid>
-            <Grid x:Name="AddToCollectionGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="501" Height="237" VerticalAlignment="Top" d:IsHidden="True">
+            <Grid x:Name="AddToCollectionGrid" Margin="0" Background="{DynamicResource OS2.Brush.Card}" HorizontalAlignment="Center" Width="501" Height="237" VerticalAlignment="Top" d:IsHidden="True">
                 <Button x:Name="AddToCollectionFormButton" Content="Add to Collection" HorizontalAlignment="Center" Margin="0,121,0,0" VerticalAlignment="Top" Width="380" Click="AddToCollectionFormButton_Click"/>
                 <ComboBox x:Name="AddToCollectionCombo" Margin="0,64,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380"/>
                 <Label Content="CHOOSE A COLLECTION" Margin="0,37,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380"/>
-                <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelAddToCollectionButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,171,0,0" VerticalAlignment="Top" Width="380" Click="CancelAddToCollectionButton_Click_1" />
+                <Button Style="{StaticResource OS2.Button.Flat}" x:Name="CancelAddToCollectionButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,171,0,0" VerticalAlignment="Top" Width="380" Click="CancelAddToCollectionButton_Click_1" />
             </Grid>
-            <Grid x:Name="NewParameterGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="501" VerticalAlignment="Top" d:IsHidden="True">
+            <Grid x:Name="NewParameterGrid" Margin="0" Background="{DynamicResource OS2.Brush.Card}" HorizontalAlignment="Center" Width="501" VerticalAlignment="Top" d:IsHidden="True">
                 <StackPanel Margin="0">
                     <Label Content="CHOOSE A COLLECTION" Margin="0,50,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380" Padding="0,4,4,4"/>
                     <ComboBox x:Name="NewParamFormCollectionsCombo" Margin="0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380" SelectionChanged="NewParamFormCollectionsCombo_SelectionChanged"/>
@@ -363,10 +386,10 @@
                         <CheckBox x:Name="NewParamUserModCheckbox" Content="USER MODIFIABLE" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0" IsChecked="True"/>
                     </Grid>
                     <Button x:Name="AddParamFormButton" Content="Create Parameter" HorizontalAlignment="Center" Margin="0,40,0,0" VerticalAlignment="Bottom" Width="379" Click="NewParamFormButton_Click" />
-                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelAddParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" Click="CancelNewParamButton_Click" />
+                    <Button Style="{StaticResource OS2.Button.Flat}" x:Name="CancelAddParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" Click="CancelNewParamButton_Click" />
                 </StackPanel>
             </Grid>
-            <Grid x:Name="NewCollectionGrid" Margin="0" Width="600" HorizontalAlignment="Center" VerticalAlignment="Top" Background="{DynamicResource OD.Brush.Card}">
+            <Grid x:Name="NewCollectionGrid" Margin="0" Width="600" HorizontalAlignment="Center" VerticalAlignment="Top" Background="{DynamicResource OS2.Brush.Card}">
                 <StackPanel>
                     <Label Content="NAME OF NEW COLLECTION" HorizontalAlignment="Center" Margin="0,50,0,0" VerticalAlignment="Top" Padding="0,4,4,4" Width="380"/>
                     <TextBox x:Name="NewCollectionFormTextBox" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Top" Width="380"/>
@@ -374,10 +397,10 @@
                     <TextBox x:Name="NewCollectionFormDesc" HorizontalAlignment="Center" Margin="110,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="380" Height="118" HorizontalContentAlignment="Left"/>
                     <CheckBox x:Name="NewCollectionFormPublic" Content="Make this Collection public" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="110,30,0,0" ToolTip="Public Collections are visible to all OpenDefinery users"/>
                     <Button x:Name="NewCollectionFormSaveButton" Content="Save Collection" HorizontalAlignment="Center" Margin="0,30,0,0" VerticalAlignment="Top" Width="380" Click="NewCollectionFormSaveButton_Click"/>
-                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="NewCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" Click="NewCollectionFormCancelButton_Click"/>
+                    <Button Style="{StaticResource OS2.Button.Flat}" x:Name="NewCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" Click="NewCollectionFormCancelButton_Click"/>
                 </StackPanel>
             </Grid>
-            <Grid x:Name="EditCollectionGrid" Margin="0" Width="600" HorizontalAlignment="Center" VerticalAlignment="Top" Background="{DynamicResource OD.Brush.Card}" Visibility="Hidden">
+            <Grid x:Name="EditCollectionGrid" Margin="0" Width="600" HorizontalAlignment="Center" VerticalAlignment="Top" Background="{DynamicResource OS2.Brush.Card}" Visibility="Hidden">
                 <StackPanel>
                     <Label Content="EDIT COLLECTION" HorizontalAlignment="Center" Margin="0,40,0,0" VerticalAlignment="Top" Padding="0,4,4,4" Width="380" FontWeight="Bold"/>
                     <Label Content="NAME" HorizontalAlignment="Center" Margin="0,20,0,0" VerticalAlignment="Top" Padding="0,4,4,4" Width="380"/>
@@ -385,19 +408,19 @@
                     <Label Content="DESCRIPTION" HorizontalAlignment="Center" Margin="0,30,0,0" VerticalAlignment="Top" Padding="0,4,4,4" Width="380"/>
                     <TextBox x:Name="EditCollectionFormDesc" HorizontalAlignment="Center" Margin="110,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Top" Width="380" Height="118" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto"/>
                     <CheckBox x:Name="EditCollectionFormPublic" Content="Make this Collection public" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="110,30,0,0" ToolTip="Public Collections are visible to all OpenDefinery users"/>
-                    <TextBlock x:Name="EditCollectionStatus" HorizontalAlignment="Center" Width="380" Margin="0,16,0,0" TextWrapping="Wrap" Foreground="{DynamicResource OD.Brush.Danger}"/>
+                    <TextBlock x:Name="EditCollectionStatus" HorizontalAlignment="Center" Width="380" Margin="0,16,0,0" TextWrapping="Wrap" Foreground="{DynamicResource OS2.Brush.Danger}"/>
                     <Button x:Name="EditCollectionFormSaveButton" Content="Save Changes" HorizontalAlignment="Center" Margin="0,24,0,0" VerticalAlignment="Top" Width="380" Click="EditCollectionFormSaveButton_Click"/>
-                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="EditCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" Click="EditCollectionFormCancelButton_Click"/>
+                    <Button Style="{StaticResource OS2.Button.Flat}" x:Name="EditCollectionFormCancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,20" VerticalAlignment="Top" Width="380" Click="EditCollectionFormCancelButton_Click"/>
                 </StackPanel>
             </Grid>
-            <Grid x:Name="ModifyParameterGrid" Margin="0" Background="{DynamicResource OD.Brush.Card}" HorizontalAlignment="Center" Width="501" VerticalAlignment="Top" d:IsHidden="True">
+            <Grid x:Name="ModifyParameterGrid" Margin="0" Background="{DynamicResource OS2.Brush.Card}" HorizontalAlignment="Center" Width="501" VerticalAlignment="Top" d:IsHidden="True">
                 <StackPanel Margin="0">
                     <Label Content="NAME" Margin="0,30,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380" Padding="0,4,4,4"/>
                     <TextBox x:Name="ModParamNameTextBox" HorizontalAlignment="Center" Height="36" Margin="0" VerticalAlignment="Top" Width="380" VerticalContentAlignment="Center"/>
                     <Label Content="DESCRIPTION" Margin="0,30,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="380" Padding="0,4,4,4"/>
                     <TextBox x:Name="ModParamDescTextBox" HorizontalAlignment="Center" Height="100" Margin="60,0,60.8,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="380" MaxLength="260" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Left"/>
                     <Button x:Name="ModParamFormButton" Content="Save" HorizontalAlignment="Center" Margin="0,40,0,0" VerticalAlignment="Bottom" Width="379" Click="ModParamFormButton_Click" />
-                    <Button Style="{StaticResource OD.Button.Flat}" x:Name="CancelModParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" Click="CancelModParamButton_Click" />
+                    <Button Style="{StaticResource OS2.Button.Flat}" x:Name="CancelModParamButton" Content="Cancel" HorizontalAlignment="Center" Margin="0,0,0,20" VerticalAlignment="Bottom" Width="380" Click="CancelModParamButton_Click" />
                 </StackPanel>
             </Grid>
         </Grid>

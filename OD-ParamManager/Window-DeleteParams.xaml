@@ -1,0 +1,66 @@
+<Window x:Class="OD_ParamManager.Window_DeleteParams"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OD_ParamManager"
+        mc:Ignorable="d"
+        Title="Delete Parameters"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        Background="{DynamicResource OS2.Brush.Background}"
+        Width="540"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="28,24,28,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Heading -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Text="&#x26A0;" FontSize="26" Foreground="{DynamicResource OS2.Brush.Danger}"
+                       VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <TextBlock x:Name="HeadingText" Text="Delete parameters?" FontSize="20" FontWeight="SemiBold"
+                       Foreground="{DynamicResource OS2.Brush.Danger}" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Red warning body -->
+        <TextBlock Grid.Row="1" x:Name="WarningText" Margin="0,18,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource OS2.Brush.Danger}" FontWeight="SemiBold"/>
+
+        <!-- Secondary explanation -->
+        <TextBlock Grid.Row="2" Margin="0,12,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource OS2.Brush.TextSecondary}"
+                   Text="This can be undone from Revit (Ctrl+Z) immediately after, but any parameter values will not be recovered by re-adding the parameter."/>
+
+        <!-- Explicit acknowledgement -->
+        <CheckBox Grid.Row="3" x:Name="AckCheckBox" Margin="0,20,0,0"
+                  Content="I understand the risks" Checked="Ack_Changed" Unchecked="Ack_Changed"
+                  Foreground="{DynamicResource OS2.Brush.TextPrimary}" FontWeight="SemiBold"/>
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+            <Button x:Name="CancelButton" Style="{StaticResource OS2.Button.Flat}"
+                    Content="Cancel" Padding="18,0" Click="CancelButton_Click"/>
+            <Button x:Name="DeleteButton" Style="{StaticResource OS2.Button.DangerSolid}"
+                    Content="Delete Parameters" Margin="10,0,0,0" Padding="20,0"
+                    IsEnabled="False" Click="DeleteButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

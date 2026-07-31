@@ -1,13 +1,11 @@
 using Autodesk.Revit.DB;
-using Microsoft.Win32;
 using OpenDefinery;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -42,8 +40,8 @@ namespace OD_ParamManager
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    /// <summary>One rendered line in the export preview: a number, the raw tab-delimited
-    /// text, and its fields split on the tab so each can be shown (and selected) on its own.</summary>
+    /// <summary>One rendered line in the export preview: a number, the raw tab-delimited text,
+    /// and its fields split on the tab so each can be shown (and selected) on its own.</summary>
     public class PreviewLine : INotifyPropertyChanged
     {
         public int Number { get; set; }
@@ -67,16 +65,53 @@ namespace OD_ParamManager
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
+    /// <summary>Natural (alphanumeric) sort for the document-parameter grid columns.</summary>
+    internal class NaturalParamComparer : IComparer
+    {
+        private readonly string _path;
+        private readonly ListSortDirection _direction;
+
+        public NaturalParamComparer(string path, ListSortDirection direction)
+        {
+            _path = path;
+            _direction = direction;
+        }
+
+        public int Compare(object x, object y)
+        {
+            var a = x as DocumentSharedParameter;
+            var b = y as DocumentSharedParameter;
+
+            int c;
+            switch (_path)
+            {
+                case "DataType":
+                    c = NaturalSort.Compare(a?.DataType, b?.DataType);
+                    break;
+                case "InSelectedCollection":
+                    c = (a != null && a.InSelectedCollection).CompareTo(b != null && b.InSelectedCollection);
+                    break;
+                default:
+                    c = NaturalSort.Compare(a?.Name, b?.Name);
+                    break;
+            }
+
+            return _direction == ListSortDirection.Ascending ? c : -c;
+        }
+    }
+
     /// <summary>
-    /// Reusable "Current Family" panel: lists the shared parameters in the active Revit
-    /// document, previews the exact shared-parameter text lines, and either uploads the
-    /// selected ones to an OpenDefinery Collection or saves them as a local .txt file. Hosted
-    /// both by the standalone Export Parameters window and by the Parameter Manager's
-    /// "Current Family" tab, so the two stay identical.
+    /// Reusable "Current Model" panel: lists the shared parameters in the active Revit document,
+    /// validates them against an OpenDefinery Collection (green check), and offers Upload / Download
+    /// (preview + save) / Delete for the selected parameters. Hosted both by the standalone Export
+    /// window and by the Parameter Manager's "Current Model" tab, so the two stay identical.
     /// </summary>
     public partial class Control_CurrentFamily : UserControl
     {
         private const string AllDataTypesLabel = "All Data Types";
+        private const string InCollAll = "All";
+        private const string InCollYes = "In Collection";
+        private const string InCollNo = "Not in Collection";
 
         private RvtConnector _connector;
         private Definery _session;
@@ -84,7 +119,7 @@ namespace OD_ParamManager
         private ICollectionView _view;
         private string _filterText = string.Empty;
         private string _dataTypeFilter = AllDataTypesLabel;
-        private List<PreviewLine> _previewLines;
+        private string _inCollectionFilter = InCollAll;
 
         public ObservableCollection<DocumentSharedParameter> Parameters { get; private set; }
 
@@ -94,14 +129,14 @@ namespace OD_ParamManager
         public Control_CurrentFamily()
         {
             InitializeComponent();
+
+            // Static options; set once so reloads don't reset the user's choice.
+            InCollectionFilterCombo.ItemsSource = new[] { InCollAll, InCollYes, InCollNo };
+            InCollectionFilterCombo.SelectedIndex = 0;
         }
 
         // ---------------------------------------------------------------- host wiring
 
-        /// <summary>
-        /// Point the panel at the live Revit connection and read its shared parameters. Pass
-        /// null when there is no open document - the panel shows a friendly empty state instead.
-        /// </summary>
         public void SetConnector(RvtConnector connector)
         {
             _connector = connector;
@@ -119,7 +154,6 @@ namespace OD_ParamManager
             LoadDocumentParameters();
         }
 
-        /// <summary>Supply the authenticated session and load the user's Collections.</summary>
         public void SetSession(Definery session)
         {
             _session = session;
@@ -176,16 +210,24 @@ namespace OD_ParamManager
                     "There was a problem reading shared parameters from the document:\n\n" + ex.Message);
             }
 
-            Parameters = new ObservableCollection<DocumentSharedParameter>(found.OrderBy(p => p.Name));
+            Parameters = new ObservableCollection<DocumentSharedParameter>(found);
             DataGrid_Params.ItemsSource = Parameters;
 
-            // Filterable/sortable view over the same collection the grid shows.
+            // Filterable/sortable view; default to a natural sort by name.
             _view = CollectionViewSource.GetDefaultView(Parameters);
             _view.Filter = MatchesFilter;
 
+            if (_view is ListCollectionView lcv)
+            {
+                lcv.CustomSort = new NaturalParamComparer("Name", ListSortDirection.Ascending);
+            }
+
+            var nameColumn = DataGrid_Params.Columns.FirstOrDefault(c => c.SortMemberPath == "Name");
+            if (nameColumn != null) nameColumn.SortDirection = ListSortDirection.Ascending;
+
             PopulateDataTypeFilter();
             UpdateCountText();
-            UpdatePreview();
+            UpdateSelectionActions();
         }
 
         private void PopulateDataTypeFilter()
@@ -206,22 +248,15 @@ namespace OD_ParamManager
 
         private void UpdateCountText()
         {
-            var isFamily = _connector != null && _connector.Document != null && _connector.Document.IsFamilyDocument;
             var count = Parameters.Count;
-
-            CountText.Text = string.Format(
-                "This {0} contains {1} shared parameter{2}. Select parameters to upload to OpenDefinery or save as a local text file.",
-                isFamily ? "family" : "Revit model",
-                count,
-                count == 1 ? string.Empty : "s");
+            CountText.Text = string.Format("{0} shared parameter{1}", count, count == 1 ? string.Empty : "s");
         }
 
-        /// <summary>Count of shared parameters found, so a host can title itself.</summary>
         public int ParameterCount => Parameters?.Count ?? 0;
 
         public bool IsFamilyDocument => _connector != null && _connector.Document != null && _connector.Document.IsFamilyDocument;
 
-        // ---------------------------------------------------------------- filtering
+        // ---------------------------------------------------------------- filtering / sorting
 
         private bool MatchesFilter(object item)
         {
@@ -244,6 +279,9 @@ namespace OD_ParamManager
                 return false;
             }
 
+            if (_inCollectionFilter == InCollYes && !p.InSelectedCollection) return false;
+            if (_inCollectionFilter == InCollNo && p.InSelectedCollection) return false;
+
             return true;
         }
 
@@ -259,95 +297,49 @@ namespace OD_ParamManager
             _view?.Refresh();
         }
 
-        // ---------------------------------------------------------------- preview
+        private void InCollectionFilter_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            _inCollectionFilter = InCollectionFilterCombo.SelectedItem as string ?? InCollAll;
+            _view?.Refresh();
+        }
+
+        /// <summary>Natural sort on column-header clicks (so Parameter #2 &lt; Parameter #10).</summary>
+        private void DataGrid_Params_Sorting(object sender, DataGridSortingEventArgs e)
+        {
+            var column = e.Column;
+            var path = column.SortMemberPath;
+            if (string.IsNullOrEmpty(path)) return;
+
+            e.Handled = true;
+
+            var direction = column.SortDirection != ListSortDirection.Ascending
+                ? ListSortDirection.Ascending
+                : ListSortDirection.Descending;
+
+            column.SortDirection = direction;
+            foreach (var c in DataGrid_Params.Columns)
+            {
+                if (c != column) c.SortDirection = null;
+            }
+
+            if (_view is ListCollectionView lcv)
+            {
+                lcv.CustomSort = new NaturalParamComparer(path, direction);
+            }
+        }
+
+        // ---------------------------------------------------------------- selection
 
         private void DataGrid_Params_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdatePreview();
+            UpdateSelectionActions();
         }
 
-        /// <summary>
-        /// The exact tab-delimited PARAM line Revit writes, matching
-        /// DefineryParameter.CreateParamTable: PARAM, GUID, NAME, DATATYPE, DATACATEGORY,
-        /// GROUP, VISIBLE, DESCRIPTION, USERMODIFIABLE.
-        /// </summary>
-        private static string BuildParamLine(DocumentSharedParameter p)
+        private void UpdateSelectionActions()
         {
-            return string.Join("\t",
-                "PARAM",
-                p.Guid.ToString(),
-                p.Name,
-                p.DataType,
-                string.Empty,           // data category (n/a for document params)
-                "1",                    // group (Default)
-                "1",                    // visible
-                p.Description ?? string.Empty,
-                "1");                   // user modifiable
-        }
-
-        private void UpdatePreview()
-        {
-            if (PreviewList == null) return;
-
-            if (Parameters == null) { PreviewList.ItemsSource = null; return; }
-
-            var selectedSet = new HashSet<DocumentSharedParameter>(SelectedParameters());
-
-            var lines = new List<PreviewLine>();
-            var number = 1;
-
-            // Iterate in display order for a stable preview regardless of click order.
-            foreach (var p in Parameters)
-            {
-                if (selectedSet.Contains(p))
-                {
-                    var raw = BuildParamLine(p);
-                    lines.Add(new PreviewLine
-                    {
-                        Number = number++,
-                        Raw = raw,
-                        Fields = raw.Split('\t').ToList()
-                    });
-                }
-            }
-
-            _previewLines = lines;
-            PreviewList.ItemsSource = _previewLines;
-        }
-
-        /// <summary>Clicking a line number copies the whole raw line and highlights that row.</summary>
-        private void PreviewGutter_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var line = (sender as FrameworkElement)?.DataContext as PreviewLine;
-            if (line == null) return;
-
-            if (_previewLines != null)
-            {
-                foreach (var l in _previewLines)
-                {
-                    l.IsRowSelected = ReferenceEquals(l, line);
-                }
-            }
-
-            try { Clipboard.SetText(line.Raw); }
-            catch { /* the clipboard can be transiently locked by another app; ignore */ }
-
-            e.Handled = true;
-        }
-
-        /// <summary>
-        /// Double-click selects the entire field. Because each tab-delimited field is its own
-        /// box, this selects the whole GUID or whole name regardless of hyphens or spaces -
-        /// the tab is effectively the only delimiter.
-        /// </summary>
-        private void PreviewField_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ClickCount == 2 && sender is TextBox tb)
-            {
-                tb.Focus();
-                tb.SelectAll();
-                e.Handled = true;
-            }
+            SelectionActions.Visibility = DataGrid_Params.SelectedItems.Count > 0
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
         }
 
         private List<DocumentSharedParameter> SelectedParameters()
@@ -447,9 +439,14 @@ namespace OD_ParamManager
             {
                 p.InSelectedCollection = guids.Contains(p.Guid);
             }
+
+            // The "In Collection" filter depends on these flags, so re-apply it.
+            _view?.Refresh();
         }
 
-        // ---------------------------------------------------------------- new collection
+        private Collection SelectedValidationCollection => CollectionCombo.SelectedItem as Collection;
+
+        // ---------------------------------------------------------------- new collection (tool row)
 
         private void NewCollectionButton_Click(object sender, RoutedEventArgs e)
         {
@@ -494,24 +491,26 @@ namespace OD_ParamManager
                     return;
                 }
 
-                var current = CollectionCombo.ItemsSource as IEnumerable<Collection>;
-                var updated = current != null ? new List<Collection>(current) : new List<Collection>();
-                updated.Add(created);
-
-                CollectionCombo.ItemsSource = updated;
-                CollectionCombo.SelectedItem = created;
-
+                AddCollectionToCombo(created);
                 OverlayGrid.Visibility = System.Windows.Visibility.Collapsed;
 
                 CollectionCreated?.Invoke(this, created);
-
-                ShowMessage("Collection Created",
-                    string.Format("Created \"{0}\" and selected it as the upload target.", created.Name));
             }
             catch (Exception ex)
             {
                 NewCollectionStatus.Text = "Error creating Collection: " + ex.Message;
             }
+        }
+
+        private void AddCollectionToCombo(Collection created)
+        {
+            var current = CollectionCombo.ItemsSource as IEnumerable<Collection>;
+            var updated = current != null ? new List<Collection>(current) : new List<Collection>();
+
+            if (updated.All(c => c.Id != created.Id)) updated.Add(created);
+
+            CollectionCombo.ItemsSource = updated;
+            CollectionCombo.SelectedItem = updated.First(c => c.Id == created.Id);
         }
 
         /// <summary>Escape closes the New Collection overlay when it's open. Returns true if handled.</summary>
@@ -526,7 +525,7 @@ namespace OD_ParamManager
             return false;
         }
 
-        // ---------------------------------------------------------------- upload (to OpenDefinery)
+        // ---------------------------------------------------------------- upload
 
         private void UploadButton_Click(object sender, RoutedEventArgs e)
         {
@@ -540,14 +539,29 @@ namespace OD_ParamManager
                 return;
             }
 
-            var collection = CollectionCombo.SelectedItem as Collection;
-            if (collection == null)
+            var collections = CollectionCombo.ItemsSource as IEnumerable<Collection>;
+
+            var picker = new Window_UploadCollection(_session, collections, SelectedValidationCollection, selected.Count)
             {
-                ShowMessage("No Collection Selected",
-                    "Choose a Collection to upload to, or create a new one.");
-                return;
+                Owner = OwnerWindow
+            };
+
+            var confirmed = picker.ShowDialog();
+
+            // Reflect any newly-created Collection in the tab's own combo.
+            if (picker.CollectionsChanged && picker.SelectedCollection != null)
+            {
+                AddCollectionToCombo(picker.SelectedCollection);
             }
 
+            if (confirmed == true && picker.SelectedCollection != null)
+            {
+                RunUpload(picker.SelectedCollection, selected);
+            }
+        }
+
+        private void RunUpload(Collection collection, List<DocumentSharedParameter> selected)
+        {
             var results = new List<ExportResult>();
 
             Mouse.OverrideCursor = Cursors.Wait;
@@ -561,16 +575,12 @@ namespace OD_ParamManager
                         Guid = param.Guid.ToString()
                     };
 
-                    // Every parameter is handled independently: one failure must never stop
-                    // the rest of the batch.
                     try
                     {
                         var existing = DefineryParameter.FromGuid(_session, param.Guid);
 
                         if (existing != null && existing.Count > 0)
                         {
-                            // Already in OpenDefinery. Rather than skip it outright, make sure it
-                            // also belongs to the chosen Collection - adding it there if it isn't.
                             var odParam = existing.First();
 
                             var inThisCollection =
@@ -587,9 +597,6 @@ namespace OD_ParamManager
                             }
                             else
                             {
-                                // AddToCollection rebuilds field_collections from CollectionsString,
-                                // so the parameter's other Collections are preserved and this one
-                                // is simply added.
                                 var addResponse = DefineryParameter.AddToCollection(_session, odParam, collection.Id);
                                 var code = (int)addResponse.StatusCode;
 
@@ -659,59 +666,82 @@ namespace OD_ParamManager
                 Mouse.OverrideCursor = null;
             }
 
-            // Newly-uploaded parameters are now in the Collection: refresh the green checks.
+            // Reflect the chosen Collection in the tab so the green checks match what was uploaded.
+            AddCollectionToCombo(collection);
             UpdateInCollectionFlags(collection);
 
             Window_ExportResults.Show(OwnerWindow, collection.Name, results);
         }
 
-        // ---------------------------------------------------------------- export (local .txt)
+        // ---------------------------------------------------------------- download (preview + save)
 
-        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        private void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
-            var selected = SelectedParameters();
-            if (selected.Count == 0)
+            // Always the whole (filtered) list, never just the row selection.
+            var all = DataGrid_Params.Items.Cast<DocumentSharedParameter>().ToList();
+            if (all.Count == 0)
             {
-                ShowMessage("Nothing Selected",
-                    "Select one or more parameters to save. Hold Ctrl or Shift to select several.");
+                ShowMessage("No Parameters", "There are no parameters in the list to preview or save.");
                 return;
             }
 
-            // Reuse the shared-parameter file format used everywhere else.
-            var defineryParams = selected.Select(p => new DefineryParameter
+            var preview = new Window_ParamPreview(all) { Owner = OwnerWindow };
+            preview.ShowDialog();
+        }
+
+        // ---------------------------------------------------------------- delete
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_connector == null || _connector.Document == null)
             {
-                Guid = p.Guid,
-                Name = p.Name,
-                DataType = p.DataType,
-                Description = p.Description ?? string.Empty,
-                Visible = "1",
-                UserModifiable = "1"
-            }).ToList();
+                ShowMessage("No Model Open", "Open a family or project in Revit to delete parameters.");
+                return;
+            }
 
-            var content = DefineryParameter.CreateParamTable(defineryParams);
-
-            // Not auto-named: these parameters may not belong to any Collection.
-            var dialog = new SaveFileDialog
+            var selected = SelectedParameters();
+            if (selected.Count == 0)
             {
-                Filter = "Text files (*.txt)|*.txt",
-                DefaultExt = ".txt",
-                FileName = "SharedParameters.txt",
-                RestoreDirectory = true
-            };
+                ShowMessage("Nothing Selected", "Select one or more parameters to delete.");
+                return;
+            }
 
-            if (dialog.ShowDialog() != true) return;
+            var isFamily = _connector.Document.IsFamilyDocument;
 
+            if (!Window_DeleteParams.Confirm(OwnerWindow, selected.Count, isFamily)) return;
+
+            List<string> failures;
+            int deleted;
+
+            Mouse.OverrideCursor = Cursors.Wait;
             try
             {
-                File.WriteAllText(dialog.FileName, content);
-                ShowMessage("File Saved",
-                    string.Format("Saved {0} parameter{1} to:\n\n{2}",
-                        selected.Count, selected.Count == 1 ? string.Empty : "s", dialog.FileName));
+                deleted = _connector.DeleteParams(selected.Select(p => p.Guid).ToList(), out failures);
             }
             catch (Exception ex)
             {
-                ShowMessage("Could Not Save File", ex.Message);
+                Mouse.OverrideCursor = null;
+                ShowMessage("Could Not Delete", ex.Message);
+                return;
             }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
+
+            // Refresh the list so the deleted parameters drop out, then re-validate.
+            LoadDocumentParameters();
+            UpdateInCollectionFlags(SelectedValidationCollection);
+
+            var message = string.Format("Deleted {0} parameter{1} from the {2}.",
+                deleted, deleted == 1 ? string.Empty : "s", isFamily ? "family" : "project");
+
+            if (failures != null && failures.Count > 0)
+            {
+                message += "\n\nCould not delete:\n" + string.Join("\n", failures);
+            }
+
+            ShowMessage("Delete Complete", message);
         }
 
         // ---------------------------------------------------------------- helpers

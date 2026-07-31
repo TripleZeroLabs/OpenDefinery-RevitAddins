@@ -13,14 +13,21 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenDefinery\OpenDefinery.csproj" />
-    <!-- OpenDefinery.Theme now lives in its own repo/solution (sibling of this one). -->
-    <ProjectReference Include="..\..\OpenDefinery-Theme\OpenDefinery.Theme\OpenDefinery.Theme.csproj" />
+    <!-- The theme (TripleZeroLabs.Os2) lives in its own repo/solution, sibling to this one. -->
+    <ProjectReference Include="..\..\TripleZeroLabs.Os2\TripleZeroLabs.Os2\TripleZeroLabs.Os2.csproj" />
   </ItemGroup>
 
   <!-- Newtonsoft/RestSharp removed (Revit/Dynamo DLL-conflict sources). HTTP + JSON now
        flow through the core's OdHttp/OdJson (HttpClient + System.Text.Json), which is
        pulled in transitively via the OpenDefinery project reference. -->
   <ItemGroup />
+
+  <!-- DPAPI (ProtectedData) for the encrypted "Remember me" session store. On net48 it lives
+       in the System.Security framework assembly; on net8/net10-windows it ships inbox in the
+       Microsoft.WindowsDesktop.App shared framework (WPF), so no package is needed there. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Security" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Ribbon/UI icons referenced via pack:// URIs -->

@@ -12,7 +12,7 @@ namespace OD_ParamManager
     {
         public Result OnStartup(UIControlledApplication a)
         {
-            // Resolve this add-in's dependencies (OpenDefinery.dll, OpenDefinery.Theme.dll,
+            // Resolve this add-in's dependencies (OpenDefinery.dll, TripleZeroLabs.Os2.dll,
             // System.Text.Json.dll, CompareNETObjects.dll, ...) from its own folder. On .NET
             // Framework, Revit does not probe the add-in folder automatically. Registered here
             // BEFORE any OpenDefinery type is touched (the real work lives in Startup), so the

@@ -30,10 +30,12 @@ namespace OD_ParamManager
         {
             UpdateTitle();
 
-            // Reuse this Revit session's sign-in if there is one, otherwise prompt.
-            if (Definery.Current != null && !string.IsNullOrEmpty(Definery.Current.AuthCode))
+            // Reuse this Revit session's sign-in, or restore a remembered one, otherwise prompt.
+            var session = SessionManager.TryRestore();
+            if (session != null)
             {
-                CurrentFamily.SetSession(Definery.Current);
+                RememberMeCheck.IsChecked = true;
+                CurrentFamily.SetSession(session);
             }
             else
             {
@@ -113,6 +115,15 @@ namespace OD_ParamManager
             {
                 LoginStatusText.Text = "Login failed. Check your credentials and try again.";
                 return;
+            }
+
+            if (RememberMeCheck.IsChecked == true)
+            {
+                SessionStore.Save(username, password);
+            }
+            else
+            {
+                SessionStore.Clear();
             }
 
             OverlayGrid.Visibility = Visibility.Collapsed;

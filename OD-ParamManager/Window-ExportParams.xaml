@@ -8,7 +8,7 @@
         Title="Export Shared Parameters"
         FontFamily="Segoe UI"
         FontSize="13"
-        Background="{DynamicResource OD.Brush.Background}"
+        Background="{DynamicResource OS2.Brush.Background}"
         Width="900" Height="650"
         MinWidth="700" MinHeight="480"
         WindowStartupLocation="CenterScreen">
@@ -16,7 +16,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/OpenDefinery.Theme;component/Themes/Theme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -33,9 +33,9 @@
             <local:Control_CurrentFamily x:Name="CurrentFamily" Grid.Row="0"/>
 
             <!-- Footer: explicit Close. Escape deliberately does NOT close this window. -->
-            <Border Grid.Row="1" Background="{DynamicResource OD.Brush.Surface}" Padding="16,12">
+            <Border Grid.Row="1" Background="{DynamicResource OS2.Brush.Surface}" Padding="16,12">
                 <Button x:Name="CloseButton"
-                        Style="{StaticResource OD.Button.Secondary}"
+                        Style="{StaticResource OS2.Button.Secondary}"
                         Content="Close"
                         HorizontalAlignment="Right"
                         Padding="24,0"
@@ -44,23 +44,24 @@
         </Grid>
 
         <!-- ============ Login overlay ============ -->
-        <Grid x:Name="OverlayGrid" Background="{DynamicResource OD.Brush.Overlay}" Visibility="Collapsed">
+        <Grid x:Name="OverlayGrid" Background="{DynamicResource OS2.Brush.Overlay}" Visibility="Collapsed">
             <Border x:Name="LoginCard"
-                    Background="{DynamicResource OD.Brush.Card}"
+                    Background="{DynamicResource OS2.Brush.Card}"
                     Width="400" Padding="30"
                     VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Sign in to OpenDefinery" Style="{StaticResource OD.Text.Heading}" Margin="0,0,0,4"/>
+                    <TextBlock Text="Sign in to OpenDefinery" Style="{StaticResource OS2.Text.Heading}" Margin="0,0,0,4"/>
                     <TextBlock Text="Required to export parameters."
-                               Foreground="{DynamicResource OD.Brush.TextSecondary}" Margin="0,0,0,16"/>
+                               Foreground="{DynamicResource OS2.Brush.TextSecondary}" Margin="0,0,0,16"/>
                     <TextBlock Text="USERNAME" FontSize="11" Margin="0,0,0,4"/>
                     <TextBox x:Name="UsernameTextBox" Height="38" FontSize="14" VerticalContentAlignment="Center"/>
                     <TextBlock Text="PASSWORD" FontSize="11" Margin="0,14,0,4"/>
                     <PasswordBox x:Name="PasswordBox" Height="38" FontSize="14" VerticalContentAlignment="Center"/>
+                    <CheckBox x:Name="RememberMeCheck" Content="Remember me on this computer" Margin="0,14,0,0"/>
                     <Button x:Name="LoginButton" Content="Login" Height="40" Margin="0,20,0,0"
                             IsDefault="True" Click="LoginButton_Click"/>
                     <TextBlock x:Name="LoginStatusText" TextWrapping="Wrap" Margin="0,12,0,0"
-                               Foreground="{DynamicResource OD.Brush.Danger}"/>
+                               Foreground="{DynamicResource OS2.Brush.Danger}"/>
                 </StackPanel>
             </Border>
         </Grid>

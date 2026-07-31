@@ -38,6 +38,16 @@ namespace OpenDefinery
         /// </summary>
         public static Definery Current { get; private set; }
 
+        /// <summary>
+        /// Clear the current session: drop the published <see cref="Current"/> and reset the
+        /// HTTP session (cookies/CSRF) so the next login starts clean/anonymous.
+        /// </summary>
+        public static void SignOut()
+        {
+            Current = null;
+            OdHttp.ResetSession();
+        }
+
         public static Definery Init(Definery definery, string username, string password)
         {
             // Drupal's /user/login only accepts ANONYMOUS requests. The HttpClient (and its

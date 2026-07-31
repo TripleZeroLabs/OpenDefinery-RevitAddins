@@ -198,9 +198,9 @@ function Update-IssVersion {
 if ($Version) {
     Write-Host "`nStamping version $Version..." -ForegroundColor Cyan
 
+    # The theme (TripleZeroLabs.Os2) is versioned in its own repo, so it's not stamped here.
     $csprojs = @(
         'OpenDefinery\OpenDefinery.csproj',
-        'OpenDefinery.Theme\OpenDefinery.Theme.csproj',
         'OD-ParamManager\OD-ParamManager.csproj'
     )
     foreach ($rel in $csprojs) {
@@ -232,9 +232,11 @@ if (-not $SkipBuild) {
 # The installer packages these, so they must be signed before ISCC runs. Only our
 # assemblies are signed; third-party DLLs keep their original signatures.
 $tfms     = @('net48', 'net8.0-windows', 'net10.0-windows')
+# The theme DLL is built in its own repo (unsigned) and copied into the add-in output via
+# the ProjectReference, so it's signed here where it lands - under OD-ParamManager.
 $ourDlls  = @(
     @{ Proj = 'OpenDefinery';        Dll = 'OpenDefinery.dll' },
-    @{ Proj = 'OpenDefinery.Theme';  Dll = 'OpenDefinery.Theme.dll' },
+    @{ Proj = 'OD-ParamManager';     Dll = 'TripleZeroLabs.Os2.dll' },
     @{ Proj = 'OD-ParamManager';     Dll = 'OpenDefinery-ParamManager.dll' }
 )
 

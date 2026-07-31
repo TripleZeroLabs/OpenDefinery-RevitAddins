@@ -2,7 +2,7 @@
   "profiles": {
     "Revit 2022": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2022\\Revit.exe"
+      "executablePath": "D:\\Program Files\\Autodesk\\Revit 2022\\Revit.exe"
     },
     "Revit 2023": {
       "commandName": "Executable",
