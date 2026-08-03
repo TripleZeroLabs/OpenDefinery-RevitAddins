@@ -5,20 +5,23 @@ using System.Security.Cryptography;
 using System.Text;
 using Path = System.IO.Path;
 
-namespace OD_ParamManager
+namespace OD_Common
 {
     /// <summary>
-    /// Opt-in "Remember me" credential store. The username + password are encrypted with
-    /// Windows DPAPI (CurrentUser scope) and written to %LocalAppData%\OpenDefinery\session.dat.
+    /// Opt-in "Remember me" credential store shared by every OpenDefinery add-in. The username +
+    /// password are encrypted with Windows DPAPI (CurrentUser scope) and written to
+    /// %LocalAppData%\OpenDefinery\session.dat, so a sign-in in one add-in is available to the
+    /// others (and across restarts).
     ///
     /// DPAPI ties decryption to this Windows user on this machine, so a copied file is useless
     /// elsewhere. It does NOT protect against code running as the same user - the standard
-    /// "remember me" tradeoff. This is an interim measure; when OAuth lands, a refresh token
-    /// replaces the stored password here.
+    /// "remember me" tradeoff. Interim measure; when OAuth lands, a refresh token replaces the
+    /// stored password here.
     /// </summary>
-    internal static class SessionStore
+    public static class SessionStore
     {
         // Non-secret app entropy (the source is open, so this only scopes the blob to this app).
+        // Kept stable so sessions remembered by earlier builds still decrypt.
         private static readonly byte[] Entropy = Encoding.UTF8.GetBytes("OpenDefinery.ParamManager.v1");
 
         private static string Dir =>
@@ -84,12 +87,13 @@ namespace OD_ParamManager
         }
     }
 
-    /// <summary>Restores a remembered OpenDefinery session at startup, if one was saved.</summary>
-    internal static class SessionManager
+    /// <summary>Restores a remembered OpenDefinery session, if one was saved.</summary>
+    public static class SessionManager
     {
         /// <summary>
         /// Return an authenticated session, silently restoring a remembered one if needed.
-        /// Returns null if there's no valid saved session (stale credentials are wiped).
+        /// Returns null if there's no valid saved session (stale credentials are NOT wiped, so a
+        /// transient network hiccup at startup doesn't permanently forget the login).
         /// </summary>
         public static Definery TryRestore()
         {
@@ -103,23 +107,67 @@ namespace OD_ParamManager
                 return null;
             }
 
-            try
+            // Retry a few times: when Revit restores this session at startup, the network stack
+            // isn't always ready, so the login POST can fail transiently. The credentials are
+            // valid (they were saved from a successful sign-in), so a brief retry avoids a
+            // spurious login prompt. Genuinely bad credentials still fall through to the prompt.
+            for (var attempt = 0; attempt < 3; attempt++)
             {
-                var session = Definery.Init(new Definery(), username, password);
-                if (session != null && !string.IsNullOrEmpty(session.CsrfToken))
+                try
                 {
-                    return session;
+                    var session = Definery.Init(new Definery(), username, password);
+                    if (session != null && !string.IsNullOrEmpty(session.CsrfToken))
+                    {
+                        return session;
+                    }
                 }
-            }
-            catch
-            {
-                // Fall through - just show the login screen this time.
+                catch
+                {
+                    // Swallow and retry.
+                }
+
+                if (attempt < 2) System.Threading.Thread.Sleep(600);
             }
 
-            // Restore failed. Do NOT wipe the saved credentials here: a transient network
-            // hiccup at Revit startup would otherwise permanently "forget" the login. Bad
-            // credentials simply fall back to the login screen; the user can Sign Out to clear.
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Small non-secret preferences shared across the add-ins (e.g. the last-used Collection), so a
+    /// selection made in one window is reflected everywhere. Stored as plain text in
+    /// %LocalAppData%\OpenDefinery\settings.dat - nothing sensitive lives here.
+    /// </summary>
+    public static class SharedSettings
+    {
+        private static string Dir =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OpenDefinery");
+
+        private static string LastCollectionPath => Path.Combine(Dir, "last-collection.dat");
+
+        /// <summary>The Collection id last selected by the user, or null if none/invalid.</summary>
+        public static int? LastCollectionId
+        {
+            get
+            {
+                try
+                {
+                    if (!File.Exists(LastCollectionPath)) return null;
+                    var text = File.ReadAllText(LastCollectionPath).Trim();
+                    return int.TryParse(text, out var id) ? (int?)id : null;
+                }
+                catch { return null; }
+            }
+            set
+            {
+                try
+                {
+                    Directory.CreateDirectory(Dir);
+                    if (value.HasValue) File.WriteAllText(LastCollectionPath, value.Value.ToString());
+                    else if (File.Exists(LastCollectionPath)) File.Delete(LastCollectionPath);
+                }
+                catch { /* best effort */ }
+            }
         }
     }
 }

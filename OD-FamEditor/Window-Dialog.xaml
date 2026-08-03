@@ -30,8 +30,12 @@
 
         <TextBlock Grid.Row="0" x:Name="HeadingText" Style="{StaticResource OS2.Text.Heading}" Text="OpenDefinery"/>
 
-        <TextBlock Grid.Row="1" x:Name="MessageText" TextWrapping="Wrap" Margin="0,12,0,0"
-                   Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
+        <StackPanel Grid.Row="1">
+            <TextBlock x:Name="MessageText" TextWrapping="Wrap" Margin="0,12,0,0"
+                       Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
+            <TextBox x:Name="InputBox" Height="34" Margin="0,12,0,0" FontSize="14"
+                     VerticalContentAlignment="Center" Visibility="Collapsed"/>
+        </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
             <Button x:Name="CancelButton" Style="{StaticResource OS2.Button.Flat}"

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Shared add-in UI/session library for the OpenDefinery Revit add-ins. Holds the
+    single sign-in window, the cross-add-in session gate, and the persisted session /
+    settings store, so every add-in authenticates the same way and shares one login.
+    Multi-targets the same runtimes as the add-ins (via Directory.Build.props); a
+    ProjectReference from any add-in resolves to the matching runtime. WPF, no Revit API.
+  -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>OD_Common</RootNamespace>
+    <AssemblyName>OpenDefinery-Common</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <Version>0.4.0</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <FileVersion>0.4.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenDefinery\OpenDefinery.csproj" />
+    <!-- The theme (TripleZeroLabs.Os2) lives in its own repo/solution, sibling to this one. -->
+    <ProjectReference Include="..\..\TripleZeroLabs.Os2\TripleZeroLabs.Os2\TripleZeroLabs.Os2.csproj" />
+  </ItemGroup>
+
+  <!-- DPAPI (ProtectedData): net48 needs the framework reference; net8/10-windows get it inbox. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Security" />
+  </ItemGroup>
+
+</Project>

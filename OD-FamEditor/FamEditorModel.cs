@@ -78,7 +78,9 @@ namespace OD_FamEditor
 
         // What the grid allows editing. Built-in parameters are locked; a value driven by a
         // formula is read-only (Revit computes it).
-        public bool CanEditName => !IsBuiltIn;
+        // Shared parameters take their name from the shared-parameter definition and can't be
+        // renamed in the family; built-ins can't either. Only plain family parameters are renamable.
+        public bool CanEditName => !IsBuiltIn && !IsShared;
         public bool CanEditFormula => !IsBuiltIn;
         public bool CanEditValue => !HasFormula;
         public bool CanEditKind => !IsBuiltIn;
@@ -165,7 +167,7 @@ namespace OD_FamEditor
                     }
                     else
                     {
-                        row.Value = ValueDisplay(type, row.Param);
+                        row.Value = ValueDisplay(doc, type, row.Param);
                     }
                 }
                 else
@@ -187,7 +189,7 @@ namespace OD_FamEditor
         /// length shows as 24.5" or feet-and-fractional-inches with the project's rounding. Text
         /// uses the raw string; integers fall back to the number if no value string exists.
         /// </summary>
-        private static string ValueDisplay(FamilyType type, FamilyParameter fp)
+        private static string ValueDisplay(Document doc, FamilyType type, FamilyParameter fp)
         {
             try
             {
@@ -198,10 +200,55 @@ namespace OD_FamEditor
                     case StorageType.Integer:
                         return type.AsValueString(fp) ?? type.AsInteger(fp)?.ToString() ?? string.Empty;
                     default: // Double / unit-based / ElementId
-                        return type.AsValueString(fp) ?? string.Empty;
+                        // Prefer a unit-symbol'd string (e.g. "1500 mm", "12 m²") even when the
+                        // project's format hides the symbol; fall back to AsValueString.
+                        return FormatWithSymbol(doc, type, fp) ?? type.AsValueString(fp) ?? string.Empty;
                 }
             }
             catch { return string.Empty; }
+        }
+
+        /// <summary>
+        /// Format a numeric parameter value in the project's units WITH the unit's abbreviation
+        /// (the symbol Revit provides), regardless of whether the project's format options show a
+        /// symbol. Returns null for non-measurable specs or on any error, so the caller falls back
+        /// to <see cref="FamilyType.AsValueString"/>.
+        /// </summary>
+        private static string FormatWithSymbol(Document doc, FamilyType type, FamilyParameter fp)
+        {
+            try
+            {
+                var spec = fp.Definition.GetDataType();
+                if (!UnitUtils.IsMeasurableSpec(spec)) return null;
+
+                var dv = type.AsDouble(fp);
+                if (!dv.HasValue) return null;
+
+                var units = doc.GetUnits();
+                var fo = units.GetFormatOptions(spec);
+
+                // Force a unit symbol if the project's format doesn't already carry one.
+                try
+                {
+                    if (fo.CanHaveSymbol())
+                    {
+                        var current = fo.GetSymbolTypeId();
+                        if (current == null || string.IsNullOrEmpty(current.TypeId))
+                        {
+                            foreach (ForgeTypeId sym in fo.GetValidSymbols())
+                            {
+                                if (sym != null && !string.IsNullOrEmpty(sym.TypeId)) { fo.SetSymbolTypeId(sym); break; }
+                            }
+                        }
+                    }
+                }
+                catch { /* keep the project's options as-is */ }
+
+                var fvo = new FormatValueOptions();
+                fvo.SetFormatOptions(fo);
+                return UnitFormatUtils.Format(units, spec, dv.Value, false, fvo);
+            }
+            catch { return null; }
         }
 
         // Natural order so Type 2 sorts before Type 10.

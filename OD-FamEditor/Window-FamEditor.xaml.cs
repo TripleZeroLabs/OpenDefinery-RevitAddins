@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using OD_Common;
 using OpenDefinery;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -128,7 +129,11 @@ namespace OD_FamEditor
             {
                 var collections = Collection.ByCurrentUser(_session) ?? new List<Collection>();
                 CollectionCombo.ItemsSource = collections;
-                if (collections.Count > 0) CollectionCombo.SelectedIndex = 0;
+
+                // Preselect the Collection last used in any add-in.
+                var lastId = SharedSettings.LastCollectionId;
+                var pick = lastId.HasValue ? collections.FirstOrDefault(c => c.Id == lastId.Value) : null;
+                CollectionCombo.SelectedItem = pick ?? collections.FirstOrDefault();
             }
             catch (System.Exception ex)
             {
@@ -138,6 +143,10 @@ namespace OD_FamEditor
 
         private void CollectionCombo_Changed(object sender, SelectionChangedEventArgs e)
         {
+            // Remember the choice so every add-in window preselects the same Collection.
+            var collection = CollectionCombo.SelectedItem as Collection;
+            if (collection != null) SharedSettings.LastCollectionId = collection.Id;
+
             UpdateMembership();
         }
 
@@ -253,8 +262,8 @@ namespace OD_FamEditor
 
             if (!ok) { ShowMessage("Swap Failed", error); return; }
 
-            // Reload the family so the swapped-in parameter and updated formulas show.
-            Load();
+            // Reload just the grid so the swapped-in parameter and updated formulas show.
+            ReloadParams();
             ShowMessage("Swap Complete",
                 string.Format("Swapped \"{0}\" for \"{1}\". Review any dependent formulas.", row.Name, picker.SelectedTarget.Name));
         }
@@ -406,6 +415,54 @@ namespace OD_FamEditor
             try { Clipboard.SetText(text); } catch { }
         }
 
+        /// <summary>Rename a family parameter (family, non-built-in only), then reload the grid.</summary>
+        private void Rename_Click(object sender, RoutedEventArgs e)
+        {
+            var row = (sender as FrameworkElement)?.DataContext as FamParamRow;
+            if (row == null || !row.CanEditName) return;
+
+            var newName = Window_Dialog.Prompt(this, "Rename Parameter",
+                "New name for \"" + row.Name + "\":", row.Name);
+            if (newName == null || newName == row.Name) return;
+
+            string error;
+            if (!FamEditorOps.Rename(_doc, row.Param, newName, out error))
+            {
+                ShowMessage("Rename Failed", error);
+                return;
+            }
+            ReloadParams();
+        }
+
+        /// <summary>
+        /// Reload only the parameter grid — rows, values, membership, and the header count — without
+        /// rebuilding the type sidebar / filters / session, so an edit doesn't flash the whole window.
+        /// Preserves the selected family type and the active filters.
+        /// </summary>
+        private void ReloadParams()
+        {
+            var selectedType = TypesList.SelectedItem as FamTypeItem;
+
+            _rows = FamEditorReader.ReadParams(_doc);
+            RebuildView();
+
+            if (selectedType?.Type != null)
+                FamEditorReader.ApplyTypeValues(_doc, selectedType.Type, _rows);
+
+            UpdateMembership();
+            UpdateHeaderCounts();
+        }
+
+        private void UpdateHeaderCounts()
+        {
+            var typeCount = TypesList.Items.Count;
+            HeaderText.Text = string.Format(
+                "{0} — {1} parameter{2}, {3} type{4}",
+                _doc.Title,
+                _rows.Count, _rows.Count == 1 ? "" : "s",
+                typeCount, typeCount == 1 ? "" : "s");
+        }
+
         // ---------------------------------------------------------------- kind (family <-> shared)
 
         private bool _suppressKind;
@@ -469,8 +526,8 @@ namespace OD_FamEditor
                 return;
             }
 
-            // Success: reload so Kind (and the GUID, swap button, etc.) reflect the new shared parameter.
-            Load();
+            // Success: reload just the grid so Kind (and the GUID, swap button, etc.) reflect the new shared parameter.
+            ReloadParams();
         }
 
         private void RevertKindCombo(ComboBox combo, string kind)
@@ -529,7 +586,7 @@ namespace OD_FamEditor
 
             if (!string.IsNullOrEmpty(warning)) ShowMessage("Binding Changed — Check Formulas", warning);
 
-            Load();
+            ReloadParams();
         }
 
         private void RevertBindingCombo(ComboBox combo, string binding)

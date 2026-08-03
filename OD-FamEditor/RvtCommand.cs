@@ -1,6 +1,7 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using OD_Common;
 using OpenDefinery;
 using System.Windows.Interop;
 
@@ -14,6 +15,10 @@ namespace OD_FamEditor
           ref string message,
           ElementSet elements)
         {
+            // Require sign-in before anything opens; the session is shared across all add-ins.
+            if (SessionGate.EnsureSignedIn(commandData.Application.MainWindowHandle) == null)
+                return Result.Cancelled;
+
             var rvtConnector = new RvtConnector(commandData);
 
             var window = new Window_FamEditor(rvtConnector);

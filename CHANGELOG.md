@@ -5,6 +5,35 @@ All notable changes to **OpenDefinery for Revit** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-08-02
+
+### Added
+- **Shared sign-in** (`OpenDefinery-Common`) — a new shared library with one themed
+  `LoginWindow` and a `SessionGate` that every add-in calls at launch. No add-in
+  window opens until the user is signed in; cancelling aborts the command.
+- **Cross-add-in session** — the DPAPI "Remember me" store moved into the shared
+  library, so a sign-in in one add-in is shared by the others and persists across
+  restarts. Restore now retries briefly to ride out a not-yet-ready network at
+  Revit startup.
+- **Last-used Collection** persists across add-ins and launches — Parameter Manager
+  and the Family Editor (and its Make-Shared modal) preselect it.
+- **Family Editor**: family (non-shared) parameters can be **renamed** (pencil +
+  copy-name buttons appear on hover); values now display in the project's units
+  **with the unit abbreviation** (e.g. `1500 mm`, `12 m²`).
+
+### Changed
+- **Family Editor** f(x) buttons: the idle (no-formula) state uses a new subdued
+  `OS2.Button.Subtle` style; the active (green) state uses `OS2.Button.Success`,
+  whose hover stays legible. Swap / Kind / Binding changes now reload **only the
+  grid** instead of rebuilding the whole window.
+
+### Fixed
+- **Parameter Manager login modal stayed on top of an already-signed-in UI.** The
+  overlay defaults to Visible in XAML (`d:IsHidden` is design-time only) and was
+  only hidden by a manual sign-in, so the restore path left it showing. The
+  restore branch now hides it. This also resolves "Remember me" appearing not to
+  persist — the session was restoring all along; only the modal wasn't dismissed.
+
 ## [0.3.0] - 2026-08-01
 
 ### Added
@@ -70,5 +99,6 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 > Note: 0.2.0 was assigned internally but never released; 0.1.0 goes
 > straight to 0.3.0.
 
+[0.4.0]: https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/releases/tag/v0.4
 [0.3.0]: https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/releases/tag/v0.3.0
 [0.1.0]: https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/releases/tag/v0.1.0

@@ -23,6 +23,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using OD_Common;
 using OD_ParamManager;
 
 namespace OpenDefinery_DesktopApp
@@ -100,6 +101,11 @@ namespace OpenDefinery_DesktopApp
             {
                 Definery = restored;
                 RememberMeCheck.IsChecked = true;
+                // The session was restored (by the add-in gate or Remember me), so the login modal
+                // must be hidden - it defaults to Visible in XAML and is only otherwise hidden by a
+                // manual sign-in, which the restore path skips.
+                OverlayGrid.Visibility = Visibility.Hidden;
+                LoginGrid.Visibility = Visibility.Hidden;
                 LoadData();
             }
             // Otherwise show the login modal.
@@ -193,6 +199,23 @@ namespace OpenDefinery_DesktopApp
                 Definery.AllCollections = new List<Collection>();
                 Definery.AllCollections.AddRange(Definery.MyCollections);
                 Definery.AllCollections.AddRange(Definery.PublishedCollections);
+
+                // Preselect the Collection last used in any add-in (shared across windows/launches).
+                // Setting SelectedItem triggers the list's selection handler, which loads its params.
+                var lastCollectionId = SharedSettings.LastCollectionId;
+                if (lastCollectionId.HasValue)
+                {
+                    var mine = Definery.MyCollections?.FirstOrDefault(c => c.Id == lastCollectionId.Value);
+                    if (mine != null)
+                    {
+                        CollectionsList.SelectedItem = mine;
+                    }
+                    else
+                    {
+                        var published = Definery.PublishedCollections?.FirstOrDefault(c => c.Id == lastCollectionId.Value);
+                        if (published != null) CollectionsList_Published.SelectedItem = published;
+                    }
+                }
 
                 // Update the main Pager object
                 Pager.CurrentPage = 0;
@@ -1407,6 +1430,9 @@ namespace OpenDefinery_DesktopApp
             {
                 // Instantiate the selected item as a Collection object and assign it to the MainWindow for future reference
                 SelectedCollection = listBox.SelectedItem as Collection;
+
+                // Remember the choice so every add-in window preselects the same Collection.
+                if (SelectedCollection != null) SharedSettings.LastCollectionId = SelectedCollection.Id;
 
                 // Get the parameters
                 Definery.Parameters = DefineryParameter.ByCollection(Definery, SelectedCollection, Pager.ItemsPerPage, 0, true

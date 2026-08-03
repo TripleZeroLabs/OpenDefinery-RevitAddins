@@ -2,6 +2,7 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using OD_Common;
 using OpenDefinery;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,10 @@ namespace OD_ParamManager
           ref string message,
           ElementSet elements)
         {
+            // Require sign-in before anything opens; the session is shared across all add-ins.
+            if (SessionGate.EnsureSignedIn(commandData.Application.MainWindowHandle) == null)
+                return Result.Cancelled;
+
             // Instantiate the connection to the Revit Model
             var rvtConnector = new RvtConnector(commandData);
 

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenDefinery\OpenDefinery.csproj" />
+    <ProjectReference Include="..\OD-Common\OD-Common.csproj" />
     <!-- The theme (TripleZeroLabs.Os2) lives in its own repo/solution, sibling to this one. -->
     <ProjectReference Include="..\..\TripleZeroLabs.Os2\TripleZeroLabs.Os2\TripleZeroLabs.Os2.csproj" />
   </ItemGroup>
