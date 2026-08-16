@@ -14,6 +14,14 @@ namespace OD_FamEditor
         public string Name { get; set; }
     }
 
+    /// <summary>One selectable value for a "Family Type" parameter (a loaded nested family type).</summary>
+    public class FamilyTypeChoice
+    {
+        public ElementId Id { get; set; }
+        public string Name { get; set; }
+        public override string ToString() => Name;
+    }
+
     /// <summary>
     /// One parameter row in the editor grid. The value is per-selected-type and updates when the
     /// user picks a different type in the sidebar, so it raises change notifications.
@@ -40,6 +48,18 @@ namespace OD_FamEditor
         public bool IsBuiltIn { get; set; }
         public bool IsYesNo { get; set; }
         public Guid Guid { get; set; }
+
+        // "Family Type" parameter: the value is a loaded nested family type (an ElementId), shown as
+        // a dropdown filtered to the parameter's Model Category (like Revit's own Family Types editor).
+        public bool IsFamilyType { get; set; }
+        public List<FamilyTypeChoice> FamilyTypeChoices { get; set; }
+
+        private ElementId _familyTypeValue;
+        public ElementId FamilyTypeValue
+        {
+            get => _familyTypeValue;
+            set { if (!Equals(_familyTypeValue, value)) { _familyTypeValue = value; Raise(nameof(FamilyTypeValue)); } }
+        }
 
         // Tri-state value for Yes/No parameters: null = unset (Revit shows a greyed, still-tickable
         // box), true = Yes, false = No.
@@ -133,6 +153,22 @@ namespace OD_FamEditor
 
                 var dataType = RvtCompat.GetDataTypeToken(def);
 
+                // "Family Type" parameters store an ElementId to a loaded nested family type. Detect
+                // them (excluding the other ElementId specs) and read the values Revit considers valid
+                // for the parameter's category - GetFamilyTypeParameterValues does the category filter.
+                var isFamilyType = false;
+                List<FamilyTypeChoice> familyTypeChoices = null;
+                if (fp.StorageType == StorageType.ElementId &&
+                    dataType != "MATERIAL" && dataType != "IMAGE" && dataType != "LOADCLASSIFICATION")
+                {
+                    try
+                    {
+                        familyTypeChoices = ReadFamilyTypeChoices(doc, fp);
+                        isFamilyType = true;
+                    }
+                    catch { isFamilyType = false; }
+                }
+
                 rows.Add(new FamParamRow
                 {
                     Param = fp,
@@ -143,6 +179,8 @@ namespace OD_FamEditor
                     IsShared = fp.IsShared,
                     IsBuiltIn = isBuiltIn,
                     IsYesNo = fp.StorageType == StorageType.Integer && RvtCompat.IsYesNo(def),
+                    IsFamilyType = isFamilyType,
+                    FamilyTypeChoices = familyTypeChoices,
                     Kind = isBuiltIn ? "Built-in" : (fp.IsShared ? "Shared" : "Family"),
                     Guid = fp.IsShared ? fp.GUID : Guid.Empty,
                     Formula = fp.Formula
@@ -165,6 +203,13 @@ namespace OD_FamEditor
                         row.BoolValue = iv.HasValue ? (bool?)(iv.Value != 0) : null;
                         row.Value = row.BoolValue == true ? "Yes" : row.BoolValue == false ? "No" : string.Empty;
                     }
+                    else if (row.IsFamilyType)
+                    {
+                        var id = type.AsElementId(row.Param);
+                        var valid = id != null && id != ElementId.InvalidElementId;
+                        row.FamilyTypeValue = valid ? id : null;
+                        row.Value = valid ? FamilyTypeName(doc, id) : string.Empty;
+                    }
                     else
                     {
                         row.Value = ValueDisplay(doc, type, row.Param);
@@ -173,6 +218,7 @@ namespace OD_FamEditor
                 else
                 {
                     row.BoolValue = null;
+                    row.FamilyTypeValue = null;
                     row.Value = string.Empty;
                 }
             }
@@ -182,6 +228,60 @@ namespace OD_FamEditor
         {
             try { return RvtCompat.GetParamGroupLabel(def); }
             catch { return "Other"; }
+        }
+
+        /// <summary>
+        /// The warnings currently active in the document (Revit's "Review Warnings" list) - used to
+        /// surface issues for the family's current type, including on first open.
+        /// </summary>
+        public static List<string> GetActiveWarnings(Document doc)
+        {
+            var list = new List<string>();
+            if (doc == null) return list;
+
+            try
+            {
+                foreach (var w in doc.GetWarnings())
+                {
+                    var text = w.GetDescriptionText();
+                    if (!string.IsNullOrWhiteSpace(text)) list.Add(text);
+                }
+            }
+            catch { /* GetWarnings can throw in odd document states - treat as none */ }
+
+            return list.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// The valid family types for a "Family Type" parameter, as selectable choices. Revit's
+        /// <c>Family.GetFamilyTypeParameterValues</c> returns exactly the loaded nested family types
+        /// whose category matches the parameter's definition, so no manual category filtering is
+        /// needed. Throws for parameters that aren't family-type parameters (used as the detector).
+        /// </summary>
+        private static List<FamilyTypeChoice> ReadFamilyTypeChoices(Document doc, FamilyParameter fp)
+        {
+            var choices = new List<FamilyTypeChoice>();
+
+            var ids = doc.OwnerFamily.GetFamilyTypeParameterValues(fp.Id);
+            foreach (var id in ids)
+            {
+                choices.Add(new FamilyTypeChoice { Id = id, Name = FamilyTypeName(doc, id) });
+            }
+
+            return choices.OrderBy(c => c.Name, Comparer<string>.Create(NaturalCompare)).ToList();
+        }
+
+        /// <summary>Display name for a family-type value: "Family : Type" for a symbol, else the element name.</summary>
+        private static string FamilyTypeName(Document doc, ElementId id)
+        {
+            if (id == null || id == ElementId.InvalidElementId) return string.Empty;
+
+            var el = doc.GetElement(id);
+            if (el is FamilySymbol sym)
+            {
+                return string.IsNullOrEmpty(sym.FamilyName) ? sym.Name : sym.FamilyName + " : " + sym.Name;
+            }
+            return el?.Name ?? string.Empty;
         }
 
         /// <summary>
@@ -280,6 +380,39 @@ namespace OD_FamEditor
         }
     }
 
+    /// <summary>
+    /// Captures the warnings/errors Revit posts while a transaction commits — e.g. broken
+    /// constraints when switching family types — so the add-in can surface them instead of (or as
+    /// well as) Revit's own failure dialog. Warnings are recorded and deleted so Revit's popup is
+    /// suppressed; if any errors are posted the transaction is rolled back to keep the family valid.
+    /// </summary>
+    public class FamWarningCollector : IFailuresPreprocessor
+    {
+        public List<string> Warnings { get; } = new List<string>();
+        public List<string> Errors { get; } = new List<string>();
+
+        public FailureProcessingResult PreprocessFailures(FailuresAccessor a)
+        {
+            foreach (var f in a.GetFailureMessages())
+            {
+                var text = f.GetDescriptionText();
+                if (f.GetSeverity() == FailureSeverity.Error)
+                {
+                    if (!string.IsNullOrWhiteSpace(text)) Errors.Add(text);
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(text)) Warnings.Add(text);
+                    a.DeleteWarning(f);
+                }
+            }
+
+            return Errors.Count > 0
+                ? FailureProcessingResult.ProceedWithRollBack
+                : FailureProcessingResult.Continue;
+        }
+    }
+
     /// <summary>Transaction-backed edits to the family. Each is its own Revit undo step.</summary>
     public static class FamEditorOps
     {
@@ -352,6 +485,70 @@ namespace OD_FamEditor
                             break;
                     }
 
+                    t.Commit();
+                }
+                return true;
+            }
+            catch (Exception ex) { error = ex.Message; return false; }
+        }
+
+        /// <summary>
+        /// Make the given family type the family's current type, so the Revit view shows it.
+        /// This is a model change (undoable). No-ops when it's already current. Any warnings Revit
+        /// posts while regenerating for the new type (e.g. "Constraints are not satisfied") are
+        /// captured into <paramref name="warnings"/> and suppressed from Revit's own dialog.
+        /// </summary>
+        public static bool SetCurrentType(Document doc, FamilyType type, out string error, out List<string> warnings)
+        {
+            error = null;
+            warnings = new List<string>();
+            if (type == null) return true;
+
+            try
+            {
+                var fm = doc.FamilyManager;
+                if (fm.CurrentType != null && fm.CurrentType.Name == type.Name) return true;
+
+                var collector = new FamWarningCollector();
+                using (var t = new Transaction(doc, "Switch Family Type"))
+                {
+                    t.Start();
+                    fm.CurrentType = type;
+
+                    var opts = t.GetFailureHandlingOptions();
+                    opts.SetFailuresPreprocessor(collector);
+                    opts.SetClearAfterRollback(true);
+                    t.SetFailureHandlingOptions(opts);
+
+                    var status = t.Commit();
+                    warnings = collector.Warnings.Distinct().ToList();
+
+                    if (status != TransactionStatus.Committed)
+                    {
+                        error = collector.Errors.Count > 0
+                            ? string.Join("\n", collector.Errors.Distinct())
+                            : "Revit could not switch to this type.";
+                        return false;
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex) { error = ex.Message; return false; }
+        }
+
+        /// <summary>Set a "Family Type" parameter to a loaded nested family type (by ElementId).</summary>
+        public static bool SetFamilyType(Document doc, FamilyType type, FamilyParameter fp, ElementId id, out string error)
+        {
+            error = null;
+            try
+            {
+                using (var t = new Transaction(doc, "Set Family Type"))
+                {
+                    t.Start();
+                    var fm = doc.FamilyManager;
+                    var target = type ?? fm.CurrentType;
+                    if (target != null) fm.CurrentType = target;
+                    fm.Set(fp, id);
                     t.Commit();
                 }
                 return true;

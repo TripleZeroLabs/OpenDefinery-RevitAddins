@@ -125,6 +125,9 @@ namespace OpenDefinery_DesktopApp
         public MainWindow(RvtConnector rvtConnector) : this()
         {
             RvtConnector = rvtConnector;
+
+            // Show the correct add button for what's open in Revit (family vs project).
+            UpdateAddButtons();
         }
 
         /// <summary>
@@ -2050,11 +2053,19 @@ namespace OpenDefinery_DesktopApp
                         item.Visibility = Visibility.Visible;
                     }
 
-                    // "Add To Family" is available for any parameter, but only when a Revit
-                    // family connection exists (hidden when the manager runs standalone).
+                    // "Add To Family"/"Add To Project" mirror the open Revit document: family shows
+                    // one, project the other, and both hide when the manager runs standalone.
+                    var docIsFamily = RvtConnector != null && RvtConnector.Document != null && RvtConnector.Document.IsFamilyDocument;
+                    var docIsProject = RvtConnector != null && RvtConnector.Document != null && !RvtConnector.Document.IsFamilyDocument;
+
                     if (item.Header.ToString() == "Add To Family")
                     {
-                        item.Visibility = RvtConnector != null ? Visibility.Visible : Visibility.Collapsed;
+                        item.Visibility = docIsFamily ? Visibility.Visible : Visibility.Collapsed;
+                    }
+
+                    if (item.Header.ToString() == "Add To Project")
+                    {
+                        item.Visibility = docIsProject ? Visibility.Visible : Visibility.Collapsed;
                     }
 
                     // Toggle UI when note viewing a Collection
@@ -2197,10 +2208,34 @@ namespace OpenDefinery_DesktopApp
             OpenAddToFamily();
         }
 
+        private void AddToProjectButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenAddToProject();
+        }
+
+        /// <summary>
+        /// Show "Add to Family" only when a family is open and "Add to Project" only when a project
+        /// is open; hide both when the manager runs without a Revit connection.
+        /// </summary>
+        private void UpdateAddButtons()
+        {
+            var hasRevit = RvtConnector != null && RvtConnector.Document != null;
+            var isFamily = hasRevit && RvtConnector.Document.IsFamilyDocument;
+
+            AddToFamilyButton.Visibility = isFamily ? Visibility.Visible : Visibility.Collapsed;
+            AddToProjectButton.Visibility = (hasRevit && !isFamily) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         /// <summary>Context-menu item: add the selected parameters to the current Revit family.</summary>
         private void ParamMenuAddToFamily_Click(object sender, RoutedEventArgs e)
         {
             OpenAddToFamily();
+        }
+
+        /// <summary>Context-menu item: add the selected parameters to the current Revit project.</summary>
+        private void ParamMenuAddToProject_Click(object sender, RoutedEventArgs e)
+        {
+            OpenAddToProject();
         }
 
         /// <summary>Tool-row "Edit Param": opens the same edit form as the right-click Edit item.</summary>
@@ -2249,6 +2284,38 @@ namespace OpenDefinery_DesktopApp
             }
 
             var window = new Window_AddToFamily(RvtConnector, selected) { Owner = this };
+            window.ShowDialog();
+        }
+
+        /// <summary>
+        /// Open the Add-to-Project window for the current selection, letting the user pick a binding,
+        /// parameter group, and model category per parameter before adding them to the active project.
+        /// </summary>
+        private void OpenAddToProject()
+        {
+            if (RvtConnector == null || RvtConnector.Document == null)
+            {
+                Window_Message.Show(this, "No Revit Project",
+                    "Open a Revit project in Revit to add project parameters to it.");
+                return;
+            }
+
+            if (RvtConnector.Document.IsFamilyDocument)
+            {
+                Window_Message.Show(this, "Project Required",
+                    "A family is open. Project parameters can only be added to a project document.");
+                return;
+            }
+
+            var selected = DataGridParameters.SelectedItems.Cast<DefineryParameter>().ToList();
+            if (selected.Count == 0)
+            {
+                Window_Message.Show(this, "Nothing Selected",
+                    "Select one or more parameters to add to the project.");
+                return;
+            }
+
+            var window = new Window_AddToProject(RvtConnector, selected) { Owner = this };
             window.ShowDialog();
         }
 

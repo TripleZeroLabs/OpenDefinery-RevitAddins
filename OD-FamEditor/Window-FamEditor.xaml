@@ -22,6 +22,8 @@
             <Style TargetType="DataGridCell" BasedOn="{StaticResource {x:Type DataGridCell}}">
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <!-- More horizontal breathing room between columns (theme base is 16,12). -->
+                <Setter Property="Padding" Value="26,12"/>
                 <Style.Triggers>
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="Background" Value="Transparent"/>
@@ -71,8 +73,25 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+
+                <!-- Warning banner: shows Revit's failures for the selected family type (constraints, etc.) -->
+                <Border x:Name="WarningBanner" Grid.Row="2" Style="{StaticResource OS2.Banner.Warning}"
+                        Margin="16,0,16,8" Visibility="Collapsed">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="WarningBannerText" Grid.Column="0" TextWrapping="Wrap"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource OS2.Brush.TextPrimary}"/>
+                        <Button x:Name="WarningBannerDismiss" Grid.Column="1" Style="{StaticResource OS2.Button.Flat}"
+                                Content="Dismiss" Margin="12,0,0,0" VerticalAlignment="Top"
+                                Click="WarningBannerDismiss_Click"/>
+                    </Grid>
+                </Border>
 
                 <!-- Toolbar: count + Collection to validate/swap against -->
                 <Border Grid.Row="0" Background="{DynamicResource OS2.Brush.Surface}"
@@ -128,7 +147,7 @@
                 </Grid>
 
                 <!-- Parameter grid, grouped by parameter group (collapsible) -->
-                <DataGrid x:Name="ParamGrid" Grid.Row="2" Margin="16,0,16,12"
+                <DataGrid x:Name="ParamGrid" Grid.Row="3" Margin="16,0,16,12"
                           AutoGenerateColumns="False" IsReadOnly="True"
                           SelectionUnit="FullRow" HeadersVisibility="Column"
                           CanUserSortColumns="False">
@@ -160,7 +179,7 @@
                     </DataGrid.GroupStyle>
                     <DataGrid.Columns>
                         <!-- Collection status: green check (in collection) / blue family / grey R / + to add -->
-                        <DataGridTemplateColumn Header="Coll." IsReadOnly="True" Width="46">
+                        <DataGridTemplateColumn Header="Coll." IsReadOnly="True" Width="72">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid HorizontalAlignment="Center">
@@ -293,6 +312,28 @@
                                             </CheckBox.Style>
                                         </CheckBox>
 
+                                        <!-- Family Type parameter: dropdown of loaded nested family types (category-filtered) -->
+                                        <ComboBox Grid.Column="0" Margin="0,2" VerticalAlignment="Center"
+                                                  ItemsSource="{Binding FamilyTypeChoices}" DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id" SelectedValue="{Binding FamilyTypeValue, Mode=OneWay}"
+                                                  SelectionChanged="FamilyType_Changed"
+                                                  ToolTip="Select a loaded nested family type">
+                                            <ComboBox.Style>
+                                                <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsFamilyType}" Value="True"/>
+                                                                <Condition Binding="{Binding HasFormula}" Value="False"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ComboBox.Style>
+                                        </ComboBox>
+
                                         <TextBox Grid.Column="0" Text="{Binding Value, Mode=OneWay}"
                                                  LostKeyboardFocus="Value_Committed" VerticalContentAlignment="Center">
                                             <TextBox.Style>
@@ -306,6 +347,7 @@
                                                         <MultiDataTrigger>
                                                             <MultiDataTrigger.Conditions>
                                                                 <Condition Binding="{Binding IsYesNo}" Value="False"/>
+                                                                <Condition Binding="{Binding IsFamilyType}" Value="False"/>
                                                                 <Condition Binding="{Binding HasFormula}" Value="False"/>
                                                             </MultiDataTrigger.Conditions>
                                                             <Setter Property="Visibility" Value="Visible"/>

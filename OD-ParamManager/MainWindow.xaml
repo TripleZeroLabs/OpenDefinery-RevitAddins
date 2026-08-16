@@ -62,6 +62,7 @@
 
             <ContextMenu x:Key="ParamContextMenu">
                 <MenuItem x:Name="ParamMenuAddToFamily" Header="Add To Family" Click="ParamMenuAddToFamily_Click" />
+                <MenuItem x:Name="ParamMenuAddToProject" Header="Add To Project" Click="ParamMenuAddToProject_Click" />
                 <MenuItem x:Name="ParamMenuAdd" Header="Add To Collection" Click="ParamMenuAdd_Click" />
                 <MenuItem x:Name="ParamMenuFork" Header="Fork" Click="ParamMenuFork_Click" />
                 <MenuItem x:Name="ParamMenuEdit" Header="Edit" Click="ParamMenuEdit_Click" />
@@ -156,6 +157,7 @@
                             <!-- Left: parameter actions (operate on the selected parameters) -->
                             <StackPanel Grid.Column="0" Orientation="Horizontal">
                                 <Button x:Name="AddToFamilyButton" Click="AddToFamilyButton_Click" Margin="10,8,0,8" ToolTip="Add the selected parameters to the current Revit family" Content="Add to Family"/>
+                                <Button x:Name="AddToProjectButton" Click="AddToProjectButton_Click" Margin="10,8,0,8" ToolTip="Add the selected parameters to the current Revit project as project parameters" Content="Add to Project" Visibility="Collapsed"/>
                                 <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="EditParamButton" Click="EditParamButton_Click" Margin="8,8,0,8" ToolTip="Edit the selected parameter" Content="Edit Param"/>
                                 <Button Style="{StaticResource OS2.Button.Secondary}" x:Name="RemoveParamButton" Click="RemoveParamButton_Click" Margin="8,8,0,8" ToolTip="Remove the selected parameters from this Collection" Content="Remove"/>
                             </StackPanel>

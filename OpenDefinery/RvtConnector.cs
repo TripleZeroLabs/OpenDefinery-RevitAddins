@@ -19,6 +19,9 @@ namespace OpenDefinery
         public FilteredElementCollector FamilyInstances { get; set; }
         public Document Document { get; set; }
 
+        /// <summary>The active UI document - used to refresh the Revit view after model changes.</summary>
+        public UIDocument UIDocument { get; set; }
+
         public RvtConnector(ExternalCommandData commandData)
         {
             UIApplication uiapp = commandData.Application;
@@ -26,6 +29,7 @@ namespace OpenDefinery
 
             App = uiapp.Application;
             Document = uidoc.Document;
+            UIDocument = uidoc;
         }
 
         /// <summary>
@@ -486,6 +490,170 @@ namespace OpenDefinery
                                         Name = extDef.Name,
                                         Guid = extDef.GUID.ToString(),
                                         Outcome = ParamLoadOutcome.Added
+                                    });
+                                }
+                                catch (Exception ex)
+                                {
+                                    LastLoadResults.Add(new ParamLoadResult
+                                    {
+                                        Name = extDef.Name,
+                                        Guid = extDef.GUID.ToString(),
+                                        Outcome = ParamLoadOutcome.Failed,
+                                        Message = ex.Message
+                                    });
+                                }
+                            }
+                        }
+
+                        t.Commit();
+                    }
+                }
+
+                this.App.SharedParametersFilename = previousParamTxtFile;
+            }
+            finally
+            {
+                try { File.Delete(tempFile); } catch { /* temp file cleanup is best-effort */ }
+            }
+
+            return output;
+        }
+
+        /// <summary>
+        /// Add OpenDefinery parameters to the active PROJECT as project parameters, each bound to a
+        /// model category under its own parameter group and instance/type binding. Records a
+        /// per-parameter outcome in <see cref="LastLoadResults"/>. Project documents only - a family
+        /// document reports every request as failed (project parameters are a project concept).
+        /// </summary>
+        public List<ElementId> CreateProjectParams(List<ProjectParamRequest> requests)
+        {
+            var output = new List<ElementId>();
+            LastLoadResults = new List<ParamLoadResult>();
+
+            if (requests == null || requests.Count == 0) return output;
+
+            if (Document == null || Document.IsFamilyDocument)
+            {
+                foreach (var r in requests)
+                {
+                    LastLoadResults.Add(new ParamLoadResult
+                    {
+                        Name = r.Param.Name,
+                        Guid = r.Param.Guid.ToString(),
+                        Outcome = ParamLoadOutcome.Failed,
+                        Message = "Project parameters require an open project document."
+                    });
+                }
+
+                return output;
+            }
+
+            var paramTable = DefineryParameter.CreateParamTable(requests.Select(r => r.Param).ToList());
+            var tempFile = System.IO.Path.GetTempPath() +
+                "OpenDefineryTempParameters_" + Guid.NewGuid().ToString() + ".txt";
+            File.WriteAllText(tempFile, paramTable);
+
+            var byGuid = requests
+                .GroupBy(r => r.Param.Guid)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            var previousParamTxtFile = this.App.SharedParametersFilename;
+            this.App.SharedParametersFilename = tempFile;
+
+            try
+            {
+                DefinitionFile spFile = null;
+                try
+                {
+                    spFile = this.App.OpenSharedParameterFile();
+                }
+                catch (Exception ex)
+                {
+                    TaskDialog.Show("Error opening shared parameter file",
+                        "There was an error opening the shared parameter text file.\n\n" + ex);
+                }
+
+                if (spFile != null)
+                {
+                    var bindings = this.Document.ParameterBindings;
+
+                    using (Transaction t = new Transaction(this.Document, "Add Project Parameters"))
+                    {
+                        t.Start();
+
+                        foreach (DefinitionGroup dg in spFile.Groups)
+                        {
+                            foreach (ExternalDefinition extDef in dg.Definitions.Cast<ExternalDefinition>())
+                            {
+                                ProjectParamRequest req;
+                                if (!byGuid.TryGetValue(extDef.GUID, out req)) continue;
+
+                                if (req.Categories == null || req.Categories.Count == 0)
+                                {
+                                    LastLoadResults.Add(new ParamLoadResult
+                                    {
+                                        Name = extDef.Name,
+                                        Guid = extDef.GUID.ToString(),
+                                        Outcome = ParamLoadOutcome.Failed,
+                                        Message = "No model category selected."
+                                    });
+                                    continue;
+                                }
+
+                                // Revit silently accepts a Type binding for instance-only categories
+                                // (e.g. Project Information) but the binding never takes effect - reject
+                                // it up front rather than create a broken binding.
+                                if (!req.IsInstance)
+                                {
+                                    var badCats = req.Categories.Where(c => !RvtCompat.AllowsTypeBinding(c)).ToList();
+                                    if (badCats.Count > 0)
+                                    {
+                                        LastLoadResults.Add(new ParamLoadResult
+                                        {
+                                            Name = extDef.Name,
+                                            Guid = extDef.GUID.ToString(),
+                                            Outcome = ParamLoadOutcome.Failed,
+                                            Message = string.Format("{0} supports Instance binding only - use Instance.",
+                                                string.Join(", ", badCats.Select(c => "\"" + c.Name + "\"")))
+                                        });
+                                        continue;
+                                    }
+                                }
+
+                                if (bindings.Contains(extDef))
+                                {
+                                    LastLoadResults.Add(new ParamLoadResult
+                                    {
+                                        Name = extDef.Name,
+                                        Guid = extDef.GUID.ToString(),
+                                        Outcome = ParamLoadOutcome.AlreadyExists,
+                                        Message = "Already a project parameter."
+                                    });
+                                    continue;
+                                }
+
+                                try
+                                {
+                                    var catSet = this.App.Create.NewCategorySet();
+                                    foreach (var c in req.Categories)
+                                    {
+                                        if (c != null) catSet.Insert(c);
+                                    }
+
+                                    Binding binding = req.IsInstance
+                                        ? (Binding)this.App.Create.NewInstanceBinding(catSet)
+                                        : (Binding)this.App.Create.NewTypeBinding(catSet);
+
+                                    var ok = RvtCompat.InsertProjectBinding(this.Document, extDef, binding, req.Group);
+
+                                    LastLoadResults.Add(new ParamLoadResult
+                                    {
+                                        Name = extDef.Name,
+                                        Guid = extDef.GUID.ToString(),
+                                        Outcome = ok ? ParamLoadOutcome.Added : ParamLoadOutcome.Failed,
+                                        Message = ok
+                                            ? string.Join(", ", req.Categories.Where(c => c != null).Select(c => c.Name))
+                                            : "Revit rejected the binding."
                                     });
                                 }
                                 catch (Exception ex)

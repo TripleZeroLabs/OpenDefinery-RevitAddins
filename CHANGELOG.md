@@ -5,6 +5,33 @@ All notable changes to **OpenDefinery for Revit** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-08-02
+
+### Added
+- **Add to Project** (Parameter Manager) — when a project is open, an "Add to Project"
+  button/menu replaces "Add to Family". It adds project parameters in bulk with a
+  per-row **binding (Instance/Type)**, **parameter group**, and **model category**
+  selection. Categories are chosen from a searchable checklist and each parameter can
+  bind to **multiple** model categories. Multi-select assignment is preserved: change
+  binding, group, or categories on any row in a multi-row selection and it applies to
+  all selected rows.
+- **Binding/category validation** — Type binding on a category that only supports
+  Instance (e.g. Project Information) is caught with an inline warning and blocked with
+  a clear message, since Revit's API silently accepts but ignores such bindings. The
+  connector also refuses them defensively.
+- **Family Type parameter dropdown** (Family Editor) — parameters whose type is
+  "Family Type" now show a dropdown of the loaded nested family types, filtered to the
+  parameter's model category (via `Family.GetFamilyTypeParameterValues`), with read/select/write.
+- **Warning capture on type switch** (Family Editor) — switching family types now
+  captures Revit's constraint/failure warnings and shows them in a themed banner,
+  including for the family's current type on first open.
+
+### Changed
+- **Selecting a family type updates the Revit view** — the sidebar selection sets the
+  family's current type and refreshes the active view.
+- Family Editor: the Family-Type dropdown uses the OS2 theme; more horizontal padding
+  between grid columns.
+
 ## [0.4.0] - 2026-08-02
 
 ### Added
@@ -99,6 +126,7 @@ and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 > Note: 0.2.0 was assigned internally but never released; 0.1.0 goes
 > straight to 0.3.0.
 
+[0.5.0]: https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/releases/tag/v0.5
 [0.4.0]: https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/releases/tag/v0.4
 [0.3.0]: https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/releases/tag/v0.3.0
 [0.1.0]: https://github.com/TripleZeroLabs/OpenDefinery-RevitAddins/releases/tag/v0.1.0

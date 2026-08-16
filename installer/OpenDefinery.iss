@@ -1,5 +1,5 @@
 #define AppName "OpenDefinery for Revit"
-#define AppVersion "0.4.0"
+#define AppVersion "0.5.0"
 #define AppPublisher "Triple Zero Labs, LLC"
 #define SrcRoot ".."
 

@@ -1,0 +1,139 @@
+<Window x:Class="OD_ParamManager.Window_AddToProject"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OD_ParamManager"
+        mc:Ignorable="d"
+        Title="Add Parameters to Project"
+        FontFamily="Segoe UI"
+        FontSize="13"
+        Background="{DynamicResource OS2.Brush.Background}"
+        Width="960" Height="580"
+        MinWidth="760" MinHeight="420"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/TripleZeroLabs.Os2;component/Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Explanatory header -->
+        <Border Grid.Row="0" Background="{DynamicResource OS2.Brush.Surface}"
+                BorderBrush="{DynamicResource OS2.Brush.Border}" BorderThickness="0,0,0,1" Padding="16,12">
+            <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource OS2.Brush.TextSecondary}"
+                       Text="Choose a binding, parameter group, and model category for each parameter, then add them to the current project as project parameters. Select multiple rows and change a dropdown to apply it to all selected rows."/>
+        </Border>
+
+        <!-- Per-parameter grid -->
+        <DataGrid x:Name="DataGrid_Rows"
+                  Grid.Row="1"
+                  Margin="16,12"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionUnit="FullRow"
+                  SelectionMode="Extended"
+                  HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Parameter" Width="*" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,4">
+                                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding Guid}" FontFamily="Consolas" FontSize="11">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.TextSecondary}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Value="True"
+                                                             Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
+                                                    <Setter Property="Foreground" Value="{DynamicResource OS2.Brush.TextOnPrimarySubtle}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <!-- Validation warning (e.g. Type binding not allowed for the chosen category) -->
+                                <TextBlock Text="{Binding Warning}" TextWrapping="Wrap" FontSize="11" Margin="0,3,0,0"
+                                           FontWeight="SemiBold" Foreground="{DynamicResource OS2.Brush.Danger}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasWarning}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Binding" Width="130" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox Margin="4" VerticalAlignment="Center"
+                                      ItemsSource="{Binding DataContext.BindingOptions, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                      SelectedItem="{Binding Binding, Mode=TwoWay}"
+                                      SelectionChanged="BindingCombo_SelectionChanged"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Model Categories" Width="240" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Margin="4" HorizontalContentAlignment="Left"
+                                    Style="{StaticResource OS2.Button.Subtle}"
+                                    Content="{Binding CategoriesSummary}"
+                                    Click="CategoryButton_Click"
+                                    ToolTip="Choose the model categories this project parameter binds to"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="Parameter Group" Width="220" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox Margin="4" VerticalAlignment="Center"
+                                      ItemsSource="{Binding DataContext.GroupOptions, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                      DisplayMemberPath="Label"
+                                      SelectedItem="{Binding Group, Mode=TwoWay}"
+                                      SelectionChanged="GroupCombo_SelectionChanged"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Footer actions -->
+        <Border Grid.Row="2" Background="{DynamicResource OS2.Brush.Surface}"
+                BorderBrush="{DynamicResource OS2.Brush.Border}" BorderThickness="0,1,0,0" Padding="16,12">
+            <Grid>
+                <TextBlock x:Name="TargetText" VerticalAlignment="Center"
+                           Foreground="{DynamicResource OS2.Brush.TextSecondary}"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="CancelButton" Style="{StaticResource OS2.Button.Flat}"
+                            Content="Cancel" Padding="18,0" Click="CancelButton_Click"/>
+                    <Button x:Name="AddButton" Content="Add to Project" Margin="10,0,0,0" Padding="22,0"
+                            Click="AddButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

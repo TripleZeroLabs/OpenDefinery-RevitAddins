@@ -305,7 +305,53 @@ namespace OD_FamEditor
         private void TypesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var item = TypesList.SelectedItem as FamTypeItem;
+
+            // Make the selection the family's current type so the Revit view updates to match, and
+            // surface any warnings Revit posts for that type (broken constraints, etc.).
+            if (item?.Type != null)
+            {
+                string error; List<string> warnings;
+                if (FamEditorOps.SetCurrentType(_doc, item.Type, out error, out warnings))
+                {
+                    try { _connector?.UIDocument?.RefreshActiveView(); } catch { }
+
+                    // When the switch was a no-op (the type was already current, e.g. on first open),
+                    // the transaction posts nothing - fall back to the document's active warnings so
+                    // the initially-selected type is covered too.
+                    if (warnings == null || warnings.Count == 0)
+                        warnings = FamEditorReader.GetActiveWarnings(_doc);
+
+                    ShowTypeWarnings(item.Type.Name, warnings);
+                }
+                else
+                {
+                    ShowTypeWarnings(null, null);
+                    ShowMessage("Could Not Switch Type", error);
+                }
+            }
+
             FamEditorReader.ApplyTypeValues(_doc, item?.Type, _rows);
+        }
+
+        /// <summary>Show (or clear) the warning banner for the selected family type's Revit warnings.</summary>
+        private void ShowTypeWarnings(string typeName, List<string> warnings)
+        {
+            if (warnings == null || warnings.Count == 0)
+            {
+                WarningBanner.Visibility = System.Windows.Visibility.Collapsed;
+                WarningBannerText.Text = string.Empty;
+                return;
+            }
+
+            var header = string.Format("\"{0}\" has {1} warning{2}:",
+                typeName, warnings.Count, warnings.Count == 1 ? "" : "s");
+            WarningBannerText.Text = header + "\n• " + string.Join("\n• ", warnings);
+            WarningBanner.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void WarningBannerDismiss_Click(object sender, RoutedEventArgs e)
+        {
+            WarningBanner.Visibility = System.Windows.Visibility.Collapsed;
         }
 
         // ---------------------------------------------------------------- filtering
@@ -383,6 +429,27 @@ namespace OD_FamEditor
 
             string error;
             if (!FamEditorOps.SetYesNo(_doc, CurrentType, row.Param, row.BoolValue, out error))
+            {
+                ShowMessage("Edit Failed", error);
+            }
+            RefreshDynamic();
+        }
+
+        /// <summary>Commit a Family Type dropdown change (select a loaded nested family type).</summary>
+        private void FamilyType_Changed(object sender, SelectionChangedEventArgs e)
+        {
+            var combo = sender as ComboBox;
+            var row = combo?.DataContext as FamParamRow;
+            if (row == null) return;
+
+            var choice = combo.SelectedItem as FamilyTypeChoice;
+            if (choice == null) return;
+
+            // Ignore the selection raised when the value is bound during load/refresh.
+            if (Equals(choice.Id, row.FamilyTypeValue)) return;
+
+            string error;
+            if (!FamEditorOps.SetFamilyType(_doc, CurrentType, row.Param, choice.Id, out error))
             {
                 ShowMessage("Edit Failed", error);
             }

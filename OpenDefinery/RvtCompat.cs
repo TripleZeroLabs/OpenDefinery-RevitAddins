@@ -119,5 +119,70 @@ namespace OpenDefinery
         {
             return LabelUtils.GetLabelForGroup(definition.GetGroupTypeId());
         }
+
+        /// <summary>
+        /// The model categories a project parameter can be bound to (those that allow bound
+        /// parameters), as (name, category) sorted by name. Matches the category list in Revit's
+        /// own "Project Parameters" dialog when the "Model" category filter is active.
+        /// </summary>
+        public static List<ModelCategoryOption> GetBindableModelCategories(Document doc)
+        {
+            var list = new List<ModelCategoryOption>();
+            if (doc == null) return list;
+
+            foreach (Category c in doc.Settings.Categories)
+            {
+                try
+                {
+                    if (c != null && c.AllowsBoundParameters && c.CategoryType == CategoryType.Model)
+                        list.Add(new ModelCategoryOption { Name = c.Name, Category = c });
+                }
+                catch { /* skip categories that throw on inspection */ }
+            }
+
+            return list.OrderBy(o => o.Name).ToList();
+        }
+
+        /// <summary>
+        /// Insert a project-parameter binding under a parameter group. The ForgeTypeId
+        /// (GroupTypeId) overload of <c>BindingMap.Insert</c> is available across 2022-2027, so no
+        /// per-version branch is needed. Returns false if a binding for the definition already exists.
+        /// </summary>
+        public static bool InsertProjectBinding(Document doc, Definition def, Binding binding, ForgeTypeId group)
+        {
+            return doc.ParameterBindings.Insert(def, binding, group ?? IdentityGroup);
+        }
+
+        // Categories that Revit does NOT allow a TYPE project parameter to bind to. The API is a
+        // trap here: Insert() returns true, but the binding is ineffective (the parameter never
+        // appears on the element - e.g. Project Information has no "type"). Revit's own dialog
+        // disallows Type for these, so the add-in must validate it itself. Extend as more are found.
+        private static readonly BuiltInCategory[] InstanceOnlyBindingCategories =
+        {
+            BuiltInCategory.OST_ProjectInformation,
+        };
+
+        /// <summary>
+        /// True if a TYPE project-parameter binding is allowed for the given model category. Some
+        /// categories (e.g. Project Information) support Instance binding only.
+        /// </summary>
+        public static bool AllowsTypeBinding(Category category)
+        {
+            if (category == null) return true;
+
+            foreach (var bic in InstanceOnlyBindingCategories)
+            {
+                if (category.Id == new ElementId(bic)) return false;
+            }
+            return true;
+        }
+    }
+
+    /// <summary>A selectable model category for project-parameter binding: its display name and Category.</summary>
+    public class ModelCategoryOption
+    {
+        public string Name { get; set; }
+        public Category Category { get; set; }
+        public override string ToString() => Name;
     }
 }
